@@ -2,6 +2,7 @@ package com.sliit.smartcampus.controller.member3.ticketing;
 
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
 import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketCreateRequest;
+import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketAssignmentRequest;
 import com.sliit.smartcampus.service.member3.ticketing.TicketService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -70,6 +71,13 @@ public class TicketController {
             @PathVariable String id,
             @RequestParam Ticket.TicketStatus status) {
         return ResponseEntity.ok(ticketService.updateTicketStatus(id, status));
+    }
+
+    @PatchMapping("/{id}/assign-technician")
+    public ResponseEntity<Ticket> assignTechnician(
+            @PathVariable String id,
+            @Valid @RequestBody TicketAssignmentRequest request) {
+        return ResponseEntity.ok(ticketService.assignTechnician(id, request.technicianId()));
     }
 
     @DeleteMapping("/{id}")

@@ -118,6 +118,26 @@ public class TicketService {
         return ticketRepository.save(ticket);
     }
 
+    public Ticket assignTechnician(String id, String technicianId) {
+        Ticket ticket = getTicketById(id);
+
+        if (ticket.getStatus() == Ticket.TicketStatus.CLOSED) {
+            throw new BadRequestException("Closed tickets cannot be assigned to a technician");
+        }
+
+        if (technicianId != null && technicianId.equals(ticket.getAssignedTo())) {
+            return ticket;
+        }
+
+        ticket.setAssignedTo(technicianId);
+
+        if (ticket.getStatus() == Ticket.TicketStatus.OPEN) {
+            ticket.setStatus(Ticket.TicketStatus.IN_PROGRESS);
+        }
+
+        return ticketRepository.save(ticket);
+    }
+
     private void validateStatusTransition(Ticket.TicketStatus currentStatus, Ticket.TicketStatus nextStatus) {
         if (currentStatus == null || nextStatus == null || currentStatus == nextStatus) {
             return;
