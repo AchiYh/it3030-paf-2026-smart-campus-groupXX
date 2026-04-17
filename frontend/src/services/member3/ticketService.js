@@ -2,7 +2,13 @@ import API from '../api';
 
 const TICKET_URL = '/member3/tickets';
 
+const cleanParams = (params = {}) => Object.fromEntries(
+  Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== '')
+);
+
 const ticketService = {
+  getTickets: (params = {}) => API.get(TICKET_URL, { params: cleanParams(params) }),
+
   createTicket: (payload) => API.post(TICKET_URL, payload),
 
   uploadTicketImage: (ticketId, file, uploadedBy) => {
