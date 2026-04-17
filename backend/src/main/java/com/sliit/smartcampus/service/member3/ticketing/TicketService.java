@@ -1,6 +1,7 @@
 package com.sliit.smartcampus.service.member3.ticketing;
 
 import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketCreateRequest;
+import com.sliit.smartcampus.exception.BadRequestException;
 import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
 import com.sliit.smartcampus.repository.member3.ticketing.TicketRepository;
@@ -103,6 +104,7 @@ public class TicketService {
         existingTicket.setReportedBy(ticketRequest.getReportedBy());
 
         if (ticketRequest.getStatus() != null) {
+            validateStatusTransition(existingTicket.getStatus(), ticketRequest.getStatus());
             existingTicket.setStatus(ticketRequest.getStatus());
         }
 
@@ -111,8 +113,32 @@ public class TicketService {
 
     public Ticket updateTicketStatus(String id, Ticket.TicketStatus status) {
         Ticket ticket = getTicketById(id);
+        validateStatusTransition(ticket.getStatus(), status);
         ticket.setStatus(status);
         return ticketRepository.save(ticket);
+    }
+
+    private void validateStatusTransition(Ticket.TicketStatus currentStatus, Ticket.TicketStatus nextStatus) {
+        if (currentStatus == null || nextStatus == null || currentStatus == nextStatus) {
+            return;
+        }
+
+        boolean allowed = switch (currentStatus) {
+            case OPEN -> nextStatus == Ticket.TicketStatus.IN_PROGRESS
+                    || nextStatus == Ticket.TicketStatus.RESOLVED
+                    || nextStatus == Ticket.TicketStatus.CLOSED;
+            case IN_PROGRESS -> nextStatus == Ticket.TicketStatus.RESOLVED
+                    || nextStatus == Ticket.TicketStatus.CLOSED;
+            case RESOLVED -> nextStatus == Ticket.TicketStatus.CLOSED;
+            case CLOSED -> false;
+        };
+
+        if (!allowed) {
+            throw new BadRequestException(String.format(
+                    "Invalid ticket status transition from %s to %s",
+                    currentStatus,
+                    nextStatus));
+        }
     }
 
     public void deleteTicket(String id) {
