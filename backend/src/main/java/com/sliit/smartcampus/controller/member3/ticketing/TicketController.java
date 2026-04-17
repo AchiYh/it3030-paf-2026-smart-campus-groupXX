@@ -1,7 +1,9 @@
 package com.sliit.smartcampus.controller.member3.ticketing;
 
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
+import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketCreateRequest;
 import com.sliit.smartcampus.service.member3.ticketing.TicketService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,8 +30,8 @@ public class TicketController {
     }
 
     @PostMapping
-    public ResponseEntity<Ticket> createTicket(@RequestBody Ticket ticket) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(ticketService.createTicket(ticket));
+    public ResponseEntity<Ticket> createTicket(@Valid @RequestBody TicketCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ticketService.createTicket(request));
     }
 
     @GetMapping

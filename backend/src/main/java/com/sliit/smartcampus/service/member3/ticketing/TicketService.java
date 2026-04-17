@@ -1,5 +1,6 @@
 package com.sliit.smartcampus.service.member3.ticketing;
 
+import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketCreateRequest;
 import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
 import com.sliit.smartcampus.repository.member3.ticketing.TicketRepository;
@@ -16,10 +17,17 @@ public class TicketService {
         this.ticketRepository = ticketRepository;
     }
 
-    public Ticket createTicket(Ticket ticket) {
-        if (ticket.getStatus() == null) {
-            ticket.setStatus(Ticket.TicketStatus.OPEN);
-        }
+    public Ticket createTicket(TicketCreateRequest request) {
+        Ticket ticket = Ticket.builder()
+                .title(request.title())
+                .description(request.description())
+                .category(request.category())
+                .priority(request.priority())
+                .status(Ticket.TicketStatus.OPEN)
+                .reportedBy(request.reportedBy())
+                .assignedTo(request.assignedTo())
+                .build();
+
         return ticketRepository.save(ticket);
     }
 

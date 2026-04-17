@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -48,12 +49,15 @@ public class Ticket {
 
     @NotBlank(message = "Reporter user ID is required")
     @Pattern(regexp = "^[a-zA-Z0-9_-]{3,60}$", message = "reportedBy must be 3-60 chars using letters, numbers, _ or -")
+    @Indexed
     private String reportedBy;
 
     @Pattern(regexp = "^$|^[a-zA-Z0-9_-]{3,60}$", message = "assignedTo must be empty or 3-60 chars using letters, numbers, _ or -")
+    @Indexed
     private String assignedTo;
 
     @CreatedDate
+    @Indexed
     private LocalDateTime createdAt;
 
     @LastModifiedDate
