@@ -1,6 +1,9 @@
 package com.sliit.smartcampus.service.member3.ticketing;
 
 import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketCreateRequest;
+import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketResolveRequest;
+import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketCloseRequest;
+import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketRejectRequest;
 import com.sliit.smartcampus.exception.BadRequestException;
 import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
@@ -104,6 +107,7 @@ public class TicketService {
         existingTicket.setReportedBy(ticketRequest.getReportedBy());
 
         if (ticketRequest.getStatus() != null) {
+            ensureStatusChangeAllowedInGenericUpdate(ticketRequest.getStatus());
             validateStatusTransition(existingTicket.getStatus(), ticketRequest.getStatus());
             existingTicket.setStatus(ticketRequest.getStatus());
         }
@@ -112,6 +116,7 @@ public class TicketService {
     }
 
     public Ticket updateTicketStatus(String id, Ticket.TicketStatus status) {
+        ensureStatusChangeAllowedInGenericUpdate(status);
         Ticket ticket = getTicketById(id);
         validateStatusTransition(ticket.getStatus(), status);
         ticket.setStatus(status);
@@ -121,8 +126,9 @@ public class TicketService {
     public Ticket assignTechnician(String id, String technicianId) {
         Ticket ticket = getTicketById(id);
 
-        if (ticket.getStatus() == Ticket.TicketStatus.CLOSED) {
-            throw new BadRequestException("Closed tickets cannot be assigned to a technician");
+        if (ticket.getStatus() == Ticket.TicketStatus.CLOSED
+                || ticket.getStatus() == Ticket.TicketStatus.REJECTED) {
+            throw new BadRequestException("Closed or rejected tickets cannot be assigned to a technician");
         }
 
         if (technicianId != null && technicianId.equals(ticket.getAssignedTo())) {
@@ -138,6 +144,68 @@ public class TicketService {
         return ticketRepository.save(ticket);
     }
 
+    public Ticket rejectTicket(String id, TicketRejectRequest request) {
+        Ticket ticket = getTicketById(id);
+
+        if (ticket.getStatus() == Ticket.TicketStatus.CLOSED) {
+            throw new BadRequestException("Closed tickets cannot be rejected");
+        }
+
+        if (ticket.getStatus() == Ticket.TicketStatus.REJECTED) {
+            throw new BadRequestException("Ticket is already rejected");
+        }
+
+        validateStatusTransition(ticket.getStatus(), Ticket.TicketStatus.REJECTED);
+        ticket.setStatus(Ticket.TicketStatus.REJECTED);
+        ticket.setRejectionReason(request.reason().trim());
+        ticket.setRejectedBy(request.rejectedBy().trim());
+        ticket.setRejectedAt(LocalDateTime.now());
+        ticket.setClosedBy(null);
+        ticket.setClosedAt(null);
+
+        return ticketRepository.save(ticket);
+    }
+
+    public Ticket resolveTicket(String id, TicketResolveRequest request) {
+        Ticket ticket = getTicketById(id);
+
+        validateStatusTransition(ticket.getStatus(), Ticket.TicketStatus.RESOLVED);
+        ticket.setStatus(Ticket.TicketStatus.RESOLVED);
+        ticket.setResolutionNotes(request.resolutionNotes().trim());
+        ticket.setResolvedBy(request.resolvedBy().trim());
+        ticket.setResolvedAt(LocalDateTime.now());
+
+        return ticketRepository.save(ticket);
+    }
+
+    public Ticket closeTicket(String id, TicketCloseRequest request) {
+        Ticket ticket = getTicketById(id);
+
+        if (ticket.getStatus() != Ticket.TicketStatus.RESOLVED) {
+            throw new BadRequestException("Ticket must be in RESOLVED state before closing");
+        }
+
+        if (!StringUtils.hasText(ticket.getResolutionNotes())) {
+            throw new BadRequestException("Resolution notes are required before closing a ticket");
+        }
+
+        validateStatusTransition(ticket.getStatus(), Ticket.TicketStatus.CLOSED);
+        ticket.setStatus(Ticket.TicketStatus.CLOSED);
+        ticket.setClosedBy(request.closedBy().trim());
+        ticket.setClosedAt(LocalDateTime.now());
+
+        return ticketRepository.save(ticket);
+    }
+
+    private void ensureStatusChangeAllowedInGenericUpdate(Ticket.TicketStatus status) {
+        if (status == Ticket.TicketStatus.RESOLVED
+                || status == Ticket.TicketStatus.CLOSED
+                || status == Ticket.TicketStatus.REJECTED) {
+            throw new BadRequestException(
+                    "Use /resolve, /close, and /reject endpoints for workflow status updates");
+        }
+    }
+
     private void validateStatusTransition(Ticket.TicketStatus currentStatus, Ticket.TicketStatus nextStatus) {
         if (currentStatus == null || nextStatus == null || currentStatus == nextStatus) {
             return;
@@ -145,12 +213,12 @@ public class TicketService {
 
         boolean allowed = switch (currentStatus) {
             case OPEN -> nextStatus == Ticket.TicketStatus.IN_PROGRESS
-                    || nextStatus == Ticket.TicketStatus.RESOLVED
-                    || nextStatus == Ticket.TicketStatus.CLOSED;
+                || nextStatus == Ticket.TicketStatus.REJECTED;
             case IN_PROGRESS -> nextStatus == Ticket.TicketStatus.RESOLVED
-                    || nextStatus == Ticket.TicketStatus.CLOSED;
-            case RESOLVED -> nextStatus == Ticket.TicketStatus.CLOSED;
-            case CLOSED -> false;
+                || nextStatus == Ticket.TicketStatus.REJECTED;
+            case RESOLVED -> nextStatus == Ticket.TicketStatus.CLOSED
+                || nextStatus == Ticket.TicketStatus.REJECTED;
+            case CLOSED, REJECTED -> false;
         };
 
         if (!allowed) {

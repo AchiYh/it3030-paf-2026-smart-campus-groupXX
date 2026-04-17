@@ -56,6 +56,27 @@ public class Ticket {
     @Indexed
     private String assignedTo;
 
+    @Size(max = 4000, message = "resolutionNotes must not exceed 4000 characters")
+    private String resolutionNotes;
+
+    @Pattern(regexp = "^$|^[a-zA-Z0-9_-]{3,60}$", message = "resolvedBy must be empty or 3-60 chars using letters, numbers, _ or -")
+    private String resolvedBy;
+
+    private LocalDateTime resolvedAt;
+
+    @Pattern(regexp = "^$|^[a-zA-Z0-9_-]{3,60}$", message = "closedBy must be empty or 3-60 chars using letters, numbers, _ or -")
+    private String closedBy;
+
+    private LocalDateTime closedAt;
+
+    @Size(max = 2000, message = "rejectionReason must not exceed 2000 characters")
+    private String rejectionReason;
+
+    @Pattern(regexp = "^$|^[a-zA-Z0-9_-]{3,60}$", message = "rejectedBy must be empty or 3-60 chars using letters, numbers, _ or -")
+    private String rejectedBy;
+
+    private LocalDateTime rejectedAt;
+
     @CreatedDate
     @Indexed
     private LocalDateTime createdAt;
@@ -67,7 +88,8 @@ public class Ticket {
         OPEN,
         IN_PROGRESS,
         RESOLVED,
-        CLOSED;
+        CLOSED,
+        REJECTED;
 
         @JsonCreator
         public static TicketStatus from(String value) {
