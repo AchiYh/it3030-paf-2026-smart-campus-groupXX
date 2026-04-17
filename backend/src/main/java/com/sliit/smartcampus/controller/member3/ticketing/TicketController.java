@@ -2,11 +2,15 @@ package com.sliit.smartcampus.controller.member3.ticketing;
 
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
 import com.sliit.smartcampus.model.member3.ticketing.Attachment;
+import com.sliit.smartcampus.model.member3.ticketing.Comment;
 import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketCreateRequest;
 import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketAssignmentRequest;
 import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketResolveRequest;
 import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketCloseRequest;
 import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketRejectRequest;
+import com.sliit.smartcampus.controller.member3.ticketing.dto.CommentCreateRequest;
+import com.sliit.smartcampus.controller.member3.ticketing.dto.CommentUpdateRequest;
+import com.sliit.smartcampus.service.member3.ticketing.CommentService;
 import com.sliit.smartcampus.service.member3.ticketing.ImageUploadService;
 import com.sliit.smartcampus.service.member3.ticketing.TicketService;
 import jakarta.validation.Valid;
@@ -38,10 +42,15 @@ public class TicketController {
 
     private final TicketService ticketService;
     private final ImageUploadService imageUploadService;
+    private final CommentService commentService;
 
-    public TicketController(TicketService ticketService, ImageUploadService imageUploadService) {
+    public TicketController(
+            TicketService ticketService,
+            ImageUploadService imageUploadService,
+            CommentService commentService) {
         this.ticketService = ticketService;
         this.imageUploadService = imageUploadService;
+        this.commentService = commentService;
     }
 
     @PostMapping
@@ -129,6 +138,35 @@ public class TicketController {
             @PathVariable String ticketId,
             @PathVariable String attachmentId) {
         imageUploadService.deleteAttachment(ticketId, attachmentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{ticketId}/comments")
+    public ResponseEntity<List<Comment>> getComments(@PathVariable String ticketId) {
+        return ResponseEntity.ok(commentService.getCommentsByTicket(ticketId));
+    }
+
+    @PostMapping("/{ticketId}/comments")
+    public ResponseEntity<Comment> addComment(
+            @PathVariable String ticketId,
+            @Valid @RequestBody CommentCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(commentService.addComment(ticketId, request));
+    }
+
+    @PutMapping("/{ticketId}/comments/{commentId}")
+    public ResponseEntity<Comment> updateComment(
+            @PathVariable String ticketId,
+            @PathVariable String commentId,
+            @Valid @RequestBody CommentUpdateRequest request) {
+        return ResponseEntity.ok(commentService.updateComment(ticketId, commentId, request));
+    }
+
+    @DeleteMapping("/{ticketId}/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable String ticketId,
+            @PathVariable String commentId) {
+        commentService.deleteComment(ticketId, commentId);
         return ResponseEntity.noContent().build();
     }
 
