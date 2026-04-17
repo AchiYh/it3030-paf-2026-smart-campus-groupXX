@@ -6,6 +6,7 @@ import com.sliit.smartcampus.service.member3.ticketing.TicketService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -35,8 +37,22 @@ public class TicketController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Ticket>> getAllTickets() {
-        return ResponseEntity.ok(ticketService.getAllTickets());
+    public ResponseEntity<List<Ticket>> getAllTickets(
+            @RequestParam(required = false) Ticket.TicketStatus status,
+            @RequestParam(required = false) Ticket.TicketPriority priority,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String reportedBy,
+            @RequestParam(required = false) String assignedTo,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdTo) {
+        return ResponseEntity.ok(ticketService.getTickets(
+                status,
+                priority,
+                category,
+                reportedBy,
+                assignedTo,
+                createdFrom,
+                createdTo));
     }
 
     @GetMapping("/{id}")

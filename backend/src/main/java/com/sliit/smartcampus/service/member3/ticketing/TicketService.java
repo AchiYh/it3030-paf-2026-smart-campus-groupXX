@@ -4,17 +4,25 @@ import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketCreateReques
 import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
 import com.sliit.smartcampus.repository.member3.ticketing.TicketRepository;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class TicketService {
 
     private final TicketRepository ticketRepository;
+    private final MongoTemplate mongoTemplate;
 
-    public TicketService(TicketRepository ticketRepository) {
+    public TicketService(TicketRepository ticketRepository, MongoTemplate mongoTemplate) {
         this.ticketRepository = ticketRepository;
+        this.mongoTemplate = mongoTemplate;
     }
 
     public Ticket createTicket(TicketCreateRequest request) {
@@ -31,8 +39,52 @@ public class TicketService {
         return ticketRepository.save(ticket);
     }
 
-    public List<Ticket> getAllTickets() {
-        return ticketRepository.findAll();
+    public List<Ticket> getTickets(
+            Ticket.TicketStatus status,
+            Ticket.TicketPriority priority,
+            String category,
+            String reportedBy,
+            String assignedTo,
+            LocalDateTime createdFrom,
+            LocalDateTime createdTo) {
+
+        List<Criteria> criteria = new ArrayList<>();
+
+        if (status != null) {
+            criteria.add(Criteria.where("status").is(status));
+        }
+
+        if (priority != null) {
+            criteria.add(Criteria.where("priority").is(priority));
+        }
+
+        if (StringUtils.hasText(category)) {
+            criteria.add(Criteria.where("category").is(category.trim()));
+        }
+
+        if (StringUtils.hasText(reportedBy)) {
+            criteria.add(Criteria.where("reportedBy").is(reportedBy.trim()));
+        }
+
+        if (StringUtils.hasText(assignedTo)) {
+            criteria.add(Criteria.where("assignedTo").is(assignedTo.trim()));
+        }
+
+        if (createdFrom != null && createdTo != null) {
+            criteria.add(Criteria.where("createdAt").gte(createdFrom).lte(createdTo));
+        } else if (createdFrom != null) {
+            criteria.add(Criteria.where("createdAt").gte(createdFrom));
+        } else if (createdTo != null) {
+            criteria.add(Criteria.where("createdAt").lte(createdTo));
+        }
+
+        Query query = new Query();
+        if (!criteria.isEmpty()) {
+            query.addCriteria(new Criteria().andOperator(criteria.toArray(new Criteria[0])));
+        }
+        query.with(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+
+        return mongoTemplate.find(query, Ticket.class);
     }
 
     public Ticket getTicketById(String id) {
