@@ -5,7 +5,7 @@ function TicketListPage() {
     <div className="card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2>Ticket List</h2>
-        <button className="btn btn-primary" type="button">+ New Ticket</button>
+        <Link className="btn btn-primary" to="/tickets/new">+ New Ticket</Link>
       </div>
 
       <div className="table-container">

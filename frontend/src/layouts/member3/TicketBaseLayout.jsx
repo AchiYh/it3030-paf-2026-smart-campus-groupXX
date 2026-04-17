@@ -33,6 +33,7 @@ function TicketBaseLayout() {
         }}
       >
         <NavLink to="/tickets" end style={navLinkStyle}>Overview</NavLink>
+        <NavLink to="/tickets/new" style={navLinkStyle}>Create Ticket</NavLink>
         <NavLink to="/tickets/list" style={navLinkStyle}>List View</NavLink>
         <NavLink to="/tickets/board" style={navLinkStyle}>Board View</NavLink>
       </div>

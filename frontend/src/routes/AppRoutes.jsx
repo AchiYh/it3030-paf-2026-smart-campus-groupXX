@@ -6,6 +6,7 @@ import TicketOverview from '../pages/member3/ticketing/TicketOverview';
 import TicketListPage from '../pages/member3/ticketing/TicketListPage';
 import TicketBoardPage from '../pages/member3/ticketing/TicketBoardPage';
 import TicketDetailsPage from '../pages/member3/ticketing/TicketDetailsPage';
+import CreateTicketPage from '../pages/member3/ticketing/CreateTicketPage';
 
 function AppRoutes() {
   return (
@@ -32,6 +33,7 @@ function AppRoutes() {
         }
       >
         <Route index element={<TicketOverview />} />
+        <Route path="new" element={<CreateTicketPage />} />
         <Route path="list" element={<TicketListPage />} />
         <Route path="board" element={<TicketBoardPage />} />
         <Route path=":ticketId" element={<TicketDetailsPage />} />
