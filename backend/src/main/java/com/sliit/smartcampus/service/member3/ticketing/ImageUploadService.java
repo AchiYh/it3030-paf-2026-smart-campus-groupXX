@@ -4,8 +4,13 @@ import com.sliit.smartcampus.exception.BadRequestException;
 import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member3.ticketing.Attachment;
 import com.sliit.smartcampus.model.member3.ticketing.Attachment.AttachmentType;
+import com.sliit.smartcampus.model.member4.User;
 import com.sliit.smartcampus.repository.member3.ticketing.AttachmentRepository;
 import com.sliit.smartcampus.repository.member3.ticketing.TicketRepository;
+import com.sliit.smartcampus.repository.member4.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.InvalidPathException;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -25,10 +31,15 @@ public class ImageUploadService {
 
     private final AttachmentRepository attachmentRepository;
     private final TicketRepository ticketRepository;
+    private final UserRepository userRepository;
 
-    public ImageUploadService(AttachmentRepository attachmentRepository, TicketRepository ticketRepository) {
+    public ImageUploadService(
+            AttachmentRepository attachmentRepository,
+            TicketRepository ticketRepository,
+            UserRepository userRepository) {
         this.attachmentRepository = attachmentRepository;
         this.ticketRepository = ticketRepository;
+        this.userRepository = userRepository;
     }
 
     public Attachment uploadTicketImage(String ticketId, String uploadedBy, MultipartFile file) {
@@ -78,5 +89,47 @@ public class ImageUploadService {
                 .build();
 
         return attachmentRepository.save(attachment);
+    }
+
+    public void deleteAttachment(String ticketId, String attachmentId) {
+        Attachment attachment = attachmentRepository.findById(attachmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Attachment", "id", attachmentId));
+
+        if (!attachment.getTicketId().equals(ticketId)) {
+            throw new BadRequestException("Attachment does not belong to the specified ticket");
+        }
+
+        User currentUser = getCurrentUser();
+        boolean isPrivileged = currentUser.getRole() == User.Role.ADMIN
+                || currentUser.getRole() == User.Role.TECHNICIAN;
+        boolean isOwner = attachment.getUploadedBy() != null
+                && (attachment.getUploadedBy().equals(currentUser.getId())
+                || attachment.getUploadedBy().equalsIgnoreCase(currentUser.getEmail()));
+
+        if (!isPrivileged && !isOwner) {
+            throw new AccessDeniedException("You are not authorized to delete this attachment");
+        }
+
+        if (StringUtils.hasText(attachment.getStorageUrl())) {
+            try {
+                Path path = Paths.get(attachment.getStorageUrl());
+                Files.deleteIfExists(path);
+            } catch (InvalidPathException | IOException ex) {
+                throw new BadRequestException("Failed to delete stored file: " + ex.getMessage());
+            }
+        }
+
+        attachmentRepository.deleteById(attachmentId);
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication is required");
+        }
+
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new AccessDeniedException("Authenticated user not found"));
     }
 }

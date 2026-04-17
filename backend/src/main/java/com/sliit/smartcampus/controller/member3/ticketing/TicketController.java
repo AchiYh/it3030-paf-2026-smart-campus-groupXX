@@ -124,6 +124,14 @@ public class TicketController {
                 .body(imageUploadService.uploadTicketImage(id, uploadedBy, file));
     }
 
+    @DeleteMapping("/{ticketId}/attachments/{attachmentId}")
+    public ResponseEntity<Void> deleteAttachment(
+            @PathVariable String ticketId,
+            @PathVariable String attachmentId) {
+        imageUploadService.deleteAttachment(ticketId, attachmentId);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTicket(@PathVariable String id) {
         ticketService.deleteTicket(id);
