@@ -16,7 +16,6 @@ function BookingForm({ defaultEmail, onCreate }) {
   const [purpose, setPurpose] = useState('');
   const [attendees, setAttendees] = useState(1);
   const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
 
@@ -63,7 +62,6 @@ function BookingForm({ defaultEmail, onCreate }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);
-    setSuccess(null);
 
     if (!validateForm()) {
       setError('Please correct the highlighted errors');
@@ -82,7 +80,6 @@ function BookingForm({ defaultEmail, onCreate }) {
         purpose: purpose.trim(),
         attendees,
       });
-      setSuccess('Booking request submitted successfully!');
       setPurpose('');
       setDate('');
       setStartTime('');
@@ -391,23 +388,6 @@ function BookingForm({ defaultEmail, onCreate }) {
             }}>
               <span style={{ fontSize: '1.2rem' }}>❌</span>
               <span>{error}</span>
-            </div>
-          )}
-
-          {success && (
-            <div style={{
-              padding: '1rem',
-              borderRadius: 'var(--border-radius)',
-              background: 'rgba(16, 185, 129, 0.1)',
-              border: '1px solid var(--success)',
-              color: 'var(--success)',
-              marginBottom: '1.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              <span style={{ fontSize: '1.2rem' }}>✅</span>
-              <span>{success}</span>
             </div>
           )}
 

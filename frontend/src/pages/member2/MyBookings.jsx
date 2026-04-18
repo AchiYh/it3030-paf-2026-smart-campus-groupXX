@@ -18,6 +18,15 @@ function MyBookings() {
     loadBookings();
   }, [user]);
 
+  useEffect(() => {
+    if (!successMessage && !error) return;
+    const timer = setTimeout(() => {
+      setSuccessMessage(null);
+      setError(null);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [successMessage, error]);
+
   const loadBookings = async () => {
     setLoading(true);
     setError(null);
@@ -111,13 +120,13 @@ function MyBookings() {
       </div>
 
       {error && (
-        <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '0.75rem', background: '#fee2e2', color: '#991b1b' }}>
+        <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '0.75rem', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #dc2626', color: '#991b1b' }}>
           {error}
         </div>
       )}
 
       {successMessage && (
-        <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '0.75rem', background: '#dcfce7', color: '#166534' }}>
+        <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '0.75rem', background: 'rgba(19, 247, 171, 0.2)', border: '1px solid #10b981', color: '#10a84a' }}>
           {successMessage}
         </div>
       )}
