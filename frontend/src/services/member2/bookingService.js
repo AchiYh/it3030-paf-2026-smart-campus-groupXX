@@ -1,6 +1,6 @@
 import API from '../../services/api';
 
-const BASE_URL = '/bookings';
+const BASE_URL = '/api/bookings';
 
 const createBooking = async (bookingData) => {
   return API.post(BASE_URL, bookingData);
