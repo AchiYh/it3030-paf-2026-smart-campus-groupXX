@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import bookingService from '../../services/member2/bookingService';
 import BookingForm from '../../components/member2/BookingForm';
 import BookingCard from '../../components/member2/BookingCard';
+import EditBookingModal from '../../components/member2/EditBookingModal';
 
 function MyBookings() {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ function MyBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [editingBooking, setEditingBooking] = useState(null);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -60,6 +62,43 @@ function MyBookings() {
     }
   };
 
+  const handleEditClick = (booking) => {
+    setError(null);
+    setSuccessMessage(null);
+    setEditingBooking(booking);
+  };
+
+  const handleUpdate = async (bookingId, updatedBookingData) => {
+    setError(null);
+    setSuccessMessage(null);
+    try {
+      await bookingService.updateBooking(bookingId, updatedBookingData);
+      await loadBookings();
+      setSuccessMessage('Booking updated successfully.');
+      setEditingBooking(null);
+    } catch (updateError) {
+      const message = updateError.response?.data?.message || updateError.message || 'Unable to update booking.';
+      setError(message);
+      throw new Error(message);
+    }
+  };
+
+  const handleDelete = async (bookingId) => {
+    setError(null);
+    setSuccessMessage(null);
+
+    const confirmed = window.confirm('Delete this pending booking? This action cannot be undone.');
+    if (!confirmed) return;
+
+    try {
+      await bookingService.deleteBooking(bookingId);
+      await loadBookings();
+      setSuccessMessage('Booking deleted successfully.');
+    } catch (deleteError) {
+      setError(deleteError.response?.data?.message || 'Unable to delete booking.');
+    }
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -94,10 +133,25 @@ function MyBookings() {
           <p style={{ color: '#64748b' }}>You currently have no bookings. Create one using the form above.</p>
         ) : (
           bookings.map((booking) => (
-            <BookingCard key={booking.id} booking={booking} onCancel={handleCancel} />
+            <BookingCard
+              key={booking.id}
+              booking={booking}
+              isOwner={booking.userEmail === user?.email}
+              onEdit={handleEditClick}
+              onDelete={handleDelete}
+              onCancel={handleCancel}
+            />
           ))
         )}
       </section>
+
+      {editingBooking && (
+        <EditBookingModal
+          booking={editingBooking}
+          onClose={() => setEditingBooking(null)}
+          onUpdate={handleUpdate}
+        />
+      )}
     </div>
   );
 }

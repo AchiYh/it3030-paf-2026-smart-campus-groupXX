@@ -8,7 +8,7 @@ function BookingStatusBadge({ status }) {
       color = '#166534';
       break;
     case 'PENDING':
-      background = '#fef9c3';
+      background = '#d2cc87';
       color = '#92400e';
       break;
     case 'REJECTED':
@@ -33,7 +33,7 @@ function BookingStatusBadge({ status }) {
       fontSize: '0.75rem',
       fontWeight: 700,
       background,
-      color,
+      color ,
       textTransform: 'uppercase',
       letterSpacing: '0.05em',
     }}>

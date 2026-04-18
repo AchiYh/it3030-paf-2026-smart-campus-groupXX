@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Data
@@ -41,4 +42,8 @@ public class Booking {
     private BookingStatus status;
 
     private String rejectReason;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

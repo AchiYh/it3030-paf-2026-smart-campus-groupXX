@@ -1,6 +1,6 @@
 import BookingStatusBadge from './BookingStatusBadge';
 
-function BookingCard({ booking, onCancel }) {
+function BookingCard({ booking, isOwner, onEdit, onDelete, onCancel }) {
   return (
     <div style={{
       border: '1px solid #d1d5db',
@@ -12,8 +12,8 @@ function BookingCard({ booking, onCancel }) {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
-          <h3 style={{ margin: 0, fontSize: '1.05rem' }}>{booking.resourceName}</h3>
-          <p style={{ margin: '0.25rem 0 0', color: '#475569' }}>
+          <h3 style={{ margin: 0, color: '#2d2066', fontSize: '1.05rem' }}>{booking.resourceName}</h3>
+          <p style={{ margin: '0.25rem 0 0', color: '#3b495e' }}>
             {booking.date} · {booking.startTime} - {booking.endTime}
           </p>
         </div>
@@ -22,16 +22,16 @@ function BookingCard({ booking, onCancel }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
         <div>
-          <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>Booked by</p>
-          <p style={{ margin: '0.25rem 0 0', fontWeight: 600 }}>{booking.userEmail}</p>
+          <p style={{ margin: 0, color: '#3a3e44', fontSize: '0.85rem' }}>Booked by</p>
+          <p style={{ margin: '0.25rem 0 0', color: '#3b495e', fontWeight: 300 }}>{booking.userEmail}</p>
         </div>
         <div>
-          <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>Attendees</p>
-          <p style={{ margin: '0.25rem 0 0', fontWeight: 600 }}>{booking.attendees}</p>
+          <p style={{ margin: 0, color: '#303235', fontSize: '0.85rem' }}>Attendees</p>
+          <p style={{ margin: '0.25rem 0 0', color: '#3b495e', fontWeight: 300 }}>{booking.attendees}</p>
         </div>
         <div>
-          <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>Purpose</p>
-          <p style={{ margin: '0.25rem 0 0', wordBreak: 'break-word' }}>{booking.purpose}</p>
+          <p style={{ margin: 0, color: '#373a3e', fontSize: '0.85rem' }}>Purpose</p>
+          <p style={{ margin: '0.25rem 0 0', color: '#3b495e', fontWeight: 300 }}>{booking.purpose}</p>
         </div>
       </div>
 
@@ -41,7 +41,38 @@ function BookingCard({ booking, onCancel }) {
         </p>
       )}
 
-      {booking.status === 'APPROVED' && (
+      {isOwner && booking.status === 'PENDING' && (
+        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => onEdit(booking)}
+            style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '9999px',
+              border: 'none',
+              background: '#2563eb',
+              color: '#ffffff',
+              cursor: 'pointer',
+            }}
+          >
+            ✏️ Edit
+          </button>
+          <button
+            onClick={() => onDelete(booking.id)}
+            style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '9999px',
+              border: 'none',
+              background: '#ef4444',
+              color: '#ffffff',
+              cursor: 'pointer',
+            }}
+          >
+            🗑️ Delete
+          </button>
+        </div>
+      )}
+
+      {isOwner && booking.status === 'APPROVED' && (
         <button
           onClick={() => onCancel(booking.id)}
           style={{

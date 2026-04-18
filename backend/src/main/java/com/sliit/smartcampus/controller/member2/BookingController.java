@@ -7,10 +7,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/bookings")
 public class BookingController {
 
     private final BookingService bookingService;
@@ -46,6 +48,29 @@ public class BookingController {
     public ResponseEntity<BookingResponseDTO> getBookingById(@PathVariable String id) {
         BookingResponseDTO booking = bookingService.getBookingById(id);
         return ResponseEntity.ok(booking);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BookingResponseDTO> updateBooking(
+            @PathVariable String id,
+            @Valid @RequestBody BookingRequestDTO bookingRequest,
+            Authentication authentication
+    ) {
+        String currentUserEmail = authentication.getName();
+        BookingResponseDTO updatedBooking = bookingService.updateBooking(id, bookingRequest, currentUserEmail);
+        return ResponseEntity.ok(updatedBooking);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Void> deleteBooking(
+            @PathVariable String id,
+            Authentication authentication
+    ) {
+        String currentUserEmail = authentication.getName();
+        bookingService.deleteBooking(id, currentUserEmail);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}/cancel")
