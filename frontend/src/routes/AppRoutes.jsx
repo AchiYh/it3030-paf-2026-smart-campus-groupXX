@@ -1,6 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../pages/member4/Login';
+import TicketBaseLayout from '../layouts/member3/TicketBaseLayout';
+import TicketOverview from '../pages/member3/ticketing/TicketOverview';
+import TicketListPage from '../pages/member3/ticketing/TicketListPage';
+import TicketBoardPage from '../pages/member3/ticketing/TicketBoardPage';
+import TicketDetailsPage from '../pages/member3/ticketing/TicketDetailsPage';
+import CreateTicketPage from '../pages/member3/ticketing/CreateTicketPage';
 
 function AppRoutes() {
   return (
@@ -17,6 +23,21 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/tickets"
+        element={
+          <ProtectedRoute>
+            <TicketBaseLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<TicketOverview />} />
+        <Route path="new" element={<CreateTicketPage />} />
+        <Route path="list" element={<TicketListPage />} />
+        <Route path="board" element={<TicketBoardPage />} />
+        <Route path=":ticketId" element={<TicketDetailsPage />} />
+      </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

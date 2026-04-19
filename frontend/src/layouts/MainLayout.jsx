@@ -15,6 +15,7 @@ function MainLayout({ children }) {
 
   const navItems = [
     { label: 'Home', path: '/', icon: '🏠' },
+    { label: 'Tickets', path: '/tickets', icon: '🎫' },
   ];
 
   return (
