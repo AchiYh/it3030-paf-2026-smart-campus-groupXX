@@ -11,6 +11,10 @@ const ticketService = {
 
   getTicketById: (ticketId) => API.get(`${TICKET_URL}/${ticketId}`),
 
+  updateTicket: (ticketId, payload) => API.put(`${TICKET_URL}/${ticketId}`, payload),
+
+  deleteTicket: (ticketId) => API.delete(`${TICKET_URL}/${ticketId}`),
+
   assignTechnician: (ticketId, payload) => API.patch(`${TICKET_URL}/${ticketId}/assign-technician`, payload),
 
   resolveTicket: (ticketId, payload) => API.patch(`${TICKET_URL}/${ticketId}/resolve`, payload),
@@ -22,6 +26,9 @@ const ticketService = {
   getComments: (ticketId) => API.get(`${TICKET_URL}/${ticketId}/comments`),
 
   addComment: (ticketId, payload) => API.post(`${TICKET_URL}/${ticketId}/comments`, payload),
+
+  updateComment: (ticketId, commentId, payload) =>
+    API.put(`${TICKET_URL}/${ticketId}/comments/${commentId}`, payload),
 
   deleteComment: (ticketId, commentId) => API.delete(`${TICKET_URL}/${ticketId}/comments/${commentId}`),
 

@@ -9,32 +9,57 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        const parsedUser = JSON.parse(storedUser);
+
+        if (parsedUser?.id) {
+          setUser(parsedUser);
+          setLoading(false);
+          return;
+        }
+
+        try {
+          const response = await authService.getCurrentUser();
+          const normalizedUser = {
+            id: response.data?.id || '',
+            email: response.data?.email || parsedUser.email,
+            role: response.data?.role || parsedUser.role,
+          };
+          localStorage.setItem('user', JSON.stringify(normalizedUser));
+          setUser(normalizedUser);
+        } catch {
+          setUser(parsedUser);
+        }
+      }
+
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = async (email, password) => {
     const response = await authService.login(email, password);
-    const { token: newToken, email: userEmail, role } = response.data;
+    const { token: newToken, id, email: userEmail, role } = response.data;
     localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify({ email: userEmail, role }));
+    localStorage.setItem('user', JSON.stringify({ id, email: userEmail, role }));
     setToken(newToken);
-    setUser({ email: userEmail, role });
+    setUser({ id, email: userEmail, role });
     return response;
   };
 
   const register = async (fullName, email, password) => {
     const response = await authService.register(fullName, email, password);
-    const { token: newToken, email: userEmail, role } = response.data;
+    const { token: newToken, id, email: userEmail, role } = response.data;
     localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify({ email: userEmail, role }));
+    localStorage.setItem('user', JSON.stringify({ id, email: userEmail, role }));
     setToken(newToken);
-    setUser({ email: userEmail, role });
+    setUser({ id, email: userEmail, role });
     return response;
   };
 
