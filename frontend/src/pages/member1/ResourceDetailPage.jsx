@@ -1,0 +1,1 @@
+// ResourceDetailPage - Member 1
