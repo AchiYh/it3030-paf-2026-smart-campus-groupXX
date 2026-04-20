@@ -1,7 +1,7 @@
 import React from 'react';
 
 const CATEGORIES = ['All', 'Lecture Halls', 'Labs', 'Meeting Rooms', 'Equipment'];
-const LOCATIONS = ['All Locations', 'Main Building', 'Tech Wing', 'Admin Block', 'Science Block', 'Media Center'];
+const LOCATIONS = ['All Locations', 'Main Building', 'Tech Wing', 'Admin Block', 'Science Block', 'Media Center', 'New Building'];
 
 function ResourceFilters({ filters, setFilters }) {
   const updateFilter = (key, value) => {
@@ -10,6 +10,7 @@ function ResourceFilters({ filters, setFilters }) {
 
   return (
     <div className="resource-filters">
+      {/* Search Bar */}
       <div className="filter-search">
         <input
           type="text"
@@ -20,6 +21,7 @@ function ResourceFilters({ filters, setFilters }) {
         />
       </div>
 
+      {/* Category Chips - NO duplicate dropdown */}
       <div className="filter-categories">
         {CATEGORIES.map(cat => (
           <button
@@ -32,6 +34,7 @@ function ResourceFilters({ filters, setFilters }) {
         ))}
       </div>
 
+      {/* Filter Row - Only Max Capacity, no Min Capacity */}
       <div className="filter-row">
         <div className="filter-group">
           <label>📍 LOCATION</label>

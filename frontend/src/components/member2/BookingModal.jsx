@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import bookingService from '../../services/member2/bookingService';
 
-function BookingModal({ resource, userEmail, onClose, onCreate }) {
+function BookingModal({ resource, userEmail, onClose, onBookingSuccess, setSuccessMessage, setError }) {
   const [formData, setFormData] = useState({
     resourceId: resource?.id || '',
     resourceName: resource?.name || '',
@@ -12,35 +13,39 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
     attendees: 1
   });
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [modalError, setModalError] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError('');
+    setModalError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
+    setModalError('');
 
     if (formData.startTime >= formData.endTime) {
-      setError('End time must be after start time');
+      setModalError('End time must be after start time');
       setSubmitting(false);
       return;
     }
 
-    if (resource && formData.attendees > resource.capacity) {
-      setError(`Attendees cannot exceed room capacity (${resource.capacity})`);
+    if (formData.attendees > resource.capacity) {
+      setModalError(`Attendees cannot exceed room capacity (${resource.capacity})`);
       setSubmitting(false);
       return;
     }
 
     try {
-      await onCreate(formData);
+      await bookingService.createBooking(formData);
+      setSuccessMessage('Booking request created successfully!');
+      onBookingSuccess();
       onClose();
     } catch (err) {
-      setError(err.message || 'Failed to create booking');
+      const message = err.response?.data?.message || 'Failed to create booking';
+      setModalError(message);
+      setError(message);
     } finally {
       setSubmitting(false);
     }
@@ -57,16 +62,21 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="modal-field">
-            <label>📍 Location</label>
-            <input type="text" value={resource?.location || ''} disabled className="disabled-input" />
+          {/* READ-ONLY INFO SECTION - Location and Capacity */}
+          <div className="modal-info-section">
+            <div className="modal-info-row">
+              <div className="modal-info-field">
+                <label>📍 Location</label>
+                <div className="info-value">{resource?.location || 'Not specified'}</div>
+              </div>
+              <div className="modal-info-field">
+                <label>👥 Max Capacity</label>
+                <div className="info-value">{resource?.capacity || 0} people</div>
+              </div>
+            </div>
           </div>
 
-          <div className="modal-field">
-            <label>👥 Capacity</label>
-            <input type="text" value={resource?.capacity ? `${resource.capacity} people` : ''} disabled className="disabled-input" />
-          </div>
-
+          {/* EDITABLE FIELDS */}
           <div className="modal-field">
             <label>📅 Date *</label>
             <input
@@ -113,6 +123,9 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
               max={resource?.capacity || 1000}
               required
             />
+            {formData.attendees > (resource?.capacity || 0) && (
+              <div className="field-warning">⚠️ Attendees exceed room capacity ({resource?.capacity})</div>
+            )}
           </div>
 
           <div className="modal-field">
@@ -127,7 +140,7 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
             />
           </div>
 
-          {error && <div className="modal-error">{error}</div>}
+          {modalError && <div className="modal-error">{modalError}</div>}
 
           <div className="modal-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
