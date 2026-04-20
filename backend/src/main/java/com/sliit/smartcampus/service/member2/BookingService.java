@@ -96,6 +96,7 @@ public class BookingService {
             checkForConflicts(request, id);
         }
 
+        // Update common fields
         booking.setResourceId(request.resourceId());
         booking.setResourceName(request.resourceName());
         booking.setDate(request.date());
@@ -103,12 +104,14 @@ public class BookingService {
         booking.setEndTime(request.endTime());
         booking.setPurpose(request.purpose());
         
-        // Handle attendees vs quantity for update
+        // Handle equipment vs room
         if (booking.getResourceType() != null && "Equipment".equals(booking.getResourceType())) {
+            // For equipment, use quantity
             int newQuantity = request.quantity() != null ? request.quantity() : 1;
             booking.setQuantity(newQuantity);
             booking.setAttendees(newQuantity);
         } else {
+            // For rooms, use attendees
             booking.setAttendees(request.attendees());
         }
         

@@ -158,49 +158,6 @@
   background: #e5e7eb;
 }
 
-/* Room Numbers Section */
-.room-numbers-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
-  animation: fadeIn 0.3s ease;
-}
-
-.room-numbers-title {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #4f46e5;
-  margin-bottom: 0.75rem;
-}
-
-.room-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.room-chip {
-  padding: 0.4rem 0.8rem;
-  border-radius: 2rem;
-  background: #f3f4f6;
-  border: none;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.room-chip:hover {
-  background: #e5e7eb;
-  transform: translateY(-1px);
-}
-
-.room-chip.active {
-  background: #4f46e5;
-  color: white;
-}
-
 /* Resource Grid */
 .resource-grid {
   display: grid;
@@ -249,7 +206,7 @@
   font-weight: 500;
 }
 
-/* Equipment Availability - HIGHLY VISIBLE */
+/* Equipment Availability */
 .equipment-availability {
   margin: 0.5rem 0;
   padding: 0.5rem;
@@ -622,7 +579,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Info Section for Modals (Read-only Location & Capacity) */
+/* Info Section for Modals */
 .modal-info-section {
   background: #eff6ff;
   border-radius: 0.75rem;
@@ -673,21 +630,6 @@
   font-weight: 500;
 }
 
-/* Responsive for mobile */
-@media (max-width: 640px) {
-  .modal-info-row {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-  
-  .modal-header h2 {
-    font-size: 1.1rem;
-  }
-  
-  .resource-info h3 {
-    font-size: 1rem;
-  }
-
 /* Unavailable Equipment Styling */
 .equipment-availability.unavailable {
   background: #fef2f2;
@@ -714,21 +656,10 @@
   gap: 0.25rem;
 }
 
-/* Low Stock Warning */
-.low-stock-warning {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: #eab308;
-  margin-top: 0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
 /* When equipment is OUT_OF_SERVICE, dim the entire card */
 .resource-card:has(.equipment-availability.unavailable) {
   opacity: 0.85;
-  background: #727e8b;
+  background: #f9fafb;
 }
 
 .resource-card:has(.equipment-availability.unavailable) .resource-icon {
@@ -745,5 +676,143 @@
   background: #9ca3af;
 }
 
+/* Room Numbers Section */
+.room-numbers-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  animation: fadeIn 0.3s ease;
+}
 
+.room-numbers-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4f46e5;
+  margin-bottom: 0.75rem;
+}
+
+.room-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.room-chip {
+  padding: 0.4rem 0.8rem;
+  border-radius: 2rem;
+  background: #f3f4f6;
+  border: none;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.room-chip:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.room-chip.active {
+  background: #4f46e5;
+  color: white;
+}
+
+/* Equipment List Section */
+.equipment-list-section {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+}
+
+.equipment-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.equipment-list-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #4f46e5;
+}
+
+.available-only-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+}
+
+.available-only-toggle input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.equipment-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.equipment-chip {
+  padding: 0.4rem 0.8rem;
+  border-radius: 2rem;
+  background: #f3f4f6;
+  border: none;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.equipment-chip:hover:not(.disabled) {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.equipment-chip.active {
+  background: #4f46e5;
+  color: white;
+}
+
+.equipment-chip.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #e5e7eb;
+}
+
+/* Responsive for mobile */
+@media (max-width: 640px) {
+  .modal-info-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .resource-info h3 {
+    font-size: 1rem;
+  }
+  
+  .equipment-chips {
+    gap: 0.5rem;
+  }
+  
+  .equipment-chip {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
 }

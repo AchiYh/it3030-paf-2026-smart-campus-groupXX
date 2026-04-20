@@ -8,12 +8,13 @@ const statusConfig = {
   CANCELLED: { class: 'status-cancelled', label: 'CANCELLED' }
 };
 
-function BookingCard({ booking, isOwner, onEdit, onDelete, onRefresh, setSuccessMessage, setError }) {
+function BookingCard({ booking, isOwner, onEdit, onDelete, onCancel, onRefresh, setSuccessMessage, setError }) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const status = statusConfig[booking.status] || statusConfig.PENDING;
+  const isEquipment = booking.resourceType === 'Equipment';
 
   const handleCancelConfirm = async () => {
     if (!cancelReason.trim()) {
@@ -41,10 +42,15 @@ function BookingCard({ booking, isOwner, onEdit, onDelete, onRefresh, setSuccess
           <h3>{booking.resourceName}</h3>
           <span className={`status-badge ${status.class}`}>{status.label}</span>
         </div>
-        
+
         <div className="booking-details">
           <p>📅 {booking.date} | 🕐 {booking.startTime} - {booking.endTime}</p>
-          <p>👥 Attendees: {booking.attendees}</p>
+          {/* Show Quantity for equipment, Attendees for rooms */}
+          {isEquipment ? (
+            <p>📦 Quantity: {booking.quantity || 1}</p>
+          ) : (
+            <p>👥 Attendees: {booking.attendees}</p>
+          )}
           <p>📝 {booking.purpose}</p>
           {booking.rejectReason && (
             <p className="reject-reason">❌ Rejection reason: {booking.rejectReason}</p>
@@ -65,7 +71,7 @@ function BookingCard({ booking, isOwner, onEdit, onDelete, onRefresh, setSuccess
         )}
       </div>
 
-      {/* Cancel Reason Modal */}
+      {/* Cancel Reason Modal (same as before) */}
       {showCancelModal && (
         <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
