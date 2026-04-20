@@ -11,6 +11,7 @@ public record BookingResponseDTO(
         String id,
         String resourceId,
         String resourceName,
+        String resourceType,      // NEW
         String userEmail,
         @JsonFormat(pattern = "yyyy-MM-dd")
         LocalDate date,
@@ -20,6 +21,7 @@ public record BookingResponseDTO(
         LocalTime endTime,
         String purpose,
         Integer attendees,
+        Integer quantity,         // NEW
         BookingStatus status,
         String rejectReason
 ) {
@@ -28,12 +30,14 @@ public record BookingResponseDTO(
                 booking.getId(),
                 booking.getResourceId(),
                 booking.getResourceName(),
+                booking.getResourceType(),
                 booking.getUserEmail(),
                 booking.getDate(),
                 booking.getStartTime(),
                 booking.getEndTime(),
                 booking.getPurpose(),
                 booking.getAttendees(),
+                booking.getQuantity(),
                 booking.getStatus(),
                 booking.getRejectReason()
         );

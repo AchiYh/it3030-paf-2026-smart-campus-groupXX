@@ -28,17 +28,33 @@ public class BookingService {
     @Transactional
     public BookingResponseDTO createBooking(BookingRequestDTO request) {
         validateBookingTimes(request.startTime(), request.endTime());
-        checkForConflicts(request);
+        
+        // For Equipment, skip conflict checking (no time conflicts)
+        // For other resources, check for conflicts
+        if (request.resourceType() == null || !"Equipment".equals(request.resourceType())) {
+            checkForConflicts(request);
+        }
+        
+        // Determine attendees vs quantity
+        int finalAttendees = request.attendees() != null ? request.attendees() : 1;
+        int finalQuantity = request.quantity() != null ? request.quantity() : 1;
+        
+        // For equipment, use quantity as attendees
+        if (request.resourceType() != null && "Equipment".equals(request.resourceType())) {
+            finalAttendees = finalQuantity;
+        }
 
         Booking booking = Booking.builder()
                 .resourceId(request.resourceId())
                 .resourceName(request.resourceName())
+                .resourceType(request.resourceType())
                 .userEmail(request.userEmail())
                 .date(request.date())
                 .startTime(request.startTime())
                 .endTime(request.endTime())
                 .purpose(request.purpose())
-                .attendees(request.attendees())
+                .attendees(finalAttendees)
+                .quantity(finalQuantity)
                 .status(BookingStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -75,7 +91,10 @@ public class BookingService {
             throw new BadRequestException("Only PENDING bookings can be edited");
         }
 
-        checkForConflicts(request, id);
+        // Skip conflict check for Equipment
+        if (booking.getResourceType() == null || !"Equipment".equals(booking.getResourceType())) {
+            checkForConflicts(request, id);
+        }
 
         booking.setResourceId(request.resourceId());
         booking.setResourceName(request.resourceName());
@@ -83,7 +102,16 @@ public class BookingService {
         booking.setStartTime(request.startTime());
         booking.setEndTime(request.endTime());
         booking.setPurpose(request.purpose());
-        booking.setAttendees(request.attendees());
+        
+        // Handle attendees vs quantity for update
+        if (booking.getResourceType() != null && "Equipment".equals(booking.getResourceType())) {
+            int newQuantity = request.quantity() != null ? request.quantity() : 1;
+            booking.setQuantity(newQuantity);
+            booking.setAttendees(newQuantity);
+        } else {
+            booking.setAttendees(request.attendees());
+        }
+        
         booking.setUpdatedAt(LocalDateTime.now());
 
         Booking updated = bookingRepository.save(booking);
@@ -119,7 +147,6 @@ public class BookingService {
         Booking cancelled = bookingRepository.save(booking);
         return BookingResponseDTO.fromBooking(cancelled);
     }
-
 
     private void checkForConflicts(BookingRequestDTO request, String excludedBookingId) {
         List<Booking> existingBookings;

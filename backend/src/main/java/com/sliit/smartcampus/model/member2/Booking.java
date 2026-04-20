@@ -46,4 +46,10 @@ public class Booking {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    // ========== NEW FIELDS FOR EQUIPMENT ==========
+    
+    private String resourceType;  // "Lecture Halls", "Labs", "Meeting Rooms", "Equipment"
+    
+    private Integer quantity;     // For equipment bookings (how many units)
 }

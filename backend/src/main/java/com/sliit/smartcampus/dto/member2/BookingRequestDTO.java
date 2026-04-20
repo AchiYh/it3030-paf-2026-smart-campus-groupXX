@@ -17,6 +17,9 @@ public record BookingRequestDTO(
         @NotBlank(message = "Resource name is required")
         String resourceName,
 
+        // NEW: Resource type (Lecture Halls, Labs, Meeting Rooms, Equipment)
+        String resourceType,
+
         @NotBlank(message = "User email is required")
         String userEmail,
 
@@ -39,5 +42,9 @@ public record BookingRequestDTO(
 
         @NotNull(message = "Attendee count is required")
         @Min(value = 1, message = "Attendees must be at least 1")
-        Integer attendees
+        Integer attendees,
+
+        // NEW: Quantity for equipment bookings
+        @Min(value = 1, message = "Quantity must be at least 1")
+        Integer quantity
 ) {}

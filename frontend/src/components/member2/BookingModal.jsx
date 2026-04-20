@@ -1,19 +1,24 @@
 import { useState } from 'react';
-import bookingService from '../../services/member2/bookingService';
 
-function BookingModal({ resource, userEmail, onClose, onBookingSuccess, setSuccessMessage, setError }) {
+function BookingModal({ resource, userEmail, onClose, onCreate }) {
   const [formData, setFormData] = useState({
     resourceId: resource?.id || '',
     resourceName: resource?.name || '',
+    resourceType: resource?.type || '',
     userEmail: userEmail || '',
     date: '',
     startTime: '',
     endTime: '',
     purpose: '',
-    attendees: 1
+    attendees: 1,
+    quantity: 1
   });
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
+
+  const isEquipment = resource?.type === 'Equipment';
+  const maxQuantity = isEquipment ? resource?.availableCount : resource?.capacity;
+  const quantityLabel = isEquipment ? 'Quantity' : 'Attendees';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -31,22 +36,29 @@ function BookingModal({ resource, userEmail, onClose, onBookingSuccess, setSucce
       return;
     }
 
-    if (formData.attendees > resource.capacity) {
-      setModalError(`Attendees cannot exceed room capacity (${resource.capacity})`);
+    const valueToCheck = isEquipment ? formData.quantity : formData.attendees;
+    if (valueToCheck > maxQuantity) {
+      setModalError(`${quantityLabel} cannot exceed ${maxQuantity}`);
       setSubmitting(false);
       return;
     }
 
     try {
-      await bookingService.createBooking(formData);
-      setSuccessMessage('Booking request created successfully!');
-      onBookingSuccess();
-      onClose();
+      const bookingData = {
+        resourceId: formData.resourceId,
+        resourceName: formData.resourceName,
+        resourceType: formData.resourceType,
+        userEmail: formData.userEmail,
+        date: formData.date,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        purpose: formData.purpose,
+        attendees: isEquipment ? formData.quantity : formData.attendees,
+        quantity: isEquipment ? formData.quantity : 1
+      };
+      await onCreate(bookingData);
     } catch (err) {
-      const message = err.response?.data?.message || 'Failed to create booking';
-      setModalError(message);
-      setError(message);
-    } finally {
+      setModalError(err.message || 'Failed to create booking');
       setSubmitting(false);
     }
   };
@@ -62,7 +74,6 @@ function BookingModal({ resource, userEmail, onClose, onBookingSuccess, setSucce
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* READ-ONLY INFO SECTION - Location and Capacity */}
           <div className="modal-info-section">
             <div className="modal-info-row">
               <div className="modal-info-field">
@@ -70,13 +81,24 @@ function BookingModal({ resource, userEmail, onClose, onBookingSuccess, setSucce
                 <div className="info-value">{resource?.location || 'Not specified'}</div>
               </div>
               <div className="modal-info-field">
-                <label>👥 Max Capacity</label>
-                <div className="info-value">{resource?.capacity || 0} people</div>
+                <label>{isEquipment ? '📊 Available' : '👥 Max Capacity'}</label>
+                <div className="info-value">
+                  {isEquipment 
+                    ? `${resource?.availableCount} out of ${resource?.totalCount}` 
+                    : `${resource?.capacity} people`}
+                </div>
               </div>
             </div>
+            {resource?.roomNumber && (
+              <div className="modal-info-row" style={{ marginTop: '0.5rem' }}>
+                <div className="modal-info-field">
+                  <label>🏠 Room Number</label>
+                  <div className="info-value">{resource.roomNumber}</div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* EDITABLE FIELDS */}
           <div className="modal-field">
             <label>📅 Date *</label>
             <input
@@ -113,18 +135,18 @@ function BookingModal({ resource, userEmail, onClose, onBookingSuccess, setSucce
           </div>
 
           <div className="modal-field">
-            <label>👥 Attendees *</label>
+            <label>{quantityLabel} *</label>
             <input
               type="number"
-              name="attendees"
-              value={formData.attendees}
+              name={isEquipment ? 'quantity' : 'attendees'}
+              value={isEquipment ? formData.quantity : formData.attendees}
               onChange={handleChange}
               min="1"
-              max={resource?.capacity || 1000}
+              max={maxQuantity}
               required
             />
-            {formData.attendees > (resource?.capacity || 0) && (
-              <div className="field-warning">⚠️ Attendees exceed room capacity ({resource?.capacity})</div>
+            {isEquipment && resource?.availableCount <= 3 && resource?.availableCount > 0 && (
+              <div className="field-warning">⚠️ Only {resource?.availableCount} items left in stock!</div>
             )}
           </div>
 
