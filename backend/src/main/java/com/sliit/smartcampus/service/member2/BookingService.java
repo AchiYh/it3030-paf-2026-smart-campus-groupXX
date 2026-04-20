@@ -120,9 +120,6 @@ public class BookingService {
         return BookingResponseDTO.fromBooking(cancelled);
     }
 
-    private void checkForConflicts(BookingRequestDTO request) {
-        checkForConflicts(request, null);
-    }
 
     private void checkForConflicts(BookingRequestDTO request, String excludedBookingId) {
         List<Booking> existingBookings;
