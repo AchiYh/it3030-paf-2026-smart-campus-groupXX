@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import ticketService from '../../../services/member3/ticketService';
 import { useAuth } from '../../../context/AuthContext';
@@ -37,6 +37,7 @@ function priorityBadgeClass(priority) {
 
 function TicketDetailsPage() {
   const { ticketId } = useParams();
+  const navigate = useNavigate();
   const { user, isTechnician, isAdmin } = useAuth();
 
   const [ticket, setTicket] = useState(null);
@@ -45,6 +46,7 @@ function TicketDetailsPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
+  const [message, setMessage] = useState('');
 
   const [assignTo, setAssignTo] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
@@ -53,9 +55,38 @@ function TicketDetailsPage() {
   const [commentContent, setCommentContent] = useState('');
   const [commentVisibility, setCommentVisibility] = useState('PUBLIC');
   const [commentPinned, setCommentPinned] = useState(false);
+  const [editingComment, setEditingComment] = useState({
+    id: null,
+    content: '',
+    visibility: 'PUBLIC',
+    pinned: false,
+  });
+
+  const [ticketEditMode, setTicketEditMode] = useState(false);
+  const [ticketForm, setTicketForm] = useState({
+    title: '',
+    description: '',
+    category: '',
+    priority: 'MEDIUM',
+  });
 
   const actorId = useMemo(() => toActorId(user?.email), [user?.email]);
   const canModerate = isTechnician || isAdmin;
+  const userId = user?.id || '';
+  const userEmail = (user?.email || '').toLowerCase();
+
+  const identityMatches = (value) => {
+    const normalized = String(value || '').toLowerCase();
+    if (!normalized) return false;
+
+    const emailPrefix = userEmail.includes('@') ? userEmail.split('@')[0] : '';
+    return [String(userId || '').toLowerCase(), String(actorId || '').toLowerCase(), userEmail, emailPrefix]
+      .filter(Boolean)
+      .includes(normalized);
+  };
+
+  const isCommentOwner = (comment) => identityMatches(comment?.authorId);
+  const isTicketOwner = (currentTicket) => identityMatches(currentTicket?.reportedBy);
 
   const loadDetail = async () => {
     setLoading(true);
@@ -84,6 +115,7 @@ function TicketDetailsPage() {
   const runAction = async (fn) => {
     setActionLoading(true);
     setActionError('');
+    setMessage('');
     try {
       await fn();
       await loadDetail();
@@ -123,6 +155,12 @@ function TicketDetailsPage() {
 
   const handleAddComment = async (event) => {
     event.preventDefault();
+
+    if (!commentContent.trim()) {
+      setActionError('Comment text is required.');
+      return;
+    }
+
     await runAction(() => ticketService.addComment(ticketId, {
       content: commentContent.trim(),
       visibility: canModerate ? commentVisibility : 'PUBLIC',
@@ -130,10 +168,90 @@ function TicketDetailsPage() {
     }));
     setCommentContent('');
     setCommentPinned(false);
+    setMessage('Comment added successfully.');
+  };
+
+  const handleStartEditComment = (comment) => {
+    setEditingComment({
+      id: comment.id,
+      content: comment.content || '',
+      visibility: comment.visibility || 'PUBLIC',
+      pinned: Boolean(comment.pinned),
+    });
+  };
+
+  const handleCancelEditComment = () => {
+    setEditingComment({ id: null, content: '', visibility: 'PUBLIC', pinned: false });
+  };
+
+  const handleSaveEditComment = async (comment) => {
+    if (!editingComment.content.trim()) {
+      setActionError('Comment text is required.');
+      return;
+    }
+
+    await runAction(() => ticketService.updateComment(ticketId, comment.id, {
+      content: editingComment.content.trim(),
+      visibility: canModerate ? editingComment.visibility : comment.visibility,
+      pinned: canModerate ? Boolean(editingComment.pinned) : Boolean(comment.pinned),
+    }));
+    handleCancelEditComment();
+    setMessage('Comment updated successfully.');
   };
 
   const handleDeleteComment = async (commentId) => {
     await runAction(() => ticketService.deleteComment(ticketId, commentId));
+    setMessage('Comment deleted successfully.');
+  };
+
+  const canEditTicket = ticket && (isTicketOwner(ticket) || canModerate) && ticket.status === 'OPEN';
+  const canDeleteTicket = ticket
+    && (isTicketOwner(ticket) || canModerate)
+    && (ticket.status === 'OPEN' || ticket.status === 'REJECTED');
+
+  const handleStartTicketEdit = () => {
+    if (!ticket || !canEditTicket) return;
+    setTicketForm({
+      title: ticket.title || '',
+      description: ticket.description || '',
+      category: ticket.category || '',
+      priority: ticket.priority || 'MEDIUM',
+    });
+    setTicketEditMode(true);
+  };
+
+  const handleCancelTicketEdit = () => {
+    setTicketEditMode(false);
+  };
+
+  const handleSaveTicketEdit = async () => {
+    if (!ticket || !canEditTicket) return;
+
+    if (!ticketForm.title.trim() || !ticketForm.description.trim() || !ticketForm.category.trim()) {
+      setActionError('Title, description and category are required.');
+      return;
+    }
+
+    await runAction(() => ticketService.updateTicket(ticketId, {
+      title: ticketForm.title.trim(),
+      description: ticketForm.description.trim(),
+      category: ticketForm.category.trim(),
+      priority: ticketForm.priority,
+      reportedBy: ticket.reportedBy,
+      assignedTo: ticket.assignedTo || '',
+      status: ticket.status,
+    }));
+
+    setTicketEditMode(false);
+    setMessage('Ticket updated successfully.');
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!ticket || !canDeleteTicket) return;
+    if (!window.confirm('Delete this ticket? This action cannot be undone.')) return;
+
+    await runAction(() => ticketService.deleteTicket(ticketId));
+    navigate('/tickets/list');
   };
 
   const showAssign = canModerate && ticket && !['CLOSED', 'REJECTED'].includes(ticket.status);
@@ -161,6 +279,19 @@ function TicketDetailsPage() {
           fontSize: '0.875rem',
         }}>
           {error}
+        </div>
+      )}
+
+      {message && (
+        <div style={{
+          padding: '0.75rem',
+          borderRadius: '8px',
+          border: '1px solid rgba(16,185,129,0.25)',
+          background: 'rgba(16,185,129,0.1)',
+          color: '#6ee7b7',
+          fontSize: '0.875rem',
+        }}>
+          {message}
         </div>
       )}
 
@@ -206,6 +337,54 @@ function TicketDetailsPage() {
               <div style={{ marginTop: '0.85rem', padding: '0.65rem', borderRadius: '8px', background: 'rgba(239,68,68,0.12)' }}>
                 <strong>Rejection Reason:</strong>
                 <p style={{ marginTop: '0.35rem', color: '#fca5a5' }}>{ticket.rejectionReason}</p>
+              </div>
+            )}
+
+            {(canEditTicket || canDeleteTicket) && (
+              <div style={{ marginTop: '0.9rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {canEditTicket && (
+                  <button className="btn btn-secondary" type="button" onClick={handleStartTicketEdit} disabled={actionLoading}>
+                    Edit Ticket
+                  </button>
+                )}
+                {canDeleteTicket && (
+                  <button className="btn btn-danger" type="button" onClick={handleDeleteTicket} disabled={actionLoading}>
+                    Delete Ticket
+                  </button>
+                )}
+              </div>
+            )}
+
+            {ticketEditMode && canEditTicket && (
+              <div style={{ marginTop: '0.9rem', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.8rem' }}>
+                <h4 style={{ marginBottom: '0.65rem' }}>Edit Ticket</h4>
+                <div className="form-group">
+                  <label>Title</label>
+                  <input className="form-control" value={ticketForm.title} onChange={(e) => setTicketForm((prev) => ({ ...prev, title: e.target.value }))} />
+                </div>
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea className="form-control" rows={4} value={ticketForm.description} onChange={(e) => setTicketForm((prev) => ({ ...prev, description: e.target.value }))} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.5rem' }}>
+                  <div className="form-group">
+                    <label>Category</label>
+                    <input className="form-control" value={ticketForm.category} onChange={(e) => setTicketForm((prev) => ({ ...prev, category: e.target.value }))} />
+                  </div>
+                  <div className="form-group">
+                    <label>Priority</label>
+                    <select className="form-control" value={ticketForm.priority} onChange={(e) => setTicketForm((prev) => ({ ...prev, priority: e.target.value }))}>
+                      <option value="LOW">LOW</option>
+                      <option value="MEDIUM">MEDIUM</option>
+                      <option value="HIGH">HIGH</option>
+                      <option value="CRITICAL">CRITICAL</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.65rem' }}>
+                  <button className="btn btn-primary" type="button" onClick={handleSaveTicketEdit} disabled={actionLoading}>Save</button>
+                  <button className="btn btn-secondary" type="button" onClick={handleCancelTicketEdit} disabled={actionLoading}>Cancel</button>
+                </div>
               </div>
             )}
           </div>
@@ -326,7 +505,11 @@ function TicketDetailsPage() {
                 <p style={{ color: 'var(--text-muted)' }}>No comments yet.</p>
               )}
 
-              {comments.map((comment) => (
+              {comments.map((comment) => {
+                const canModifyComment = canModerate || isCommentOwner(comment);
+                const editing = editingComment.id === comment.id;
+
+                return (
                 <div key={comment.id} style={{
                   border: '1px solid var(--border-color)',
                   borderRadius: '10px',
@@ -342,10 +525,57 @@ function TicketDetailsPage() {
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{formatDate(comment.createdAt)}</span>
                   </div>
 
-                  <p style={{ marginTop: '0.45rem', color: 'var(--text-primary)' }}>{comment.content}</p>
+                  {!editing ? (
+                    <p style={{ marginTop: '0.45rem', color: 'var(--text-primary)' }}>{comment.content}</p>
+                  ) : (
+                    <div style={{ marginTop: '0.45rem', display: 'grid', gap: '0.45rem' }}>
+                      <textarea
+                        className="form-control"
+                        rows={3}
+                        value={editingComment.content}
+                        onChange={(e) => setEditingComment((prev) => ({ ...prev, content: e.target.value }))}
+                      />
 
-                  {canModerate && (
-                    <div style={{ marginTop: '0.5rem' }}>
+                      {canModerate && (
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <select
+                            className="form-control"
+                            style={{ width: '170px' }}
+                            value={editingComment.visibility}
+                            onChange={(e) => setEditingComment((prev) => ({ ...prev, visibility: e.target.value }))}
+                          >
+                            <option value="PUBLIC">PUBLIC</option>
+                            <option value="INTERNAL">INTERNAL</option>
+                          </select>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                            <input
+                              type="checkbox"
+                              checked={editingComment.pinned}
+                              onChange={(e) => setEditingComment((prev) => ({ ...prev, pinned: e.target.checked }))}
+                            />
+                            Pin comment
+                          </label>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                        <button className="btn btn-primary" type="button" onClick={() => handleSaveEditComment(comment)} disabled={actionLoading}>Save</button>
+                        <button className="btn btn-secondary" type="button" onClick={handleCancelEditComment} disabled={actionLoading}>Cancel</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {canModifyComment && !editing && (
+                    <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem' }}>
+                      <button
+                        className="btn btn-secondary"
+                        type="button"
+                        style={{ padding: '0.32rem 0.6rem', fontSize: '0.75rem' }}
+                        onClick={() => handleStartEditComment(comment)}
+                        disabled={actionLoading}
+                      >
+                        Edit
+                      </button>
                       <button
                         className="btn btn-danger"
                         type="button"
@@ -358,7 +588,8 @@ function TicketDetailsPage() {
                     </div>
                   )}
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         </>
