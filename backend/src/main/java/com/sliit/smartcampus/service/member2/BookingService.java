@@ -20,9 +20,11 @@ import java.util.stream.Collectors;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final EquipmentService equipmentService;
 
-    public BookingService(BookingRepository bookingRepository) {
+    public BookingService(BookingRepository bookingRepository, EquipmentService equipmentService) {
         this.bookingRepository = bookingRepository;
+        this.equipmentService = equipmentService;
     }
 
     @Transactional
@@ -61,6 +63,12 @@ public class BookingService {
                 .build();
 
         Booking saved = bookingRepository.save(booking);
+
+        // Decrement equipment stock if applicable – TEMPORARILY DISABLED (Equipment collection not seeded)
+        // if ("Equipment".equals(request.resourceType())) {
+        //     equipmentService.decrementAvailableCount(request.resourceId(), request.quantity());
+        // }
+
         return BookingResponseDTO.fromBooking(saved);
     }
 
@@ -96,25 +104,30 @@ public class BookingService {
             checkForConflicts(request, id);
         }
 
-        // Update common fields
+        // For equipment, adjust stock based on quantity change – TEMPORARILY DISABLED
+        if (booking.getResourceType() != null && "Equipment".equals(booking.getResourceType())) {
+            int oldQuantity = booking.getQuantity();
+            int newQuantity = request.quantity() != null ? request.quantity() : 1;
+            if (newQuantity != oldQuantity) {
+                // Stock adjustment disabled
+                // if (newQuantity > oldQuantity) {
+                //     equipmentService.decrementAvailableCount(booking.getResourceId(), newQuantity - oldQuantity);
+                // } else {
+                //     equipmentService.incrementAvailableCount(booking.getResourceId(), oldQuantity - newQuantity);
+                // }
+            }
+            booking.setQuantity(newQuantity);
+            booking.setAttendees(newQuantity);
+        } else {
+            booking.setAttendees(request.attendees());
+        }
+
         booking.setResourceId(request.resourceId());
         booking.setResourceName(request.resourceName());
         booking.setDate(request.date());
         booking.setStartTime(request.startTime());
         booking.setEndTime(request.endTime());
         booking.setPurpose(request.purpose());
-        
-        // Handle equipment vs room
-        if (booking.getResourceType() != null && "Equipment".equals(booking.getResourceType())) {
-            // For equipment, use quantity
-            int newQuantity = request.quantity() != null ? request.quantity() : 1;
-            booking.setQuantity(newQuantity);
-            booking.setAttendees(newQuantity);
-        } else {
-            // For rooms, use attendees
-            booking.setAttendees(request.attendees());
-        }
-        
         booking.setUpdatedAt(LocalDateTime.now());
 
         Booking updated = bookingRepository.save(booking);
@@ -134,6 +147,11 @@ public class BookingService {
             throw new BadRequestException("Only PENDING bookings can be deleted");
         }
 
+        // Increment equipment stock back if equipment – TEMPORARILY DISABLED
+        // if ("Equipment".equals(booking.getResourceType())) {
+        //     equipmentService.incrementAvailableCount(booking.getResourceId(), booking.getQuantity());
+        // }
+
         bookingRepository.delete(booking);
     }
 
@@ -148,9 +166,52 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.CANCELLED);
         Booking cancelled = bookingRepository.save(booking);
+
+        // Increment equipment stock back if equipment – TEMPORARILY DISABLED
+        // if ("Equipment".equals(booking.getResourceType())) {
+        //     equipmentService.incrementAvailableCount(booking.getResourceId(), booking.getQuantity());
+        // }
+
         return BookingResponseDTO.fromBooking(cancelled);
     }
 
+    @Transactional
+    public BookingResponseDTO approveBooking(String id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new BadRequestException("Only PENDING bookings can be approved");
+        }
+
+        booking.setStatus(BookingStatus.APPROVED);
+        Booking approved = bookingRepository.save(booking);
+        // For equipment, stock already decreased at creation – but creation stock change is disabled, so no change
+        return BookingResponseDTO.fromBooking(approved);
+    }
+
+    @Transactional
+    public BookingResponseDTO rejectBooking(String id, String reason) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new BadRequestException("Only PENDING bookings can be rejected");
+        }
+
+        booking.setStatus(BookingStatus.REJECTED);
+        booking.setRejectReason(reason);
+        Booking rejected = bookingRepository.save(booking);
+
+        // Increment equipment stock back if equipment – TEMPORARILY DISABLED
+        // if ("Equipment".equals(booking.getResourceType())) {
+        //     equipmentService.incrementAvailableCount(booking.getResourceId(), booking.getQuantity());
+        // }
+
+        return BookingResponseDTO.fromBooking(rejected);
+    }
+
+    // ---------- Private helper methods (unchanged) ----------
     private void checkForConflicts(BookingRequestDTO request, String excludedBookingId) {
         List<Booking> existingBookings;
         if (excludedBookingId == null) {

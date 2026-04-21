@@ -14,121 +14,118 @@ const RESOURCES_DATA = {
     // Main Building
     { id: 'lh1', name: 'Lecture Hall A', roomNumber: 'A101', type: 'Lecture Halls', location: 'Main Building', capacity: 2500, status: 'ACTIVE' },
     { id: 'lh2', name: 'Lecture Hall B', roomNumber: 'A102', type: 'Lecture Halls', location: 'Main Building', capacity: 2000, status: 'ACTIVE' },
-    { id: 'lh3', name: 'Lecture Hall C', roomNumber: 'A103', type: 'Lecture Halls', location: 'Main Building', capacity: 1800, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'lh3', name: 'Lecture Hall C', roomNumber: 'A103', type: 'Lecture Halls', location: 'Main Building', capacity: 1800, status: 'OUT_OF_SERVICE' },
     { id: 'lh4', name: 'Lecture Hall D', roomNumber: 'A104', type: 'Lecture Halls', location: 'Main Building', capacity: 1600, status: 'ACTIVE' },
     // Science Block
     { id: 'lh5', name: 'Lecture Hall E', roomNumber: 'S201', type: 'Lecture Halls', location: 'Science Block', capacity: 1500, status: 'ACTIVE' },
     { id: 'lh6', name: 'Lecture Hall F', roomNumber: 'S202', type: 'Lecture Halls', location: 'Science Block', capacity: 1400, status: 'ACTIVE' },
-    { id: 'lh7', name: 'Lecture Hall G', roomNumber: 'S203', type: 'Lecture Halls', location: 'Science Block', capacity: 1300, status: 'OUT_OF_SERVICE' }, // unavailable
-    // Engineering Block (new)
+    { id: 'lh7', name: 'Lecture Hall G', roomNumber: 'S203', type: 'Lecture Halls', location: 'Science Block', capacity: 1300, status: 'OUT_OF_SERVICE' },
+    // Engineering Block
     { id: 'lh8', name: 'Engineering Hall 1', roomNumber: 'E101', type: 'Lecture Halls', location: 'Engineering Block', capacity: 1200, status: 'ACTIVE' },
     { id: 'lh9', name: 'Engineering Hall 2', roomNumber: 'E102', type: 'Lecture Halls', location: 'Engineering Block', capacity: 1100, status: 'ACTIVE' },
     { id: 'lh10', name: 'Engineering Hall 3', roomNumber: 'E103', type: 'Lecture Halls', location: 'Engineering Block', capacity: 1000, status: 'ACTIVE' },
     { id: 'lh11', name: 'Engineering Hall 4', roomNumber: 'E104', type: 'Lecture Halls', location: 'Engineering Block', capacity: 900, status: 'ACTIVE' },
     { id: 'lh12', name: 'Engineering Hall 5', roomNumber: 'E105', type: 'Lecture Halls', location: 'Engineering Block', capacity: 800, status: 'ACTIVE' },
-    { id: 'lh13', name: 'Engineering Hall 6', roomNumber: 'E106', type: 'Lecture Halls', location: 'Engineering Block', capacity: 700, status: 'OUT_OF_SERVICE' }, // unavailable
-    { id: 'lh14', name: 'Engineering Hall 7', roomNumber: 'E107', type: 'Lecture Halls', location: 'Engineering Block', capacity: 600, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'lh13', name: 'Engineering Hall 6', roomNumber: 'E106', type: 'Lecture Halls', location: 'Engineering Block', capacity: 700, status: 'OUT_OF_SERVICE' },
+    { id: 'lh14', name: 'Engineering Hall 7', roomNumber: 'E107', type: 'Lecture Halls', location: 'Engineering Block', capacity: 600, status: 'OUT_OF_SERVICE' },
     // New Building
     { id: 'lh15', name: 'New Lecture Hall 1', roomNumber: 'N101', type: 'Lecture Halls', location: 'New Building', capacity: 2200, status: 'ACTIVE' },
     { id: 'lh16', name: 'New Lecture Hall 2', roomNumber: 'N102', type: 'Lecture Halls', location: 'New Building', capacity: 2100, status: 'ACTIVE' },
     { id: 'lh17', name: 'New Lecture Hall 3', roomNumber: 'N103', type: 'Lecture Halls', location: 'New Building', capacity: 1900, status: 'ACTIVE' },
     { id: 'lh18', name: 'New Lecture Hall 4', roomNumber: 'N104', type: 'Lecture Halls', location: 'New Building', capacity: 1800, status: 'ACTIVE' },
     { id: 'lh19', name: 'New Lecture Hall 5', roomNumber: 'N105', type: 'Lecture Halls', location: 'New Building', capacity: 1700, status: 'ACTIVE' },
-    { id: 'lh20', name: 'New Lecture Hall 6', roomNumber: 'N106', type: 'Lecture Halls', location: 'New Building', capacity: 1600, status: 'OUT_OF_SERVICE' }, // unavailable
-    { id: 'lh21', name: 'New Lecture Hall 7', roomNumber: 'N107', type: 'Lecture Halls', location: 'New Building', capacity: 1500, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'lh20', name: 'New Lecture Hall 6', roomNumber: 'N106', type: 'Lecture Halls', location: 'New Building', capacity: 1600, status: 'OUT_OF_SERVICE' },
+    { id: 'lh21', name: 'New Lecture Hall 7', roomNumber: 'N107', type: 'Lecture Halls', location: 'New Building', capacity: 1500, status: 'OUT_OF_SERVICE' },
   ],
 
-  // Laboratories (expanded for all locations)
+  // Laboratories
   labs: [
     // Tech Wing
-    { id: 'lab1', name: 'Computer Lab A', roomNumber: 'LAB01', type: 'Labs', location: 'Tech Wing', capacity: 60, status: 'ACTIVE' },
-    { id: 'lab2', name: 'Computer Lab B', roomNumber: 'LAB02', type: 'Labs', location: 'Tech Wing', capacity: 55, status: 'ACTIVE' },
-    { id: 'lab3', name: 'Computer Lab C', roomNumber: 'LAB03', type: 'Labs', location: 'Tech Wing', capacity: 50, status: 'ACTIVE' },
-    { id: 'lab4', name: 'Networking Lab', roomNumber: 'LAB06', type: 'Labs', location: 'Tech Wing', capacity: 45, status: 'ACTIVE' },
-    { id: 'lab5', name: 'Security Lab', roomNumber: 'LAB07', type: 'Labs', location: 'Tech Wing', capacity: 40, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'lab1', name: 'Computer Lab A', roomNumber: 'LAB01', type: 'Labs', location: 'Tech Wing', capacity: 150, status: 'ACTIVE' },
+    { id: 'lab2', name: 'Computer Lab B', roomNumber: 'LAB02', type: 'Labs', location: 'Tech Wing', capacity: 180, status: 'ACTIVE' },
+    { id: 'lab3', name: 'Computer Lab C', roomNumber: 'LAB03', type: 'Labs', location: 'Tech Wing', capacity: 200, status: 'ACTIVE' },
+    { id: 'lab4', name: 'Networking Lab', roomNumber: 'LAB06', type: 'Labs', location: 'Tech Wing', capacity: 145, status: 'ACTIVE' },
+    { id: 'lab5', name: 'Security Lab', roomNumber: 'LAB07', type: 'Labs', location: 'Tech Wing', capacity: 250, status: 'OUT_OF_SERVICE' },
     // Science Block
-    { id: 'lab6', name: 'Electronics Lab', roomNumber: 'LAB04', type: 'Labs', location: 'Science Block', capacity: 40, status: 'ACTIVE' },
-    { id: 'lab7', name: 'Physics Lab', roomNumber: 'LAB08', type: 'Labs', location: 'Science Block', capacity: 35, status: 'ACTIVE' },
-    { id: 'lab8', name: 'Chemistry Lab', roomNumber: 'LAB09', type: 'Labs', location: 'Science Block', capacity: 30, status: 'ACTIVE' },
-    { id: 'lab9', name: 'Biology Lab', roomNumber: 'LAB10', type: 'Labs', location: 'Science Block', capacity: 25, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'lab6', name: 'Electronics Lab', roomNumber: 'LAB04', type: 'Labs', location: 'Science Block', capacity: 200, status: 'ACTIVE' },
+    { id: 'lab7', name: 'Physics Lab', roomNumber: 'LAB08', type: 'Labs', location: 'Science Block', capacity: 135, status: 'ACTIVE' },
+    { id: 'lab8', name: 'Chemistry Lab', roomNumber: 'LAB09', type: 'Labs', location: 'Science Block', capacity: 130, status: 'ACTIVE' },
+    { id: 'lab9', name: 'Biology Lab', roomNumber: 'LAB10', type: 'Labs', location: 'Science Block', capacity: 125, status: 'OUT_OF_SERVICE' },
     // Engineering Block
-    { id: 'lab10', name: 'Robotics Lab', roomNumber: 'LAB05', type: 'Labs', location: 'Engineering Block', capacity: 30, status: 'ACTIVE' },
-    { id: 'lab11', name: 'Mechanical Lab', roomNumber: 'LAB11', type: 'Labs', location: 'Engineering Block', capacity: 28, status: 'ACTIVE' },
-    { id: 'lab12', name: 'Civil Lab', roomNumber: 'LAB12', type: 'Labs', location: 'Engineering Block', capacity: 35, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'lab10', name: 'Robotics Lab', roomNumber: 'LAB05', type: 'Labs', location: 'Engineering Block', capacity: 230, status: 'ACTIVE' },
+    { id: 'lab11', name: 'Mechanical Lab', roomNumber: 'LAB11', type: 'Labs', location: 'Engineering Block', capacity: 220, status: 'ACTIVE' },
+    { id: 'lab12', name: 'Civil Lab', roomNumber: 'LAB12', type: 'Labs', location: 'Engineering Block', capacity: 150, status: 'OUT_OF_SERVICE' },
     // New Building
-    { id: 'lab13', name: 'AI Lab', roomNumber: 'LAB13', type: 'Labs', location: 'New Building', capacity: 65, status: 'ACTIVE' },
-    { id: 'lab14', name: 'Data Science Lab', roomNumber: 'LAB14', type: 'Labs', location: 'New Building', capacity: 60, status: 'ACTIVE' },
-    { id: 'lab15', name: 'VR Lab', roomNumber: 'LAB15', type: 'Labs', location: 'New Building', capacity: 50, status: 'ACTIVE' },
-    { id: 'lab16', name: 'IoT Lab', roomNumber: 'LAB16', type: 'Labs', location: 'New Building', capacity: 45, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'lab13', name: 'AI Lab', roomNumber: 'LAB13', type: 'Labs', location: 'New Building', capacity: 350, status: 'ACTIVE' },
+    { id: 'lab14', name: 'Data Science Lab', roomNumber: 'LAB14', type: 'Labs', location: 'New Building', capacity: 600, status: 'ACTIVE' },
+    { id: 'lab15', name: 'VR Lab', roomNumber: 'LAB15', type: 'Labs', location: 'New Building', capacity: 250, status: 'ACTIVE' },
+    { id: 'lab16', name: 'IoT Lab', roomNumber: 'LAB16', type: 'Labs', location: 'New Building', capacity: 450, status: 'OUT_OF_SERVICE' },
     // Main Building
-    { id: 'lab17', name: 'Main Computer Lab', roomNumber: 'MLAB01', type: 'Labs', location: 'Main Building', capacity: 70, status: 'ACTIVE' },
-    { id: 'lab18', name: 'Main Electronics Lab', roomNumber: 'MLAB02', type: 'Labs', location: 'Main Building', capacity: 50, status: 'ACTIVE' },
-    { id: 'lab19', name: 'Main Physics Lab', roomNumber: 'MLAB03', type: 'Labs', location: 'Main Building', capacity: 45, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'lab17', name: 'Main Computer Lab', roomNumber: 'MLAB01', type: 'Labs', location: 'Main Building', capacity: 270, status: 'ACTIVE' },
+    { id: 'lab18', name: 'Main Electronics Lab', roomNumber: 'MLAB02', type: 'Labs', location: 'Main Building', capacity: 250, status: 'ACTIVE' },
+    { id: 'lab19', name: 'Main Physics Lab', roomNumber: 'MLAB03', type: 'Labs', location: 'Main Building', capacity: 220, status: 'OUT_OF_SERVICE' },
   ],
 
-  // Meeting Rooms (expanded for all locations)
+  // Meeting Rooms
   meetingRooms: [
     // Main Building
-    { id: 'mr1', name: 'Conference Room', roomNumber: 'CR201', type: 'Meeting Rooms', location: 'Main Building', capacity: 20, status: 'ACTIVE' },
-    { id: 'mr2', name: 'Meeting Room 3', roomNumber: 'MR301', type: 'Meeting Rooms', location: 'Main Building', capacity: 12, status: 'ACTIVE' },
-    { id: 'mr3', name: 'Executive Lounge', roomNumber: 'EL401', type: 'Meeting Rooms', location: 'Main Building', capacity: 25, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'mr1', name: 'Conference Room', roomNumber: 'CR201', type: 'Meeting Rooms', location: 'Main Building', capacity: 200, status: 'ACTIVE' },
+    { id: 'mr2', name: 'Meeting Room 3', roomNumber: 'MR301', type: 'Meeting Rooms', location: 'Main Building', capacity: 120, status: 'ACTIVE' },
+    { id: 'mr3', name: 'Executive Lounge', roomNumber: 'EL401', type: 'Meeting Rooms', location: 'Main Building', capacity: 100, status: 'OUT_OF_SERVICE' },
     // New Building
-    { id: 'mr4', name: 'Seminar Room', roomNumber: 'NR101', type: 'Meeting Rooms', location: 'New Building', capacity: 25, status: 'ACTIVE' },
-    { id: 'mr5', name: 'Huddle Room', roomNumber: 'NR102', type: 'Meeting Rooms', location: 'New Building', capacity: 8, status: 'ACTIVE' },
-    { id: 'mr6', name: 'Innovation Hub', roomNumber: 'NR103', type: 'Meeting Rooms', location: 'New Building', capacity: 30, status: 'ACTIVE' },
-    { id: 'mr7', name: 'New Boardroom', roomNumber: 'NR104', type: 'Meeting Rooms', location: 'New Building', capacity: 18, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'mr4', name: 'Seminar Room', roomNumber: 'NR101', type: 'Meeting Rooms', location: 'New Building', capacity: 250, status: 'ACTIVE' },
+    { id: 'mr5', name: 'Huddle Room', roomNumber: 'NR102', type: 'Meeting Rooms', location: 'New Building', capacity: 80, status: 'ACTIVE' },
+    { id: 'mr6', name: 'Innovation Hub', roomNumber: 'NR103', type: 'Meeting Rooms', location: 'New Building', capacity: 130, status: 'ACTIVE' },
+    { id: 'mr7', name: 'New Boardroom', roomNumber: 'NR104', type: 'Meeting Rooms', location: 'New Building', capacity: 180, status: 'OUT_OF_SERVICE' },
     // Auditorium
     { id: 'mr8', name: 'Main Auditorium', roomNumber: 'AUD101', type: 'Meeting Rooms', location: 'Auditorium', capacity: 500, status: 'ACTIVE' },
-    { id: 'mr9', name: 'Small Auditorium', roomNumber: 'AUD102', type: 'Meeting Rooms', location: 'Auditorium', capacity: 200, status: 'ACTIVE' },
-    { id: 'mr10', name: 'Rehearsal Hall', roomNumber: 'AUD103', type: 'Meeting Rooms', location: 'Auditorium', capacity: 100, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'mr9', name: 'Small Auditorium', roomNumber: 'AUD102', type: 'Meeting Rooms', location: 'Auditorium', capacity: 1200, status: 'ACTIVE' },
+    { id: 'mr10', name: 'Rehearsal Hall', roomNumber: 'AUD103', type: 'Meeting Rooms', location: 'Auditorium', capacity: 1000, status: 'OUT_OF_SERVICE' },
     // Library
-    { id: 'mr11', name: 'Discussion Pod', roomNumber: 'DP301', type: 'Meeting Rooms', location: 'Library', capacity: 6, status: 'ACTIVE' },
-    { id: 'mr12', name: 'Study Group Room', roomNumber: 'SG401', type: 'Meeting Rooms', location: 'Library', capacity: 10, status: 'ACTIVE' },
-    { id: 'mr13', name: 'Silent Study Hall', roomNumber: 'SS501', type: 'Meeting Rooms', location: 'Library', capacity: 20, status: 'ACTIVE' },
-    { id: 'mr14', name: 'Research Room', roomNumber: 'RR601', type: 'Meeting Rooms', location: 'Library', capacity: 8, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'mr11', name: 'Discussion Pod', roomNumber: 'DP301', type: 'Meeting Rooms', location: 'Library', capacity: 50, status: 'ACTIVE' },
+    { id: 'mr12', name: 'Study Group Room', roomNumber: 'SG401', type: 'Meeting Rooms', location: 'Library', capacity: 60, status: 'ACTIVE' },
+    { id: 'mr13', name: 'Silent Study Hall', roomNumber: 'SS501', type: 'Meeting Rooms', location: 'Library', capacity: 120, status: 'ACTIVE' },
+    { id: 'mr14', name: 'Research Room', roomNumber: 'RR601', type: 'Meeting Rooms', location: 'Library', capacity: 30, status: 'OUT_OF_SERVICE' },
     // Media Center
     { id: 'mr15', name: 'Media Studio', roomNumber: 'MC101', type: 'Meeting Rooms', location: 'Media Center', capacity: 15, status: 'ACTIVE' },
-    { id: 'mr16', name: 'Recording Room', roomNumber: 'MC102', type: 'Meeting Rooms', location: 'Media Center', capacity: 5, status: 'ACTIVE' },
-    { id: 'mr17', name: 'Editing Suite', roomNumber: 'MC103', type: 'Meeting Rooms', location: 'Media Center', capacity: 8, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'mr16', name: 'Recording Room', roomNumber: 'MC102', type: 'Meeting Rooms', location: 'Media Center', capacity: 120, status: 'ACTIVE' },
+    { id: 'mr17', name: 'Editing Suite', roomNumber: 'MC103', type: 'Meeting Rooms', location: 'Media Center', capacity: 50, status: 'OUT_OF_SERVICE' },
     // Admin Block
     { id: 'mr18', name: 'Board Room', roomNumber: 'BR401', type: 'Meeting Rooms', location: 'Admin Block', capacity: 15, status: 'ACTIVE' },
-    { id: 'mr19', name: 'Meeting Room 1', roomNumber: 'MR101', type: 'Meeting Rooms', location: 'Admin Block', capacity: 10, status: 'ACTIVE' },
-    { id: 'mr20', name: 'Meeting Room 2', roomNumber: 'MR102', type: 'Meeting Rooms', location: 'Admin Block', capacity: 8, status: 'ACTIVE' },
-    { id: 'mr21', name: 'HR Conference', roomNumber: 'HR201', type: 'Meeting Rooms', location: 'Admin Block', capacity: 12, status: 'OUT_OF_SERVICE' }, // unavailable
+    { id: 'mr19', name: 'Meeting Room 1', roomNumber: 'MR101', type: 'Meeting Rooms', location: 'Admin Block', capacity: 30, status: 'ACTIVE' },
+    { id: 'mr20', name: 'Meeting Room 2', roomNumber: 'MR102', type: 'Meeting Rooms', location: 'Admin Block', capacity: 40, status: 'ACTIVE' },
+    { id: 'mr21', name: 'HR Conference', roomNumber: 'HR201', type: 'Meeting Rooms', location: 'Admin Block', capacity: 120, status: 'OUT_OF_SERVICE' },
   ],
 
-  // Equipment (expanded)
+  // Equipment
   equipment: [
-    { id: 'eq1', name: 'Projector', type: 'Equipment', location: 'Media Center', totalCount: 20, availableCount: 8, status: 'ACTIVE' },
-    { id: 'eq2', name: 'Camera Kit', type: 'Equipment', location: 'Media Center', totalCount: 10, availableCount: 3, status: 'ACTIVE' },
-    { id: 'eq3', name: 'Laptop Set', type: 'Equipment', location: 'Tech Wing', totalCount: 15, availableCount: 6, status: 'ACTIVE' },
-    { id: 'eq4', name: 'Sound System', type: 'Equipment', location: 'Auditorium', totalCount: 5, availableCount: 2, status: 'ACTIVE' },
+    { id: 'eq1', name: 'Projector', type: 'Equipment', location: 'Media Center', totalCount: 20, availableCount: 12, status: 'ACTIVE' },
+    { id: 'eq2', name: 'Camera Kit', type: 'Equipment', location: 'Media Center', totalCount: 25, availableCount: 13, status: 'ACTIVE' },
+    { id: 'eq3', name: 'Laptop Set', type: 'Equipment', location: 'Tech Wing', totalCount: 100, availableCount: 60, status: 'ACTIVE' },
+    { id: 'eq4', name: 'Sound System', type: 'Equipment', location: 'Auditorium', totalCount: 50, availableCount: 22, status: 'ACTIVE' },
     { id: 'eq5', name: 'Wireless Mic', type: 'Equipment', location: 'Media Center', totalCount: 25, availableCount: 12, status: 'ACTIVE' },
     { id: 'eq6', name: 'Tripod', type: 'Equipment', location: 'Media Center', totalCount: 15, availableCount: 10, status: 'OUT_OF_SERVICE' },
-    // New equipment items
     { id: 'eq7', name: 'Whiteboard', type: 'Equipment', location: 'Main Building', totalCount: 20, availableCount: 15, status: 'ACTIVE' },
     { id: 'eq8', name: 'Clicker/Presenter', type: 'Equipment', location: 'Tech Wing', totalCount: 30, availableCount: 20, status: 'ACTIVE' },
-    { id: 'eq9', name: 'Document Camera', type: 'Equipment', location: 'Science Block', totalCount: 12, availableCount: 5, status: 'ACTIVE' },
-    { id: 'eq10', name: 'Portable Screen', type: 'Equipment', location: 'Media Center', totalCount: 8, availableCount: 2, status: 'ACTIVE' },
+    { id: 'eq9', name: 'Document Camera', type: 'Equipment', location: 'Science Block', totalCount: 25, availableCount: 5, status: 'ACTIVE' },
+    { id: 'eq10', name: 'Portable Screen', type: 'Equipment', location: 'Media Center', totalCount: 20, availableCount: 12, status: 'ACTIVE' },
     { id: 'eq11', name: 'Conference Speaker', type: 'Equipment', location: 'Admin Block', totalCount: 10, availableCount: 4, status: 'OUT_OF_SERVICE' },
-    { id: 'eq12', name: 'Webcam Kit', type: 'Equipment', location: 'Library', totalCount: 15, availableCount: 7, status: 'ACTIVE' },
-    { id: 'eq13', name: 'Green Screen', type: 'Equipment', location: 'Media Center', totalCount: 5, availableCount: 1, status: 'ACTIVE' },
-    { id: 'eq14', name: 'Portable PA System', type: 'Equipment', location: 'Auditorium', totalCount: 3, availableCount: 0, status: 'ACTIVE' }, // out of stock
+    { id: 'eq12', name: 'Webcam Kit', type: 'Equipment', location: 'Library', totalCount: 15, availableCount: 10, status: 'ACTIVE' },
+    { id: 'eq13', name: 'Green Screen', type: 'Equipment', location: 'Media Center', totalCount: 25, availableCount: 20, status: 'ACTIVE' },
+    { id: 'eq14', name: 'Portable PA System', type: 'Equipment', location: 'Auditorium', totalCount: 3, availableCount: 0, status: 'ACTIVE' },
   ]
 };
 
 // ==================== CATEGORY-SPECIFIC FILTER CONFIGURATIONS ====================
 
-// Location options for each category (updated to include all needed locations)
 const CATEGORY_LOCATIONS = {
   'Lecture Halls': ['All Locations', 'Main Building', 'New Building', 'Science Block', 'Engineering Block'],
   'Labs': ['All Locations', 'Tech Wing', 'Science Block', 'Engineering Block', 'New Building', 'Main Building'],
   'Meeting Rooms': ['All Locations', 'Main Building', 'New Building', 'Auditorium', 'Library', 'Media Center', 'Admin Block'],
-  'Equipment': [], // No location dropdown for equipment
-  'All': [] // No location dropdown for All
+  'Equipment': [],
+  'All': []
 };
 
-// Room/Lab/Meeting Room mapping for each category and location (expanded)
 const CATEGORY_ROOM_MAPPING = {
   'Lecture Halls': {
     'Main Building': [
@@ -163,93 +160,91 @@ const CATEGORY_ROOM_MAPPING = {
   },
   'Labs': {
     'Tech Wing': [
-      { id: 'lab_lab01', name: 'LAB01 - Computer Lab A', capacity: 60, resourceId: 'lab1' },
-      { id: 'lab_lab02', name: 'LAB02 - Computer Lab B', capacity: 55, resourceId: 'lab2' },
-      { id: 'lab_lab03', name: 'LAB03 - Computer Lab C', capacity: 50, resourceId: 'lab3' },
-      { id: 'lab_lab06', name: 'LAB06 - Networking Lab', capacity: 45, resourceId: 'lab4' },
-      { id: 'lab_lab07', name: 'LAB07 - Security Lab', capacity: 40, resourceId: 'lab5' },
+      { id: 'lab_lab01', name: 'LAB01 - Computer Lab A', capacity: 150, resourceId: 'lab1' },
+      { id: 'lab_lab02', name: 'LAB02 - Computer Lab B', capacity: 180, resourceId: 'lab2' },
+      { id: 'lab_lab03', name: 'LAB03 - Computer Lab C', capacity: 200, resourceId: 'lab3' },
+      { id: 'lab_lab06', name: 'LAB06 - Networking Lab', capacity: 145, resourceId: 'lab4' },
+      { id: 'lab_lab07', name: 'LAB07 - Security Lab', capacity: 250, resourceId: 'lab5' },
     ],
     'Science Block': [
-      { id: 'lab_lab04', name: 'LAB04 - Electronics Lab', capacity: 40, resourceId: 'lab6' },
-      { id: 'lab_lab08', name: 'LAB08 - Physics Lab', capacity: 35, resourceId: 'lab7' },
-      { id: 'lab_lab09', name: 'LAB09 - Chemistry Lab', capacity: 30, resourceId: 'lab8' },
-      { id: 'lab_lab10', name: 'LAB10 - Biology Lab', capacity: 25, resourceId: 'lab9' },
+      { id: 'lab_lab04', name: 'LAB04 - Electronics Lab', capacity: 200, resourceId: 'lab6' },
+      { id: 'lab_lab08', name: 'LAB08 - Physics Lab', capacity: 135, resourceId: 'lab7' },
+      { id: 'lab_lab09', name: 'LAB09 - Chemistry Lab', capacity: 130, resourceId: 'lab8' },
+      { id: 'lab_lab10', name: 'LAB10 - Biology Lab', capacity: 125, resourceId: 'lab9' },
     ],
     'Engineering Block': [
-      { id: 'lab_lab05', name: 'LAB05 - Robotics Lab', capacity: 30, resourceId: 'lab10' },
-      { id: 'lab_lab11', name: 'LAB11 - Mechanical Lab', capacity: 28, resourceId: 'lab11' },
-      { id: 'lab_lab12', name: 'LAB12 - Civil Lab', capacity: 35, resourceId: 'lab12' },
+      { id: 'lab_lab05', name: 'LAB05 - Robotics Lab', capacity: 230, resourceId: 'lab10' },
+      { id: 'lab_lab11', name: 'LAB11 - Mechanical Lab', capacity: 220, resourceId: 'lab11' },
+      { id: 'lab_lab12', name: 'LAB12 - Civil Lab', capacity: 150, resourceId: 'lab12' },
     ],
     'New Building': [
-      { id: 'lab_lab13', name: 'LAB13 - AI Lab', capacity: 65, resourceId: 'lab13' },
-      { id: 'lab_lab14', name: 'LAB14 - Data Science Lab', capacity: 60, resourceId: 'lab14' },
-      { id: 'lab_lab15', name: 'LAB15 - VR Lab', capacity: 50, resourceId: 'lab15' },
-      { id: 'lab_lab16', name: 'LAB16 - IoT Lab', capacity: 45, resourceId: 'lab16' },
+      { id: 'lab_lab13', name: 'LAB13 - AI Lab', capacity: 350, resourceId: 'lab13' },
+      { id: 'lab_lab14', name: 'LAB14 - Data Science Lab', capacity: 600, resourceId: 'lab14' },
+      { id: 'lab_lab15', name: 'LAB15 - VR Lab', capacity: 250, resourceId: 'lab15' },
+      { id: 'lab_lab16', name: 'LAB16 - IoT Lab', capacity: 450, resourceId: 'lab16' },
     ],
     'Main Building': [
-      { id: 'lab_mlab01', name: 'MLAB01 - Main Computer Lab', capacity: 70, resourceId: 'lab17' },
-      { id: 'lab_mlab02', name: 'MLAB02 - Main Electronics Lab', capacity: 50, resourceId: 'lab18' },
-      { id: 'lab_mlab03', name: 'MLAB03 - Main Physics Lab', capacity: 45, resourceId: 'lab19' },
+      { id: 'lab_mlab01', name: 'MLAB01 - Main Computer Lab', capacity: 270, resourceId: 'lab17' },
+      { id: 'lab_mlab02', name: 'MLAB02 - Main Electronics Lab', capacity: 250, resourceId: 'lab18' },
+      { id: 'lab_mlab03', name: 'MLAB03 - Main Physics Lab', capacity: 220, resourceId: 'lab19' },
     ],
   },
   'Meeting Rooms': {
     'Main Building': [
-      { id: 'mr_cr201', name: 'CR201 - Conference Room', capacity: 20, resourceId: 'mr1' },
-      { id: 'mr_mr301', name: 'MR301 - Meeting Room 3', capacity: 12, resourceId: 'mr2' },
-      { id: 'mr_el401', name: 'EL401 - Executive Lounge', capacity: 25, resourceId: 'mr3' },
+      { id: 'mr_cr201', name: 'CR201 - Conference Room', capacity: 200, resourceId: 'mr1' },
+      { id: 'mr_mr301', name: 'MR301 - Meeting Room 3', capacity: 120, resourceId: 'mr2' },
+      { id: 'mr_el401', name: 'EL401 - Executive Lounge', capacity: 100, resourceId: 'mr3' },
     ],
     'New Building': [
-      { id: 'mr_nr101', name: 'NR101 - Seminar Room', capacity: 25, resourceId: 'mr4' },
-      { id: 'mr_nr102', name: 'NR102 - Huddle Room', capacity: 8, resourceId: 'mr5' },
-      { id: 'mr_nr103', name: 'NR103 - Innovation Hub', capacity: 30, resourceId: 'mr6' },
-      { id: 'mr_nr104', name: 'NR104 - New Boardroom', capacity: 18, resourceId: 'mr7' },
+      { id: 'mr_nr101', name: 'NR101 - Seminar Room', capacity: 250, resourceId: 'mr4' },
+      { id: 'mr_nr102', name: 'NR102 - Huddle Room', capacity: 80, resourceId: 'mr5' },
+      { id: 'mr_nr103', name: 'NR103 - Innovation Hub', capacity: 130, resourceId: 'mr6' },
+      { id: 'mr_nr104', name: 'NR104 - New Boardroom', capacity: 180, resourceId: 'mr7' },
     ],
     'Auditorium': [
       { id: 'mr_aud101', name: 'AUD101 - Main Auditorium', capacity: 500, resourceId: 'mr8' },
-      { id: 'mr_aud102', name: 'AUD102 - Small Auditorium', capacity: 200, resourceId: 'mr9' },
-      { id: 'mr_aud103', name: 'AUD103 - Rehearsal Hall', capacity: 100, resourceId: 'mr10' },
+      { id: 'mr_aud102', name: 'AUD102 - Small Auditorium', capacity: 1200, resourceId: 'mr9' },
+      { id: 'mr_aud103', name: 'AUD103 - Rehearsal Hall', capacity: 1000, resourceId: 'mr10' },
     ],
     'Library': [
-      { id: 'mr_dp301', name: 'DP301 - Discussion Pod', capacity: 6, resourceId: 'mr11' },
-      { id: 'mr_sg401', name: 'SG401 - Study Group Room', capacity: 10, resourceId: 'mr12' },
-      { id: 'mr_ss501', name: 'SS501 - Silent Study Hall', capacity: 20, resourceId: 'mr13' },
-      { id: 'mr_rr601', name: 'RR601 - Research Room', capacity: 8, resourceId: 'mr14' },
+      { id: 'mr_dp301', name: 'DP301 - Discussion Pod', capacity: 50, resourceId: 'mr11' },
+      { id: 'mr_sg401', name: 'SG401 - Study Group Room', capacity: 60, resourceId: 'mr12' },
+      { id: 'mr_ss501', name: 'SS501 - Silent Study Hall', capacity: 120, resourceId: 'mr13' },
+      { id: 'mr_rr601', name: 'RR601 - Research Room', capacity: 30, resourceId: 'mr14' },
     ],
     'Media Center': [
       { id: 'mr_mc101', name: 'MC101 - Media Studio', capacity: 15, resourceId: 'mr15' },
-      { id: 'mr_mc102', name: 'MC102 - Recording Room', capacity: 5, resourceId: 'mr16' },
-      { id: 'mr_mc103', name: 'MC103 - Editing Suite', capacity: 8, resourceId: 'mr17' },
+      { id: 'mr_mc102', name: 'MC102 - Recording Room', capacity: 120, resourceId: 'mr16' },
+      { id: 'mr_mc103', name: 'MC103 - Editing Suite', capacity: 50, resourceId: 'mr17' },
     ],
     'Admin Block': [
       { id: 'mr_br401', name: 'BR401 - Board Room', capacity: 15, resourceId: 'mr18' },
-      { id: 'mr_mr101', name: 'MR101 - Meeting Room 1', capacity: 10, resourceId: 'mr19' },
-      { id: 'mr_mr102', name: 'MR102 - Meeting Room 2', capacity: 8, resourceId: 'mr20' },
-      { id: 'mr_hr201', name: 'HR201 - HR Conference', capacity: 12, resourceId: 'mr21' },
+      { id: 'mr_mr101', name: 'MR101 - Meeting Room 1', capacity: 30, resourceId: 'mr19' },
+      { id: 'mr_mr102', name: 'MR102 - Meeting Room 2', capacity: 40, resourceId: 'mr20' },
+      { id: 'mr_hr201', name: 'HR201 - HR Conference', capacity: 120, resourceId: 'mr21' },
     ],
   },
   'Equipment': {},
   'All': {}
 };
 
-// Equipment list for Equipment category (expanded)
 const EQUIPMENT_LIST = [
-  { id: 'eq1', name: 'Projector', available: 8, total: 20 },
-  { id: 'eq2', name: 'Camera Kit', available: 3, total: 10 },
-  { id: 'eq3', name: 'Laptop Set', available: 6, total: 15 },
-  { id: 'eq4', name: 'Sound System', available: 2, total: 5 },
+  { id: 'eq1', name: 'Projector', available: 20, total: 20 },
+  { id: 'eq2', name: 'Camera Kit', available: 13, total: 25 },
+  { id: 'eq3', name: 'Laptop Set', available: 60, total: 100 },
+  { id: 'eq4', name: 'Sound System', available: 22, total: 50 },
   { id: 'eq5', name: 'Wireless Mic', available: 12, total: 25 },
   { id: 'eq6', name: 'Tripod', available: 10, total: 15 },
   { id: 'eq7', name: 'Whiteboard', available: 15, total: 20 },
   { id: 'eq8', name: 'Clicker/Presenter', available: 20, total: 30 },
-  { id: 'eq9', name: 'Document Camera', available: 5, total: 12 },
-  { id: 'eq10', name: 'Portable Screen', available: 2, total: 8 },
+  { id: 'eq9', name: 'Document Camera', available: 5, total: 25 },
+  { id: 'eq10', name: 'Portable Screen', available: 12, total: 20 },
   { id: 'eq11', name: 'Conference Speaker', available: 4, total: 10 },
-  { id: 'eq12', name: 'Webcam Kit', available: 7, total: 15 },
-  { id: 'eq13', name: 'Green Screen', available: 1, total: 5 },
+  { id: 'eq12', name: 'Webcam Kit', available: 10, total: 15 },
+  { id: 'eq13', name: 'Green Screen', available: 20, total: 25 },
   { id: 'eq14', name: 'Portable PA System', available: 0, total: 3 },
 ];
 
-// Flatten all resources for the grid
 const ALL_RESOURCES = [
   ...RESOURCES_DATA.lectureHalls,
   ...RESOURCES_DATA.labs,
@@ -279,15 +274,18 @@ function MyBookings() {
     maxCapacity: ''
   });
 
+  // Load bookings from backend
   useEffect(() => {
     if (!user?.email) return;
     loadBookings();
   }, [user]);
 
+  // Re-apply filters whenever filters or showAvailableOnly change
   useEffect(() => {
     filterResources();
   }, [filters, showAvailableOnly]);
 
+  // Auto-dismiss messages
   useEffect(() => {
     if (!successMessage && !error) return;
     const timer = setTimeout(() => {
@@ -309,6 +307,7 @@ function MyBookings() {
     }
   };
 
+  // Filter resources based on current filters and showAvailableOnly
   const filterResources = () => {
     let filtered = [...ALL_RESOURCES];
     
@@ -350,21 +349,28 @@ function MyBookings() {
     setResources(filtered);
   };
 
+  // Helper to update available count of an equipment resource locally
+  const updateEquipmentCount = (equipmentId, delta) => {
+    setResources(prevResources =>
+      prevResources.map(r =>
+        r.id === equipmentId && r.type === 'Equipment'
+          ? { ...r, availableCount: Math.max(0, r.availableCount + delta) }
+          : r
+      )
+    );
+  };
+
   const handleCreate = async (bookingData) => {
     try {
       const response = await bookingService.createBooking(bookingData);
       setBookings((current) => [response.data, ...current]);
       setSuccessMessage('Booking request created successfully!');
       setShowBookingModal(false);
-      
+
+      // Update local equipment count (decrease by quantity)
       if (selectedResource?.type === 'Equipment') {
-        const updatedResources = resources.map(r => {
-          if (r.id === selectedResource.id) {
-            return { ...r, availableCount: r.availableCount - (bookingData.quantity || 1) };
-          }
-          return r;
-        });
-        setResources(updatedResources);
+        const quantity = bookingData.quantity || 1;
+        updateEquipmentCount(selectedResource.id, -quantity);
       }
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to create booking.';
@@ -375,9 +381,15 @@ function MyBookings() {
   const handleCancel = async (bookingId) => {
     if (!window.confirm('Cancel this booking?')) return;
     try {
+      const bookingToCancel = bookings.find(b => b.id === bookingId);
       await bookingService.cancelBooking(bookingId);
       await loadBookings();
       setSuccessMessage('Booking cancelled successfully.');
+
+      // Restore equipment stock
+      if (bookingToCancel?.resourceType === 'Equipment') {
+        updateEquipmentCount(bookingToCancel.resourceId, bookingToCancel.quantity || 1);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to cancel booking.');
     }
@@ -394,10 +406,22 @@ function MyBookings() {
 
   const handleUpdate = async (bookingId, updatedBookingData) => {
     try {
+      const oldBooking = bookings.find(b => b.id === bookingId);
+      const oldQuantity = oldBooking?.quantity || 1;
+      const newQuantity = updatedBookingData.quantity || 1;
+
       await bookingService.updateBooking(bookingId, updatedBookingData);
       await loadBookings();
       setSuccessMessage('Booking updated successfully.');
       setEditingBooking(null);
+
+      // Adjust equipment stock locally based on quantity change
+      if (updatedBookingData.resourceType === 'Equipment') {
+        const delta = oldQuantity - newQuantity; // positive if reduced quantity
+        if (delta !== 0) {
+          updateEquipmentCount(updatedBookingData.resourceId, delta);
+        }
+      }
     } catch (err) {
       const message = err.response?.data?.message || 'Unable to update booking.';
       setError(message);
@@ -408,9 +432,15 @@ function MyBookings() {
   const handleDelete = async (bookingId) => {
     if (!window.confirm('Delete this pending booking?')) return;
     try {
+      const bookingToDelete = bookings.find(b => b.id === bookingId);
       await bookingService.deleteBooking(bookingId);
       await loadBookings();
       setSuccessMessage('Booking deleted successfully.');
+
+      // Restore equipment stock
+      if (bookingToDelete?.resourceType === 'Equipment') {
+        updateEquipmentCount(bookingToDelete.resourceId, bookingToDelete.quantity || 1);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Unable to delete booking.');
     }

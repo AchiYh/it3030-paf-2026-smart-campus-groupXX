@@ -1,6 +1,7 @@
 import API from '../../services/api';
 
 const BASE_URL = '/bookings';
+const EQUIPMENT_URL = '/equipment';
 
 const createBooking = async (bookingData) => {
   const response = await API.post(BASE_URL, bookingData);
@@ -32,6 +33,23 @@ const cancelBooking = async (bookingId) => {
   return response;
 };
 
+// Admin approve/reject (if not already present)
+const approveBooking = async (bookingId) => {
+  const response = await API.patch(`${BASE_URL}/${bookingId}/approve`);
+  return response;
+};
+
+const rejectBooking = async (bookingId, reason) => {
+  const response = await API.patch(`${BASE_URL}/${bookingId}/reject`, { reason });
+  return response;
+};
+
+// Equipment API
+const getAllEquipment = async () => {
+  const response = await API.get(EQUIPMENT_URL);
+  return response;
+};
+
 const bookingService = {
   createBooking,
   getMyBookings,
@@ -39,6 +57,9 @@ const bookingService = {
   updateBooking,
   deleteBooking,
   cancelBooking,
+  approveBooking,
+  rejectBooking,
+  getAllEquipment,
 };
 
 export default bookingService;

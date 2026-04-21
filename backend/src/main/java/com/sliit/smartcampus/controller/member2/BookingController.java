@@ -2,22 +2,17 @@ package com.sliit.smartcampus.controller.member2;
 
 import com.sliit.smartcampus.dto.member2.BookingRequestDTO;
 import com.sliit.smartcampus.dto.member2.BookingResponseDTO;
+import com.sliit.smartcampus.exception.BadRequestException;
 import com.sliit.smartcampus.service.member2.BookingService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/bookings")
@@ -78,5 +73,24 @@ public class BookingController {
     public ResponseEntity<BookingResponseDTO> cancelBooking(@PathVariable String id) {
         BookingResponseDTO cancelled = bookingService.cancelBooking(id);
         return ResponseEntity.ok(cancelled);
+    }
+
+    // ----- Admin endpoints for approve/reject -----
+    @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BookingResponseDTO> approveBooking(@PathVariable String id) {
+        BookingResponseDTO approved = bookingService.approveBooking(id);
+        return ResponseEntity.ok(approved);
+    }
+
+    @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BookingResponseDTO> rejectBooking(@PathVariable String id, @RequestBody Map<String, String> payload) {
+        String reason = payload.get("reason");
+        if (reason == null || reason.isBlank()) {
+            throw new BadRequestException("Rejection reason is required");
+        }
+        BookingResponseDTO rejected = bookingService.rejectBooking(id, reason);
+        return ResponseEntity.ok(rejected);
     }
 }
