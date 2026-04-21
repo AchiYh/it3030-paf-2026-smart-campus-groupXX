@@ -235,4 +235,29 @@ class TicketServiceStatusTransitionTest {
                 .build())
     );
     }
+
+    @Test
+    void assignTechnician_embedsTechnicianSnapshot() {
+        Ticket ticket = Ticket.builder().id("t1").status(Ticket.TicketStatus.OPEN).build();
+        User technician = User.builder()
+                .id("tech_001")
+                .email("tech1@mail.com")
+                .fullName("Tech One")
+                .role(User.Role.TECHNICIAN)
+                .enabled(true)
+                .profilePicture("avatar.png")
+                .build();
+
+        when(ticketRepository.findById("t1")).thenReturn(Optional.of(ticket));
+        when(userRepository.findById("tech_001")).thenReturn(Optional.of(technician));
+        when(ticketRepository.save(any(Ticket.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Ticket updated = ticketService.assignTechnician("t1", "tech_001");
+
+        assertEquals("tech_001", updated.getAssignedTo());
+        assertEquals("Tech One", updated.getAssignedTechnician().getFullName());
+        assertEquals("TECHNICIAN", updated.getAssignedTechnician().getRole());
+        assertEquals(Ticket.TicketStatus.IN_PROGRESS, updated.getStatus());
+        verify(ticketRepository).save(ticket);
+    }
 }

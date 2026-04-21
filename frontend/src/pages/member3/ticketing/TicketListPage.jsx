@@ -80,6 +80,14 @@ function TicketListPage() {
     return parsed.toLocaleString();
   };
 
+  const formatAssignee = (ticket) => {
+    const snapshot = ticket?.assignedTechnician;
+    if (snapshot?.fullName) {
+      return `${snapshot.fullName}${snapshot.id ? ` (${snapshot.id})` : ''}`;
+    }
+    return ticket?.assignedTo || 'Unassigned';
+  };
+
   return (
     <div className="card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -176,7 +184,7 @@ function TicketListPage() {
                   <span className={`badge ${getPriorityBadgeClass(ticket.priority)}`}>{ticket.priority || '-'}</span>
                 </td>
                 <td>{ticket.category || '-'}</td>
-                <td>{ticket.assignedTo || 'Unassigned'}</td>
+                <td>{formatAssignee(ticket)}</td>
                 <td>{formatDate(ticket.createdAt)}</td>
               </tr>
             ))}

@@ -14,6 +14,7 @@ import AdminDashboard from '../pages/member4/AdminDashboard';
 import UserDashboard from '../pages/member4/UserDashboard';
 import TechnicianDashboard from '../pages/member4/TechnicianDashboard';
 import UserManagement from '../pages/member4/UserManagement';
+import AddTechnicianPage from '../pages/member4/AddTechnicianPage';
 import { useAuth } from '../context/AuthContext';
 
 function DashboardRouter() {
@@ -58,6 +59,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute roles={['ADMIN']}>
             <UserManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/users/technicians/new"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <AddTechnicianPage />
           </ProtectedRoute>
         }
       />

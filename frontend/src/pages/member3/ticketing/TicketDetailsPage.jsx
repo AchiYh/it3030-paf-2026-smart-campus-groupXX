@@ -35,6 +35,14 @@ function priorityBadgeClass(priority) {
   return 'badge-info';
 }
 
+function formatAssignee(ticket) {
+  const snapshot = ticket?.assignedTechnician;
+  if (snapshot?.fullName) {
+    return `${snapshot.fullName}${snapshot.id ? ` (${snapshot.id})` : ''}`;
+  }
+  return ticket?.assignedTo || 'Unassigned';
+}
+
 function TicketDetailsPage() {
   const { ticketId } = useParams();
   const navigate = useNavigate();
@@ -320,7 +328,7 @@ function TicketDetailsPage() {
             }}>
               <div><strong>Category:</strong> {ticket.category || '-'}</div>
               <div><strong>Reported By:</strong> {ticket.reportedBy || '-'}</div>
-              <div><strong>Assigned To:</strong> {ticket.assignedTo || 'Unassigned'}</div>
+              <div><strong>Assigned To:</strong> {formatAssignee(ticket)}</div>
               <div><strong>Created:</strong> {formatDate(ticket.createdAt)}</div>
               <div><strong>Resolved By:</strong> {ticket.resolvedBy || '-'}</div>
               <div><strong>Closed By:</strong> {ticket.closedBy || '-'}</div>

@@ -19,6 +19,7 @@ function MainLayout({ children }) {
   ];
 
   if (user?.role === 'ADMIN') {
+    navItems.push({ label: 'Add Technician', path: '/users/technicians/new', icon: '➕' });
     navItems.push({ label: 'Users', path: '/users', icon: '👥' });
   }
 
