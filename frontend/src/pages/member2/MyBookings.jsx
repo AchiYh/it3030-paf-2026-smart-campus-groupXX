@@ -485,6 +485,9 @@ function MyBookings() {
   const showEquipmentList = filters.category === 'Equipment';
   const showMaxCapacity = filters.category === 'All' || filters.category === 'Equipment';
 
+  // Sort bookings by updatedAt descending (most recently updated first)
+const sortedBookings = [...bookings].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
   return (
     <div className="dashboard-container">
       {error && <div className="error-message">{error}</div>}
@@ -699,18 +702,18 @@ function MyBookings() {
         <div className="right-column">
           <div className="section-header">
             <h2>📋 My Upcoming Bookings</h2>
-            <p>Manage your booking requests</p>
+            <p>Manage your booking requests – newest first</p>
           </div>
 
           {loading ? (
             <div className="loading-skeleton">Loading your bookings...</div>
-          ) : bookings.length === 0 ? (
+          ) : sortedBookings.length === 0 ? (
             <div className="empty-state">
               <p>You have no upcoming bookings.</p>
               <p className="empty-hint">Use the form to create your first booking.</p>
             </div>
           ) : (
-            bookings.map((booking) => (
+            sortedBookings.map((booking) => (
               <BookingCard
                 key={booking.id}
                 booking={booking}

@@ -5,13 +5,14 @@ import com.sliit.smartcampus.model.member2.Booking;
 import com.sliit.smartcampus.model.member2.BookingStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public record BookingResponseDTO(
         String id,
         String resourceId,
         String resourceName,
-        String resourceType,      // NEW
+        String resourceType,
         String userEmail,
         @JsonFormat(pattern = "yyyy-MM-dd")
         LocalDate date,
@@ -21,9 +22,11 @@ public record BookingResponseDTO(
         LocalTime endTime,
         String purpose,
         Integer attendees,
-        Integer quantity,         // NEW
+        Integer quantity,
         BookingStatus status,
-        String rejectReason
+        String rejectReason,
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime updatedAt          // ← NEW
 ) {
     public static BookingResponseDTO fromBooking(Booking booking) {
         return new BookingResponseDTO(
@@ -39,7 +42,8 @@ public record BookingResponseDTO(
                 booking.getAttendees(),
                 booking.getQuantity(),
                 booking.getStatus(),
-                booking.getRejectReason()
+                booking.getRejectReason(),
+                booking.getUpdatedAt()    // ← NEW
         );
     }
 }
