@@ -23,6 +23,22 @@ function DashboardRouter() {
   return <UserDashboard />;
 }
 
+function TicketOverviewRoute() {
+  const { user } = useAuth();
+  if (user?.role === 'USER') {
+    return <Navigate to="/tickets/list" replace />;
+  }
+  return <TicketOverview />;
+}
+
+function TicketBoardRoute() {
+  const { user } = useAuth();
+  if (user?.role === 'USER') {
+    return <Navigate to="/tickets/list" replace />;
+  }
+  return <TicketBoardPage />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -54,10 +70,10 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<TicketOverview />} />
+        <Route index element={<TicketOverviewRoute />} />
         <Route path="new" element={<CreateTicketPage />} />
         <Route path="list" element={<TicketListPage />} />
-        <Route path="board" element={<TicketBoardPage />} />
+        <Route path="board" element={<TicketBoardRoute />} />
         <Route path=":ticketId" element={<TicketDetailsPage />} />
       </Route>
 

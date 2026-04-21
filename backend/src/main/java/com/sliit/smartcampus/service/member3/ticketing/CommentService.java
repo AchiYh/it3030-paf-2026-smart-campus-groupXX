@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,13 +41,15 @@ public class CommentService {
 
         List<Comment> comments = commentRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
         if (isPrivileged(currentUser)) {
-            return comments;
+            return enrichCommentsWithAuthorRole(comments);
         }
 
-        return comments.stream()
+        List<Comment> visibleComments = comments.stream()
                 .filter(comment -> comment.getVisibility() == Comment.Visibility.PUBLIC
                         || isOwner(comment, currentUser))
                 .collect(Collectors.toList());
+
+        return enrichCommentsWithAuthorRole(visibleComments);
     }
 
     public Comment addComment(String ticketId, CommentCreateRequest request) {
@@ -63,7 +66,7 @@ public class CommentService {
                 .pinned(Boolean.TRUE.equals(request.pinned()))
                 .build();
 
-        return commentRepository.save(comment);
+        return enrichCommentWithAuthorRole(commentRepository.save(comment));
     }
 
     public Comment updateComment(String ticketId, String commentId, CommentUpdateRequest request) {
@@ -71,11 +74,11 @@ public class CommentService {
         User currentUser = getCurrentUser();
         Comment comment = getCommentByIdAndTicket(commentId, ticketId);
 
-        boolean privileged = isPrivileged(currentUser);
-        if (!privileged && !isOwner(comment, currentUser)) {
+        if (!isOwner(comment, currentUser)) {
             throw new AccessDeniedException("You are not authorized to update this comment");
         }
 
+        boolean privileged = isPrivileged(currentUser);
         if (!privileged) {
             if (request.visibility() != comment.getVisibility()) {
                 throw new AccessDeniedException("Only ADMIN or TECHNICIAN can change comment visibility");
@@ -89,7 +92,7 @@ public class CommentService {
         comment.setVisibility(request.visibility());
         comment.setPinned(Boolean.TRUE.equals(request.pinned()));
 
-        return commentRepository.save(comment);
+        return enrichCommentWithAuthorRole(commentRepository.save(comment));
     }
 
     public void deleteComment(String ticketId, String commentId) {
@@ -97,7 +100,7 @@ public class CommentService {
         User currentUser = getCurrentUser();
         Comment comment = getCommentByIdAndTicket(commentId, ticketId);
 
-        if (!isPrivileged(currentUser) && !isOwner(comment, currentUser)) {
+        if (!isOwner(comment, currentUser)) {
             throw new AccessDeniedException("You are not authorized to delete this comment");
         }
 
@@ -128,6 +131,36 @@ public class CommentService {
     private void ensureTicketExists(String ticketId) {
         ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", ticketId));
+    }
+
+    private List<Comment> enrichCommentsWithAuthorRole(List<Comment> comments) {
+        return comments.stream().map(this::enrichCommentWithAuthorRole).collect(Collectors.toList());
+    }
+
+    private Comment enrichCommentWithAuthorRole(Comment comment) {
+        String authorId = comment.getAuthorId();
+        String authorRole = resolveAuthorByCommentAuthorId(authorId)
+                .map(user -> user.getRole().name())
+                .orElse("UNKNOWN");
+        comment.setAuthorRole(authorRole);
+        return comment;
+    }
+
+    private Optional<User> resolveAuthorByCommentAuthorId(String authorId) {
+        if (!StringUtils.hasText(authorId)) {
+            return Optional.empty();
+        }
+
+        Optional<User> byId = userRepository.findById(authorId);
+        if (byId.isPresent()) {
+            return byId;
+        }
+
+        if (authorId.contains("@")) {
+            return userRepository.findByEmail(authorId);
+        }
+
+        return Optional.empty();
     }
 
     private boolean isPrivileged(User user) {

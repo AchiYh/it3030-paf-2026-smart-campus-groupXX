@@ -7,10 +7,15 @@ import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketRejectReques
 import com.sliit.smartcampus.exception.BadRequestException;
 import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
+import com.sliit.smartcampus.model.member4.User;
 import com.sliit.smartcampus.repository.member3.ticketing.TicketRepository;
+import com.sliit.smartcampus.repository.member4.UserRepository;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -23,10 +28,12 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final MongoTemplate mongoTemplate;
+    private final UserRepository userRepository;
 
-    public TicketService(TicketRepository ticketRepository, MongoTemplate mongoTemplate) {
+    public TicketService(TicketRepository ticketRepository, MongoTemplate mongoTemplate, UserRepository userRepository) {
         this.ticketRepository = ticketRepository;
         this.mongoTemplate = mongoTemplate;
+        this.userRepository = userRepository;
     }
 
     public Ticket createTicket(TicketCreateRequest request) {
@@ -98,6 +105,11 @@ public class TicketService {
 
     public Ticket updateTicket(String id, Ticket ticketRequest) {
         Ticket existingTicket = getTicketById(id);
+        User currentUser = getCurrentUser();
+
+        if (!isTicketOwner(existingTicket, currentUser)) {
+            throw new AccessDeniedException("Only ticket owner can update this ticket");
+        }
 
         if (existingTicket.getStatus() != Ticket.TicketStatus.OPEN) {
             throw new BadRequestException("Tickets can only be updated when status is OPEN");
@@ -233,6 +245,11 @@ public class TicketService {
 
     public void deleteTicket(String id) {
         Ticket existingTicket = getTicketById(id);
+        User currentUser = getCurrentUser();
+
+        if (!isTicketOwner(existingTicket, currentUser)) {
+            throw new AccessDeniedException("Only ticket owner can delete this ticket");
+        }
 
         if (existingTicket.getStatus() != Ticket.TicketStatus.OPEN
                 && existingTicket.getStatus() != Ticket.TicketStatus.REJECTED) {
@@ -240,5 +257,29 @@ public class TicketService {
         }
 
         ticketRepository.deleteById(id);
+    }
+
+    private boolean isTicketOwner(Ticket ticket, User user) {
+        String reporter = ticket.getReportedBy();
+        if (!StringUtils.hasText(reporter)) {
+            return false;
+        }
+
+        String email = user.getEmail();
+        String emailPrefix = email != null && email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
+
+        return reporter.equalsIgnoreCase(String.valueOf(user.getId()))
+                || reporter.equalsIgnoreCase(email)
+                || reporter.equalsIgnoreCase(emailPrefix);
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication is required");
+        }
+
+        return userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new AccessDeniedException("Authenticated user not found"));
     }
 }

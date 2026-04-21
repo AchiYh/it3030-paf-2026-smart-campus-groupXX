@@ -130,7 +130,7 @@ class CommentServiceAuthorizationTest {
     }
 
     @Test
-    void updateComment_allowsAdminToChangeVisibilityAndPin() {
+        void updateComment_allowsAdminToEditOwnCommentAndChangeVisibilityAndPin() {
         User admin = user("a1", "admin@mail.com", User.Role.ADMIN);
         authenticateAs(admin.getEmail());
         mockCurrentUser(admin);
@@ -139,7 +139,7 @@ class CommentServiceAuthorizationTest {
         Comment existing = Comment.builder()
                 .id("c1")
                 .ticketId("t1")
-                .authorId("u1")
+                                .authorId("a1")
                 .content("old")
                 .visibility(Comment.Visibility.PUBLIC)
                 .pinned(false)
@@ -157,6 +157,37 @@ class CommentServiceAuthorizationTest {
         assertEquals(Comment.Visibility.INTERNAL, updated.getVisibility());
         assertEquals(true, updated.getPinned());
         verify(commentRepository).save(existing);
+    }
+
+    @Test
+    void updateComment_deniesAdminEditingAnotherUsersComment() {
+        User admin = user("a1", "admin@mail.com", User.Role.ADMIN);
+        authenticateAs(admin.getEmail());
+        mockCurrentUser(admin);
+        mockTicketExists("t1");
+
+        Comment existing = Comment.builder()
+                .id("c1")
+                .ticketId("t1")
+                .authorId("u1")
+                .content("old")
+                .visibility(Comment.Visibility.PUBLIC)
+                .pinned(false)
+                .build();
+
+        when(commentRepository.findById("c1")).thenReturn(Optional.of(existing));
+
+        AccessDeniedException ex = assertThrows(
+                AccessDeniedException.class,
+                () -> commentService.updateComment(
+                        "t1",
+                        "c1",
+                        new CommentUpdateRequest("moderated", Comment.Visibility.INTERNAL, true)
+                )
+        );
+
+        assertTrue(ex.getMessage().contains("not authorized"));
+        verify(commentRepository, never()).save(any());
     }
 
     @Test
@@ -180,6 +211,28 @@ class CommentServiceAuthorizationTest {
         assertThrows(AccessDeniedException.class, () -> commentService.deleteComment("t1", "c1"));
         verify(commentRepository, never()).deleteById(any());
     }
+
+        @Test
+        void deleteComment_deniesAdminDeletingAnotherUsersComment() {
+                User admin = user("a1", "admin@mail.com", User.Role.ADMIN);
+                authenticateAs(admin.getEmail());
+                mockCurrentUser(admin);
+                mockTicketExists("t1");
+
+                Comment existing = Comment.builder()
+                                .id("c1")
+                                .ticketId("t1")
+                                .authorId("u1")
+                                .content("old")
+                                .visibility(Comment.Visibility.PUBLIC)
+                                .pinned(false)
+                                .build();
+
+                when(commentRepository.findById("c1")).thenReturn(Optional.of(existing));
+
+                assertThrows(AccessDeniedException.class, () -> commentService.deleteComment("t1", "c1"));
+                verify(commentRepository, never()).deleteById(any());
+        }
 
     @Test
     void getComments_hidesInternalCommentsForRegularUserUnlessOwner() {
