@@ -255,6 +255,7 @@
   gap: 0.25rem;
   margin: 0.25rem 0;
   font-weight: 600;
+  color: #75787c;
 }
 
 .status-dot {
@@ -297,8 +298,13 @@
   transform: scale(1.02);
 }
 
+.book-now-btn:disabled:hover {
+  transform: none;
+  background: #fe0000;
+}
+
 .book-now-btn:disabled {
-  background: #9ca3af;
+  background: #e23939;
   cursor: not-allowed;
 }
 
@@ -308,7 +314,7 @@
   padding: 3rem;
   background: #f9fafb;
   border-radius: 1rem;
-  color: #6b7280;
+  color: #806b6b;
 }
 
 .empty-hint {
@@ -667,14 +673,15 @@
 }
 
 .resource-card:has(.equipment-availability.unavailable) .book-now-btn {
-  background: #9ca3af;
+  background: #e23939;
   cursor: not-allowed;
 }
 
 .resource-card:has(.equipment-availability.unavailable) .book-now-btn:hover {
   transform: none;
-  background: #9ca3af;
+   background: #fe0000;
 }
+
 
 /* Room Numbers Section */
 .room-numbers-section {
@@ -750,7 +757,7 @@
   gap: 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: #374151;
+  color: #045715;
   cursor: pointer;
 }
 
