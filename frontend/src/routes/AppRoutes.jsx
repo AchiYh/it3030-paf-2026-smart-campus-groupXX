@@ -8,18 +8,40 @@ import TicketBoardPage from '../pages/member3/ticketing/TicketBoardPage';
 import TicketDetailsPage from '../pages/member3/ticketing/TicketDetailsPage';
 import CreateTicketPage from '../pages/member3/ticketing/CreateTicketPage';
 
+import OAuth2RedirectHandler from '../pages/member4/OAuth2RedirectHandler';
+
+import AdminDashboard from '../pages/member4/AdminDashboard';
+import UserDashboard from '../pages/member4/UserDashboard';
+import TechnicianDashboard from '../pages/member4/TechnicianDashboard';
+import UserManagement from '../pages/member4/UserManagement';
+import { useAuth } from '../context/AuthContext';
+
+function DashboardRouter() {
+  const { user } = useAuth();
+  if (user?.role === 'ADMIN') return <AdminDashboard />;
+  if (user?.role === 'TECHNICIAN') return <TechnicianDashboard />;
+  return <UserDashboard />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
       <Route
         path="/"
         element={
           <ProtectedRoute>
-            <div style={{ padding: '2rem', fontSize: '1rem' }}>
-              Welcome to the Smart Campus portal. Use the notification bell to view alerts.
-            </div>
+            <DashboardRouter />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <UserManagement />
           </ProtectedRoute>
         }
       />

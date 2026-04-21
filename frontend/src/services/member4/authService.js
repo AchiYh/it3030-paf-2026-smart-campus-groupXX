@@ -14,10 +14,9 @@ const authService = {
 
   /**
    * Initiates Google OAuth2 login flow.
-   * In a real implementation, this would redirect to the OAuth2 provider.
    */
   loginWithGoogle: () => {
-    window.location.href = '/api/oauth2/authorization/google';
+    window.location.href = 'http://localhost:8081/api/oauth2/authorization/google';
   },
 };
 
