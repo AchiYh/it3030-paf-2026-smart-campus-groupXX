@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../pages/member4/Login';
+import ResourceListPage from '../pages/member1/ResourceListPage';
 
 function AppRoutes() {
   return (
@@ -14,6 +15,15 @@ function AppRoutes() {
             <div style={{ padding: '2rem', fontSize: '1rem' }}>
               Welcome to the Smart Campus portal. Use the notification bell to view alerts.
             </div>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/resources"
+        element={
+          <ProtectedRoute>
+            <ResourceListPage />
           </ProtectedRoute>
         }
       />
