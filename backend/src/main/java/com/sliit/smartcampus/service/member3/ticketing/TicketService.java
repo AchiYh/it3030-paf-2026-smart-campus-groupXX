@@ -99,6 +99,10 @@ public class TicketService {
     public Ticket updateTicket(String id, Ticket ticketRequest) {
         Ticket existingTicket = getTicketById(id);
 
+        if (existingTicket.getStatus() != Ticket.TicketStatus.OPEN) {
+            throw new BadRequestException("Tickets can only be updated when status is OPEN");
+        }
+
         existingTicket.setTitle(ticketRequest.getTitle());
         existingTicket.setDescription(ticketRequest.getDescription());
         existingTicket.setCategory(ticketRequest.getCategory());
@@ -106,10 +110,8 @@ public class TicketService {
         existingTicket.setAssignedTo(ticketRequest.getAssignedTo());
         existingTicket.setReportedBy(ticketRequest.getReportedBy());
 
-        if (ticketRequest.getStatus() != null) {
-            ensureStatusChangeAllowedInGenericUpdate(ticketRequest.getStatus());
-            validateStatusTransition(existingTicket.getStatus(), ticketRequest.getStatus());
-            existingTicket.setStatus(ticketRequest.getStatus());
+        if (ticketRequest.getStatus() != null && ticketRequest.getStatus() != existingTicket.getStatus()) {
+            throw new BadRequestException("Ticket status cannot be changed from the edit form");
         }
 
         return ticketRepository.save(existingTicket);
@@ -230,7 +232,13 @@ public class TicketService {
     }
 
     public void deleteTicket(String id) {
-        getTicketById(id);
+        Ticket existingTicket = getTicketById(id);
+
+        if (existingTicket.getStatus() != Ticket.TicketStatus.OPEN
+                && existingTicket.getStatus() != Ticket.TicketStatus.REJECTED) {
+            throw new BadRequestException("Tickets can only be deleted when status is OPEN or REJECTED");
+        }
+
         ticketRepository.deleteById(id);
     }
 }

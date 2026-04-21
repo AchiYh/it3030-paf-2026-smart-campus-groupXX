@@ -106,4 +106,63 @@ class TicketServiceStatusTransitionTest {
         assertEquals("Resolution notes are required before closing a ticket", ex.getMessage());
         verify(ticketRepository, never()).save(any());
     }
+
+    @Test
+    void updateTicket_rejectsNonOpenStatus() {
+    Ticket ticket = Ticket.builder()
+        .id("t1")
+        .status(Ticket.TicketStatus.REJECTED)
+        .build();
+
+    when(ticketRepository.findById("t1")).thenReturn(Optional.of(ticket));
+
+    BadRequestException ex = assertThrows(
+        BadRequestException.class,
+        () -> ticketService.updateTicket(
+            "t1",
+            Ticket.builder()
+                .title("Updated")
+                .description("Updated description")
+                .category("Facilities")
+                .priority(Ticket.TicketPriority.MEDIUM)
+                .reportedBy("reporter")
+                .status(Ticket.TicketStatus.REJECTED)
+                .build())
+    );
+
+    assertEquals("Tickets can only be updated when status is OPEN", ex.getMessage());
+    verify(ticketRepository, never()).save(any());
+    }
+
+    @Test
+    void deleteTicket_allowsRejectedStatus() {
+    Ticket ticket = Ticket.builder()
+        .id("t1")
+        .status(Ticket.TicketStatus.REJECTED)
+        .build();
+
+    when(ticketRepository.findById("t1")).thenReturn(Optional.of(ticket));
+
+    ticketService.deleteTicket("t1");
+
+    verify(ticketRepository).deleteById("t1");
+    }
+
+    @Test
+    void deleteTicket_rejectsInProgressStatus() {
+    Ticket ticket = Ticket.builder()
+        .id("t1")
+        .status(Ticket.TicketStatus.IN_PROGRESS)
+        .build();
+
+    when(ticketRepository.findById("t1")).thenReturn(Optional.of(ticket));
+
+    BadRequestException ex = assertThrows(
+        BadRequestException.class,
+        () -> ticketService.deleteTicket("t1")
+    );
+
+    assertEquals("Tickets can only be deleted when status is OPEN or REJECTED", ex.getMessage());
+    verify(ticketRepository, never()).deleteById(any());
+    }
 }
