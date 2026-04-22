@@ -8,15 +8,20 @@ function MainLayout({ children }) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Don't show layout on login page
-  if (location.pathname === '/login') {
+  // Don't show layout on login or oauth redirect pages
+  if (location.pathname === '/login' || location.pathname === '/oauth2/redirect') {
     return <>{children}</>;
   }
 
   const navItems = [
     { label: 'Home', path: '/', icon: '🏠' },
-    { label: 'Facilities', path: '/resources', icon: '🏠' },
+    { label: 'Facilities', path: '/resources', icon: '🏢' },
+    { label: 'Tickets', path: '/tickets', icon: '🎫' },
   ];
+
+  if (user?.role === 'ADMIN') {
+    navItems.push({ label: 'Users', path: '/users', icon: '👥' });
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>

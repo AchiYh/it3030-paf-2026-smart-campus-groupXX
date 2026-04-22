@@ -6,9 +6,11 @@ import com.sliit.smartcampus.model.member4.User;
 import com.sliit.smartcampus.model.member4.User.Role;
 import com.sliit.smartcampus.repository.member4.UserRepository;
 import com.sliit.smartcampus.security.JwtTokenProvider;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -58,7 +60,12 @@ public class AuthService implements UserDetailsService {
         );
 
         String token = jwtTokenProvider.generateToken(auth);
-        return Map.of("token", token, "email", email, "role", user.getRole().name());
+        return Map.of(
+            "token", token,
+            "id", user.getId(),
+            "email", email,
+            "role", user.getRole().name()
+        );
     }
 
     /**
@@ -73,7 +80,12 @@ public class AuthService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String token = jwtTokenProvider.generateToken(auth);
-        return Map.of("token", token, "email", email, "role", user.getRole().name());
+        return Map.of(
+            "token", token,
+            "id", user.getId(),
+            "email", email,
+            "role", user.getRole().name()
+        );
     }
 
     /**
@@ -98,8 +110,29 @@ public class AuthService implements UserDetailsService {
                 user
         );
 
-        return Map.of("token", token, "email", email, "role", user.getRole().name());
+        return Map.of(
+            "token", token,
+            "id", user.getId(),
+            "email", email,
+            "role", user.getRole().name()
+        );
     }
+
+        public Map<String, String> getCurrentUserProfile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication is required");
+        }
+
+        User user = userRepository.findByEmail(authentication.getName())
+            .orElseThrow(() -> new AccessDeniedException("Authenticated user not found"));
+
+        return Map.of(
+            "id", user.getId() == null ? "" : user.getId(),
+            "email", user.getEmail(),
+            "role", user.getRole().name()
+        );
+        }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
