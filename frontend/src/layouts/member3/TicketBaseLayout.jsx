@@ -1,6 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 function TicketBaseLayout() {
+  const { isAdmin, user } = useAuth();
+  const isUser = user?.role === 'USER';
+
   const navLinkStyle = ({ isActive }) => ({
     padding: '0.5rem 0.875rem',
     borderRadius: '8px',
@@ -32,10 +36,10 @@ function TicketBaseLayout() {
           flexWrap: 'wrap',
         }}
       >
-        <NavLink to="/tickets" end style={navLinkStyle}>Overview</NavLink>
-        <NavLink to="/tickets/new" style={navLinkStyle}>Create Ticket</NavLink>
+        {!isUser && <NavLink to="/tickets" end style={navLinkStyle}>Overview</NavLink>}
+        {!isAdmin && <NavLink to="/tickets/new" style={navLinkStyle}>Create Ticket</NavLink>}
         <NavLink to="/tickets/list" style={navLinkStyle}>List View</NavLink>
-        <NavLink to="/tickets/board" style={navLinkStyle}>Board View</NavLink>
+        {!isUser && <NavLink to="/tickets/board" style={navLinkStyle}>Board View</NavLink>}
       </div>
 
       <Outlet />

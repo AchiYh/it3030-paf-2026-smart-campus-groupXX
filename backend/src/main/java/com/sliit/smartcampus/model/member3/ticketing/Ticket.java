@@ -56,6 +56,8 @@ public class Ticket {
     @Indexed
     private String assignedTo;
 
+    private UserSnapshot assignedTechnician;
+
     @Size(max = 4000, message = "resolutionNotes must not exceed 4000 characters")
     private String resolutionNotes;
 

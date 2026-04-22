@@ -35,6 +35,14 @@ function priorityBadgeClass(priority) {
   return 'badge-info';
 }
 
+function formatAssignee(ticket) {
+  const snapshot = ticket?.assignedTechnician;
+  if (snapshot?.fullName) {
+    return `${snapshot.fullName}${snapshot.id ? ` (${snapshot.id})` : ''}`;
+  }
+  return ticket?.assignedTo || 'Unassigned';
+}
+
 function TicketDetailsPage() {
   const { ticketId } = useParams();
   const navigate = useNavigate();
@@ -204,9 +212,9 @@ function TicketDetailsPage() {
     setMessage('Comment deleted successfully.');
   };
 
-  const canEditTicket = ticket && (isTicketOwner(ticket) || canModerate) && ticket.status === 'OPEN';
+  const canEditTicket = ticket && isTicketOwner(ticket) && ticket.status === 'OPEN';
   const canDeleteTicket = ticket
-    && (isTicketOwner(ticket) || canModerate)
+    && isTicketOwner(ticket)
     && (ticket.status === 'OPEN' || ticket.status === 'REJECTED');
 
   const handleStartTicketEdit = () => {
@@ -320,7 +328,7 @@ function TicketDetailsPage() {
             }}>
               <div><strong>Category:</strong> {ticket.category || '-'}</div>
               <div><strong>Reported By:</strong> {ticket.reportedBy || '-'}</div>
-              <div><strong>Assigned To:</strong> {ticket.assignedTo || 'Unassigned'}</div>
+              <div><strong>Assigned To:</strong> {formatAssignee(ticket)}</div>
               <div><strong>Created:</strong> {formatDate(ticket.createdAt)}</div>
               <div><strong>Resolved By:</strong> {ticket.resolvedBy || '-'}</div>
               <div><strong>Closed By:</strong> {ticket.closedBy || '-'}</div>
@@ -506,19 +514,36 @@ function TicketDetailsPage() {
               )}
 
               {comments.map((comment) => {
-                const canModifyComment = canModerate || isCommentOwner(comment);
+                const canModifyComment = isCommentOwner(comment);
                 const editing = editingComment.id === comment.id;
+                const authorRole = String(comment.authorRole || 'UNKNOWN').toUpperCase();
+                const roleAccent = authorRole === 'ADMIN'
+                  ? { bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.35)', label: '#93c5fd' }
+                  : authorRole === 'TECHNICIAN'
+                    ? { bg: 'rgba(16,185,129,0.14)', border: 'rgba(16,185,129,0.35)', label: '#6ee7b7' }
+                    : authorRole === 'USER'
+                      ? { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', label: '#fcd34d' }
+                      : { bg: 'var(--bg-secondary)', border: 'var(--border-color)', label: 'var(--text-secondary)' };
+                const owner = isCommentOwner(comment);
 
                 return (
                 <div key={comment.id} style={{
-                  border: '1px solid var(--border-color)',
+                  border: `1px solid ${owner ? 'rgba(99,102,241,0.5)' : roleAccent.border}`,
                   borderRadius: '10px',
                   padding: '0.7rem',
-                  background: 'var(--bg-secondary)',
+                  background: owner ? 'rgba(99,102,241,0.08)' : roleAccent.bg,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>{comment.authorId}</span>
+                      <span className="badge" style={{ background: 'rgba(15,23,42,0.5)', color: roleAccent.label, border: `1px solid ${roleAccent.border}` }}>
+                        {authorRole}
+                      </span>
+                      {owner && (
+                        <span className="badge badge-in-progress" style={{ fontSize: '0.7rem' }}>
+                          YOUR COMMENT
+                        </span>
+                      )}
                       <span className={`badge ${comment.visibility === 'INTERNAL' ? 'badge-info' : 'badge-open'}`}>{comment.visibility}</span>
                       {comment.pinned && <span className="badge badge-warning">PINNED</span>}
                     </div>

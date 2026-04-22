@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import ticketService from '../../../services/member3/ticketService';
 
@@ -13,7 +13,7 @@ function toReporterId(email) {
 }
 
 function CreateTicketPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -29,6 +29,10 @@ function CreateTicketPage() {
   const [apiError, setApiError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  if (isAdmin) {
+    return <Navigate to="/tickets/list" replace />;
+  }
 
   useEffect(() => {
     return () => {

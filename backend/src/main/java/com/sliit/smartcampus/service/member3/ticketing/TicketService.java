@@ -7,10 +7,16 @@ import com.sliit.smartcampus.controller.member3.ticketing.dto.TicketRejectReques
 import com.sliit.smartcampus.exception.BadRequestException;
 import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
+import com.sliit.smartcampus.model.member3.ticketing.UserSnapshot;
+import com.sliit.smartcampus.model.member4.User;
 import com.sliit.smartcampus.repository.member3.ticketing.TicketRepository;
+import com.sliit.smartcampus.repository.member4.UserRepository;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -23,13 +29,16 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final MongoTemplate mongoTemplate;
+    private final UserRepository userRepository;
 
-    public TicketService(TicketRepository ticketRepository, MongoTemplate mongoTemplate) {
+    public TicketService(TicketRepository ticketRepository, MongoTemplate mongoTemplate, UserRepository userRepository) {
         this.ticketRepository = ticketRepository;
         this.mongoTemplate = mongoTemplate;
+        this.userRepository = userRepository;
     }
 
     public Ticket createTicket(TicketCreateRequest request) {
+        UserSnapshot assignedTechnician = resolveTechnicianSnapshot(request.assignedTo());
         Ticket ticket = Ticket.builder()
                 .title(request.title())
                 .description(request.description())
@@ -38,6 +47,7 @@ public class TicketService {
                 .status(Ticket.TicketStatus.OPEN)
                 .reportedBy(request.reportedBy())
                 .assignedTo(request.assignedTo())
+            .assignedTechnician(assignedTechnician)
                 .build();
 
         return ticketRepository.save(ticket);
@@ -98,6 +108,11 @@ public class TicketService {
 
     public Ticket updateTicket(String id, Ticket ticketRequest) {
         Ticket existingTicket = getTicketById(id);
+        User currentUser = getCurrentUser();
+
+        if (!isTicketOwner(existingTicket, currentUser)) {
+            throw new AccessDeniedException("Only ticket owner can update this ticket");
+        }
 
         if (existingTicket.getStatus() != Ticket.TicketStatus.OPEN) {
             throw new BadRequestException("Tickets can only be updated when status is OPEN");
@@ -127,6 +142,7 @@ public class TicketService {
 
     public Ticket assignTechnician(String id, String technicianId) {
         Ticket ticket = getTicketById(id);
+        UserSnapshot assignedTechnician = resolveTechnicianSnapshot(technicianId);
 
         if (ticket.getStatus() == Ticket.TicketStatus.CLOSED
                 || ticket.getStatus() == Ticket.TicketStatus.REJECTED) {
@@ -134,10 +150,15 @@ public class TicketService {
         }
 
         if (technicianId != null && technicianId.equals(ticket.getAssignedTo())) {
+            if (ticket.getAssignedTechnician() == null && assignedTechnician != null) {
+                ticket.setAssignedTechnician(assignedTechnician);
+                return ticketRepository.save(ticket);
+            }
             return ticket;
         }
 
-        ticket.setAssignedTo(technicianId);
+        ticket.setAssignedTo(assignedTechnician == null ? null : assignedTechnician.getId());
+        ticket.setAssignedTechnician(assignedTechnician);
 
         if (ticket.getStatus() == Ticket.TicketStatus.OPEN) {
             ticket.setStatus(Ticket.TicketStatus.IN_PROGRESS);
@@ -233,6 +254,11 @@ public class TicketService {
 
     public void deleteTicket(String id) {
         Ticket existingTicket = getTicketById(id);
+        User currentUser = getCurrentUser();
+
+        if (!isTicketOwner(existingTicket, currentUser)) {
+            throw new AccessDeniedException("Only ticket owner can delete this ticket");
+        }
 
         if (existingTicket.getStatus() != Ticket.TicketStatus.OPEN
                 && existingTicket.getStatus() != Ticket.TicketStatus.REJECTED) {
@@ -240,5 +266,50 @@ public class TicketService {
         }
 
         ticketRepository.deleteById(id);
+    }
+
+    private boolean isTicketOwner(Ticket ticket, User user) {
+        String reporter = ticket.getReportedBy();
+        if (!StringUtils.hasText(reporter)) {
+            return false;
+        }
+
+        String email = user.getEmail();
+        String emailPrefix = email != null && email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
+
+        return reporter.equalsIgnoreCase(String.valueOf(user.getId()))
+                || reporter.equalsIgnoreCase(email)
+                || reporter.equalsIgnoreCase(emailPrefix);
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AccessDeniedException("Authentication is required");
+        }
+
+        return userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new AccessDeniedException("Authenticated user not found"));
+    }
+
+    private UserSnapshot resolveTechnicianSnapshot(String technicianId) {
+        if (!StringUtils.hasText(technicianId)) {
+            return null;
+        }
+
+        User technician = userRepository.findById(technicianId.trim())
+                .orElseThrow(() -> new BadRequestException("Technician not found"));
+
+        if (technician.getRole() != User.Role.TECHNICIAN) {
+            throw new BadRequestException("Selected user is not a technician");
+        }
+
+        return UserSnapshot.builder()
+                .id(technician.getId())
+                .fullName(technician.getFullName())
+                .email(technician.getEmail())
+                .role(technician.getRole().name())
+                .profilePicture(technician.getProfilePicture())
+                .build();
     }
 }

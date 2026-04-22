@@ -36,6 +36,10 @@ public class User implements UserDetails {
 
     private String profilePicture;
 
+    private String phone;
+
+    private String specialization;
+
     private Role role;
 
     private boolean enabled;

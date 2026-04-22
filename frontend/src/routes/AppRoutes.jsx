@@ -14,6 +14,7 @@ import AdminDashboard from '../pages/member4/AdminDashboard';
 import UserDashboard from '../pages/member4/UserDashboard';
 import TechnicianDashboard from '../pages/member4/TechnicianDashboard';
 import UserManagement from '../pages/member4/UserManagement';
+import AddTechnicianPage from '../pages/member4/AddTechnicianPage';
 import { useAuth } from '../context/AuthContext';
 
 function DashboardRouter() {
@@ -21,6 +22,22 @@ function DashboardRouter() {
   if (user?.role === 'ADMIN') return <AdminDashboard />;
   if (user?.role === 'TECHNICIAN') return <TechnicianDashboard />;
   return <UserDashboard />;
+}
+
+function TicketOverviewRoute() {
+  const { user } = useAuth();
+  if (user?.role === 'USER') {
+    return <Navigate to="/tickets/list" replace />;
+  }
+  return <TicketOverview />;
+}
+
+function TicketBoardRoute() {
+  const { user } = useAuth();
+  if (user?.role === 'USER') {
+    return <Navigate to="/tickets/list" replace />;
+  }
+  return <TicketBoardPage />;
 }
 
 function AppRoutes() {
@@ -47,6 +64,15 @@ function AppRoutes() {
       />
 
       <Route
+        path="/users/technicians/new"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <AddTechnicianPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/tickets"
         element={
           <ProtectedRoute>
@@ -54,10 +80,10 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<TicketOverview />} />
+        <Route index element={<TicketOverviewRoute />} />
         <Route path="new" element={<CreateTicketPage />} />
         <Route path="list" element={<TicketListPage />} />
-        <Route path="board" element={<TicketBoardPage />} />
+        <Route path="board" element={<TicketBoardRoute />} />
         <Route path=":ticketId" element={<TicketDetailsPage />} />
       </Route>
 
