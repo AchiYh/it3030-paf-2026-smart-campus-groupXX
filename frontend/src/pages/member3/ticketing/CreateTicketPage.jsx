@@ -12,6 +12,13 @@ function toReporterId(email) {
   return `${normalized}usr`.slice(0, 60);
 }
 
+function calculateDueDatePreview(priority) {
+  const days = priority === 'CRITICAL' ? 1 : priority === 'HIGH' ? 2 : priority === 'MEDIUM' ? 3 : 5;
+  const due = new Date();
+  due.setDate(due.getDate() + days);
+  return `${due.toLocaleDateString()} (${days} day${days > 1 ? 's' : ''})`;
+}
+
 function CreateTicketPage() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -40,6 +47,7 @@ function CreateTicketPage() {
   }, [images]);
 
   const imageCountLabel = useMemo(() => `${images.length}/${MAX_IMAGES} images selected`, [images.length]);
+  const dueDatePreview = useMemo(() => calculateDueDatePreview(formData.priority), [formData.priority]);
 
   const validateForm = () => {
     const nextErrors = {};
@@ -256,6 +264,9 @@ function CreateTicketPage() {
               <option value="CRITICAL">CRITICAL</option>
             </select>
             {errors.priority && <p style={{ color: '#fca5a5', marginTop: '0.35rem', fontSize: '0.8rem' }}>{errors.priority}</p>}
+            <p style={{ color: 'var(--text-muted)', marginTop: '0.35rem', fontSize: '0.8rem' }}>
+              Due date will be auto-set to: {dueDatePreview}
+            </p>
           </div>
         </div>
 

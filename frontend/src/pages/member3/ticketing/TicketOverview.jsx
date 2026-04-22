@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 const STATUS = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
+  OVERDUE: 'OVERDUE',
   RESOLVED: 'RESOLVED',
   CLOSED: 'CLOSED',
   REJECTED: 'REJECTED',
@@ -134,6 +135,7 @@ function TicketOverview() {
     const total = filteredTickets.length;
     const open = countByStatus(filteredTickets, STATUS.OPEN);
     const inProgress = countByStatus(filteredTickets, STATUS.IN_PROGRESS);
+    const overdue = countByStatus(filteredTickets, STATUS.OVERDUE);
     const resolved = countByStatus(filteredTickets, STATUS.RESOLVED);
     const rejected = countByStatus(filteredTickets, STATUS.REJECTED);
     const closed = countByStatus(filteredTickets, STATUS.CLOSED);
@@ -157,6 +159,7 @@ function TicketOverview() {
       return [
         { label: 'TOTAL TICKETS', value: total, accent: '#5e86ba', spot: 'rgba(94, 134, 186, 0.14)', subLabel: 'In selected period' },
         { label: 'OPEN TICKETS', value: open, accent: '#d5ad58', spot: 'rgba(213, 173, 88, 0.14)', subLabel: 'Awaiting action' },
+        { label: 'OVERDUE', value: overdue, accent: '#ef4444', spot: 'rgba(239, 68, 68, 0.16)', subLabel: 'Past deadline' },
         { label: 'RESOLVED', value: resolved, accent: '#8fb478', spot: 'rgba(143, 180, 120, 0.14)', subLabel: 'Successfully closed' },
         { label: 'AVG RESOLUTION', value: avgResolutionHours, accent: '#a678af', spot: 'rgba(166, 120, 175, 0.14)', subLabel: 'Created to resolved/closed' },
       ];
@@ -166,6 +169,7 @@ function TicketOverview() {
       { label: 'TOTAL', value: total, accent: '#5e86ba', spot: 'rgba(94, 134, 186, 0.14)' },
       { label: 'OPEN', value: open, accent: '#d5ad58', spot: 'rgba(213, 173, 88, 0.14)' },
       { label: 'IN PROGRESS', value: inProgress, accent: '#a678af', spot: 'rgba(166, 120, 175, 0.14)' },
+      { label: 'OVERDUE', value: overdue, accent: '#ef4444', spot: 'rgba(239, 68, 68, 0.16)' },
       { label: 'RESOLVED', value: resolved, accent: '#8fb478', spot: 'rgba(143, 180, 120, 0.14)' },
       { label: 'REJECTED', value: rejected, accent: '#e17f7f', spot: 'rgba(225, 127, 127, 0.14)' },
       { label: 'CLOSED', value: closed, accent: '#7f8999', spot: 'rgba(127, 137, 153, 0.14)' },
@@ -210,6 +214,7 @@ function TicketOverview() {
           date: formatShortDate(dayKeyDate),
           open: 0,
           inProgress: 0,
+          overdue: 0,
           resolved: 0,
           closed: 0,
         };
@@ -218,6 +223,7 @@ function TicketOverview() {
       const status = String(ticket?.status || '').toUpperCase();
       if (status === STATUS.OPEN) acc[key].open += 1;
       if (status === STATUS.IN_PROGRESS) acc[key].inProgress += 1;
+      if (status === STATUS.OVERDUE) acc[key].overdue += 1;
       if (status === STATUS.RESOLVED) acc[key].resolved += 1;
       if (status === STATUS.CLOSED) acc[key].closed += 1;
       return acc;
@@ -398,11 +404,13 @@ function TicketOverview() {
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No priority data in selected range.</p>
                 )}
                 {priorityDistribution.map((item) => {
-                  const tone = item.label === 'CRITICAL' || item.label === 'HIGH'
-                    ? '#c55a64'
-                    : item.label === 'MEDIUM'
-                      ? '#d5ad58'
-                      : '#5e86ba';
+                  const tone = item.label === 'CRITICAL'
+                    ? '#ef4444'
+                    : item.label === 'HIGH'
+                      ? '#f97316'
+                      : item.label === 'MEDIUM'
+                        ? '#facc15'
+                        : '#22c55e';
 
                   return (
                     <div key={item.label} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 110px', alignItems: 'center', gap: '0.6rem' }}>
@@ -427,6 +435,7 @@ function TicketOverview() {
                     <th>Date</th>
                     <th>Open</th>
                     <th>In Progress</th>
+                    <th>Overdue</th>
                     <th>Resolved</th>
                     <th>Closed</th>
                   </tr>
@@ -434,7 +443,7 @@ function TicketOverview() {
                 <tbody>
                   {visibleTrendRows.length === 0 && (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
                         No status activity for the selected range.
                       </td>
                     </tr>
@@ -444,6 +453,7 @@ function TicketOverview() {
                       <td>{row.date}</td>
                       <td>{row.open}</td>
                       <td>{row.inProgress}</td>
+                      <td>{row.overdue}</td>
                       <td>{row.resolved}</td>
                       <td>{row.closed}</td>
                     </tr>

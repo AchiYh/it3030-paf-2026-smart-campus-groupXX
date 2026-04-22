@@ -22,6 +22,7 @@ function statusBadgeClass(status) {
   const value = (status || '').toUpperCase();
   if (value === 'OPEN') return 'badge-open';
   if (value === 'IN_PROGRESS') return 'badge-in-progress';
+  if (value === 'OVERDUE') return 'badge-overdue';
   if (value === 'RESOLVED') return 'badge-resolved';
   if (value === 'CLOSED') return 'badge-closed';
   if (value === 'REJECTED') return 'badge-rejected';
@@ -30,9 +31,10 @@ function statusBadgeClass(status) {
 
 function priorityBadgeClass(priority) {
   const value = (priority || '').toUpperCase();
-  if (value === 'LOW') return 'badge-info';
-  if (value === 'MEDIUM') return 'badge-warning';
-  if (value === 'HIGH' || value === 'CRITICAL') return 'badge-danger';
+  if (value === 'CRITICAL') return 'badge-priority-critical';
+  if (value === 'HIGH') return 'badge-priority-high';
+  if (value === 'MEDIUM') return 'badge-priority-medium';
+  if (value === 'LOW') return 'badge-priority-low';
   return 'badge-info';
 }
 
@@ -293,9 +295,9 @@ function TicketDetailsPage() {
   };
 
   const showAssign = canModerate && ticket && !['CLOSED', 'REJECTED'].includes(ticket.status);
-  const showResolve = isTechnician && ticket?.status === 'IN_PROGRESS';
+  const showResolve = isTechnician && ['IN_PROGRESS', 'OVERDUE'].includes(ticket?.status);
   const showClose = canModerate && ticket?.status === 'RESOLVED';
-  const showReject = isAdmin && ticket && ['OPEN', 'IN_PROGRESS', 'RESOLVED'].includes(ticket.status);
+  const showReject = isAdmin && ticket && ['OPEN', 'IN_PROGRESS', 'OVERDUE', 'RESOLVED'].includes(ticket.status);
 
   return (
     <div className="fade-in" style={{ display: 'grid', gap: '1rem' }}>
@@ -359,10 +361,20 @@ function TicketDetailsPage() {
               <div><strong>Category:</strong> {ticket.category || '-'}</div>
               <div><strong>Reported By:</strong> {ticket.reportedBy || '-'}</div>
               <div><strong>Assigned To:</strong> {formatAssignee(ticket)}</div>
+              <div><strong>Due Date:</strong> {formatDate(ticket.dueAt)}</div>
               <div><strong>Created:</strong> {formatDate(ticket.createdAt)}</div>
               <div><strong>Resolved By:</strong> {ticket.resolvedBy || '-'}</div>
               <div><strong>Closed By:</strong> {ticket.closedBy || '-'}</div>
             </div>
+
+            {ticket.status === 'OVERDUE' && (
+              <div style={{ marginTop: '0.8rem', padding: '0.65rem', borderRadius: '8px', background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.35)' }}>
+                <strong style={{ color: '#fca5a5' }}>Overdue Ticket</strong>
+                <p style={{ marginTop: '0.35rem', color: '#fca5a5' }}>
+                  This ticket passed its deadline and needs immediate attention.
+                </p>
+              </div>
+            )}
 
             {ticket.resolutionNotes && (
               <div style={{ marginTop: '0.85rem', padding: '0.65rem', borderRadius: '8px', background: 'var(--bg-secondary)' }}>

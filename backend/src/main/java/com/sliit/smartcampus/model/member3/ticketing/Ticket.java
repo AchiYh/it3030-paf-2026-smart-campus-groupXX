@@ -66,6 +66,8 @@ public class Ticket {
 
     private LocalDateTime resolvedAt;
 
+    private LocalDateTime dueAt;
+
     @Pattern(regexp = "^$|^[a-zA-Z0-9_-]{3,60}$", message = "closedBy must be empty or 3-60 chars using letters, numbers, _ or -")
     private String closedBy;
 
@@ -89,6 +91,7 @@ public class Ticket {
     public enum TicketStatus {
         OPEN,
         IN_PROGRESS,
+        OVERDUE,
         RESOLVED,
         CLOSED,
         REJECTED;

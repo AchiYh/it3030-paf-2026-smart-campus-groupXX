@@ -30,7 +30,13 @@ public class TicketService {
     private static final List<Ticket.TicketStatus> ACTIVE_ASSIGNMENT_STATUSES = List.of(
             Ticket.TicketStatus.OPEN,
             Ticket.TicketStatus.IN_PROGRESS,
+        Ticket.TicketStatus.OVERDUE,
             Ticket.TicketStatus.RESOLVED
+    );
+
+    private static final List<Ticket.TicketStatus> OVERDUE_CANDIDATE_STATUSES = List.of(
+        Ticket.TicketStatus.OPEN,
+        Ticket.TicketStatus.IN_PROGRESS
     );
 
     private final TicketRepository ticketRepository;
@@ -45,6 +51,7 @@ public class TicketService {
 
     public Ticket createTicket(TicketCreateRequest request) {
         UserSnapshot assignedTechnician = resolveTechnicianSnapshot(request.assignedTo());
+        LocalDateTime dueAt = calculateDueDate(request.priority());
         Ticket ticket = Ticket.builder()
                 .title(request.title())
                 .description(request.description())
@@ -53,7 +60,8 @@ public class TicketService {
                 .status(Ticket.TicketStatus.OPEN)
                 .reportedBy(request.reportedBy())
                 .assignedTo(request.assignedTo())
-            .assignedTechnician(assignedTechnician)
+                .assignedTechnician(assignedTechnician)
+                .dueAt(dueAt)
                 .build();
 
         return ticketRepository.save(ticket);
@@ -69,6 +77,7 @@ public class TicketService {
             LocalDateTime createdTo) {
 
         User currentUser = getCurrentUser();
+        refreshOverdueTickets();
 
         List<Criteria> criteria = new ArrayList<>();
 
@@ -116,8 +125,9 @@ public class TicketService {
     }
 
     public Ticket getTicketById(String id) {
-        return ticketRepository.findById(id)
+        Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", id));
+        return refreshOverdueStatus(ticket);
     }
 
     public Ticket getTicketByIdForCurrentUser(String id) {
@@ -263,6 +273,7 @@ public class TicketService {
     private void ensureStatusChangeAllowedInGenericUpdate(Ticket.TicketStatus status) {
         if (status == Ticket.TicketStatus.RESOLVED
                 || status == Ticket.TicketStatus.CLOSED
+                || status == Ticket.TicketStatus.OVERDUE
                 || status == Ticket.TicketStatus.REJECTED) {
             throw new BadRequestException(
                     "Use /resolve, /close, and /reject endpoints for workflow status updates");
@@ -276,8 +287,12 @@ public class TicketService {
 
         boolean allowed = switch (currentStatus) {
             case OPEN -> nextStatus == Ticket.TicketStatus.IN_PROGRESS
+                || nextStatus == Ticket.TicketStatus.OVERDUE
                 || nextStatus == Ticket.TicketStatus.REJECTED;
             case IN_PROGRESS -> nextStatus == Ticket.TicketStatus.RESOLVED
+                || nextStatus == Ticket.TicketStatus.OVERDUE
+                || nextStatus == Ticket.TicketStatus.REJECTED;
+            case OVERDUE -> nextStatus == Ticket.TicketStatus.RESOLVED
                 || nextStatus == Ticket.TicketStatus.REJECTED;
             case RESOLVED -> nextStatus == Ticket.TicketStatus.CLOSED
                 || nextStatus == Ticket.TicketStatus.REJECTED;
@@ -396,9 +411,48 @@ public class TicketService {
                 .fullName(technician.getFullName())
                 .email(technician.getEmail())
                 .role(technician.getRole().name())
-            .phone(technician.getPhone())
-            .specialization(technician.getSpecialization())
+                .phone(technician.getPhone())
+                .specialization(technician.getSpecialization())
                 .profilePicture(technician.getProfilePicture())
                 .build();
+    }
+
+    private LocalDateTime calculateDueDate(Ticket.TicketPriority priority) {
+        int days = switch (priority) {
+            case CRITICAL -> 1;
+            case HIGH -> 2;
+            case MEDIUM -> 3;
+            case LOW -> 5;
+        };
+        return LocalDateTime.now().plusDays(days);
+    }
+
+    private void refreshOverdueTickets() {
+        Query overdueQuery = new Query();
+        overdueQuery.addCriteria(Criteria.where("dueAt").lt(LocalDateTime.now()));
+        overdueQuery.addCriteria(Criteria.where("status").in(OVERDUE_CANDIDATE_STATUSES));
+
+        List<Ticket> overdueCandidates = mongoTemplate.find(overdueQuery, Ticket.class);
+        if (overdueCandidates.isEmpty()) {
+            return;
+        }
+
+        overdueCandidates.forEach(ticket -> ticket.setStatus(Ticket.TicketStatus.OVERDUE));
+        ticketRepository.saveAll(overdueCandidates);
+    }
+
+    private Ticket refreshOverdueStatus(Ticket ticket) {
+        if (ticket == null) {
+            return null;
+        }
+
+        if (ticket.getDueAt() != null
+                && ticket.getDueAt().isBefore(LocalDateTime.now())
+                && OVERDUE_CANDIDATE_STATUSES.contains(ticket.getStatus())) {
+            ticket.setStatus(Ticket.TicketStatus.OVERDUE);
+            return ticketRepository.save(ticket);
+        }
+
+        return ticket;
     }
 }
