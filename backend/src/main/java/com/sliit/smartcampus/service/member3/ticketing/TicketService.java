@@ -27,6 +27,12 @@ import java.util.List;
 @Service
 public class TicketService {
 
+    private static final List<Ticket.TicketStatus> ACTIVE_ASSIGNMENT_STATUSES = List.of(
+            Ticket.TicketStatus.OPEN,
+            Ticket.TicketStatus.IN_PROGRESS,
+            Ticket.TicketStatus.RESOLVED
+    );
+
     private final TicketRepository ticketRepository;
     private final MongoTemplate mongoTemplate;
     private final UserRepository userRepository;
@@ -174,6 +180,12 @@ public class TicketService {
             return ticket;
         }
 
+        if (assignedTechnician != null
+                && ticketRepository.existsByAssignedToAndStatusInAndIdNot(
+                assignedTechnician.getId(), ACTIVE_ASSIGNMENT_STATUSES, ticket.getId())) {
+            throw new BadRequestException("Technician is already assigned to another active ticket");
+        }
+
         ticket.setAssignedTo(assignedTechnician == null ? null : assignedTechnician.getId());
         ticket.setAssignedTechnician(assignedTechnician);
 
@@ -208,6 +220,11 @@ public class TicketService {
 
     public Ticket resolveTicket(String id, TicketResolveRequest request) {
         Ticket ticket = getTicketById(id);
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getRole() != User.Role.TECHNICIAN) {
+            throw new AccessDeniedException("Only technicians can resolve tickets");
+        }
 
         validateStatusTransition(ticket.getStatus(), Ticket.TicketStatus.RESOLVED);
         ticket.setStatus(Ticket.TicketStatus.RESOLVED);
@@ -351,6 +368,8 @@ public class TicketService {
                 .fullName(technician.getFullName())
                 .email(technician.getEmail())
                 .role(technician.getRole().name())
+            .phone(technician.getPhone())
+            .specialization(technician.getSpecialization())
                 .profilePicture(technician.getProfilePicture())
                 .build();
     }

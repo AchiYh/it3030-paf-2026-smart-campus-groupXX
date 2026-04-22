@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import ticketService from '../../../services/member3/ticketService';
+import API from '../../../services/api';
 import { useAuth } from '../../../context/AuthContext';
 
 function toActorId(email) {
@@ -59,6 +60,9 @@ function TicketDetailsPage() {
   const [assignTo, setAssignTo] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [rejectReason, setRejectReason] = useState('');
+  const [technicians, setTechnicians] = useState([]);
+  const [busyTechnicianIds, setBusyTechnicianIds] = useState(new Set());
+  const [loadingTechnicians, setLoadingTechnicians] = useState(false);
 
   const [commentContent, setCommentContent] = useState('');
   const [commentVisibility, setCommentVisibility] = useState('PUBLIC');
@@ -108,9 +112,31 @@ function TicketDetailsPage() {
       setTicket(ticketRes.data);
       setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
       setAssignTo(ticketRes.data?.assignedTo || '');
+
+      if (canModerate) {
+        setLoadingTechnicians(true);
+        const [techniciansRes, ticketsRes] = await Promise.all([
+          API.get('/users/technicians'),
+          ticketService.getTickets(),
+        ]);
+
+        const technicianList = Array.isArray(techniciansRes.data) ? techniciansRes.data : [];
+        const allTickets = Array.isArray(ticketsRes.data) ? ticketsRes.data : [];
+        const busy = new Set(
+          allTickets
+            .filter((item) => item?.id !== ticketId)
+            .filter((item) => item?.assignedTo)
+            .filter((item) => !['CLOSED', 'REJECTED'].includes(String(item?.status || '').toUpperCase()))
+            .map((item) => item.assignedTo)
+        );
+
+        setTechnicians(technicianList);
+        setBusyTechnicianIds(busy);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load ticket details.');
     } finally {
+      setLoadingTechnicians(false);
       setLoading(false);
     }
   };
@@ -136,6 +162,10 @@ function TicketDetailsPage() {
 
   const handleAssign = async (event) => {
     event.preventDefault();
+    if (!assignTo) {
+      setActionError('Please select a technician.');
+      return;
+    }
     await runAction(() => ticketService.assignTechnician(ticketId, { technicianId: assignTo.trim() }));
   };
 
@@ -263,7 +293,7 @@ function TicketDetailsPage() {
   };
 
   const showAssign = canModerate && ticket && !['CLOSED', 'REJECTED'].includes(ticket.status);
-  const showResolve = canModerate && ticket?.status === 'IN_PROGRESS';
+  const showResolve = isTechnician && ticket?.status === 'IN_PROGRESS';
   const showClose = canModerate && ticket?.status === 'RESOLVED';
   const showReject = isAdmin && ticket && ['OPEN', 'IN_PROGRESS', 'RESOLVED'].includes(ticket.status);
 
@@ -419,16 +449,31 @@ function TicketDetailsPage() {
                 <form onSubmit={handleAssign} style={{ marginBottom: '0.8rem' }}>
                   <label style={{ display: 'block', marginBottom: '0.4rem' }}>Assign Technician</label>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <input
+                    <select
                       className="form-control"
                       style={{ minWidth: '220px', flex: 1 }}
                       value={assignTo}
                       onChange={(e) => setAssignTo(e.target.value)}
-                      placeholder="tech_001"
+                      disabled={loadingTechnicians || actionLoading}
                       required
-                    />
+                    >
+                      <option value="">Select technician</option>
+                      {technicians.map((tech) => {
+                        const isCurrentAssignee = tech.id === ticket?.assignedTo;
+                        const isBusy = busyTechnicianIds.has(tech.id) && !isCurrentAssignee;
+                        const category = tech.specialization || 'General';
+                        return (
+                          <option key={tech.id} value={tech.id} disabled={isBusy}>
+                            {tech.fullName} - {category}{isBusy ? ' (Already Assigned)' : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
                     <button className="btn btn-primary" type="submit" disabled={actionLoading}>Assign</button>
                   </div>
+                  <p style={{ marginTop: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                    Technicians already assigned to another active ticket are unavailable.
+                  </p>
                 </form>
               )}
 

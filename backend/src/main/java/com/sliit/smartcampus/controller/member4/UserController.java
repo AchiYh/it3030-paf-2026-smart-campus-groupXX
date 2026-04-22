@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,23 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userRepository.findAll());
+    }
+
+    @GetMapping("/technicians")
+    @PreAuthorize("hasAnyRole('ADMIN','TECHNICIAN')")
+    public ResponseEntity<List<TechnicianOptionResponse>> getTechnicians() {
+        List<TechnicianOptionResponse> technicians = userRepository.findByRole(User.Role.TECHNICIAN)
+                .stream()
+                .sorted(Comparator.comparing(user -> String.valueOf(user.getFullName()).toLowerCase()))
+                .map(user -> new TechnicianOptionResponse(
+                        user.getId(),
+                        user.getFullName(),
+                        user.getEmail(),
+                        user.getSpecialization(),
+                        user.getPhone(),
+                        user.getProfilePicture()))
+                .toList();
+        return ResponseEntity.ok(technicians);
     }
 
     @PatchMapping("/admin/{userId}/role")
@@ -69,4 +87,13 @@ public class UserController {
 
         return ResponseEntity.ok(userRepository.save(technician));
     }
+
+    public record TechnicianOptionResponse(
+            String id,
+            String fullName,
+            String email,
+            String specialization,
+            String phone,
+            String profilePicture
+    ) {}
 }

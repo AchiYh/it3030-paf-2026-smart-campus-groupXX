@@ -12,4 +12,6 @@ public interface TicketRepository extends MongoRepository<Ticket, String> {
     List<Ticket> findByReportedByOrderByCreatedAtDesc(String reportedBy);
 
     List<Ticket> findByStatus(Ticket.TicketStatus status);
+
+    boolean existsByAssignedToAndStatusInAndIdNot(String assignedTo, List<Ticket.TicketStatus> statuses, String id);
 }
