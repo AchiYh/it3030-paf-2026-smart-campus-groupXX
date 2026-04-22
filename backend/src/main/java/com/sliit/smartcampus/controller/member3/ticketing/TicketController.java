@@ -79,7 +79,7 @@ public class TicketController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Ticket> getTicketById(@PathVariable String id) {
-        return ResponseEntity.ok(ticketService.getTicketById(id));
+        return ResponseEntity.ok(ticketService.getTicketByIdForCurrentUser(id));
     }
 
     @PutMapping("/{id}")

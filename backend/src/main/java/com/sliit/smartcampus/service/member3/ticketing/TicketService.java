@@ -62,7 +62,13 @@ public class TicketService {
             LocalDateTime createdFrom,
             LocalDateTime createdTo) {
 
+        User currentUser = getCurrentUser();
+
         List<Criteria> criteria = new ArrayList<>();
+
+        if (currentUser.getRole() == User.Role.USER) {
+            criteria.add(buildTicketOwnerCriteria(currentUser));
+        }
 
         if (status != null) {
             criteria.add(Criteria.where("status").is(status));
@@ -104,6 +110,17 @@ public class TicketService {
     public Ticket getTicketById(String id) {
         return ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", id));
+    }
+
+    public Ticket getTicketByIdForCurrentUser(String id) {
+        Ticket ticket = getTicketById(id);
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getRole() == User.Role.USER && !isTicketOwner(ticket, currentUser)) {
+            throw new AccessDeniedException("You are not authorized to view this ticket");
+        }
+
+        return ticket;
     }
 
     public Ticket updateTicket(String id, Ticket ticketRequest) {
@@ -290,6 +307,31 @@ public class TicketService {
 
         return userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new AccessDeniedException("Authenticated user not found"));
+    }
+
+    private Criteria buildTicketOwnerCriteria(User user) {
+        List<Criteria> ownerCriteria = new ArrayList<>();
+
+        if (StringUtils.hasText(user.getId())) {
+            ownerCriteria.add(Criteria.where("reportedBy").is(user.getId()));
+        }
+
+        if (StringUtils.hasText(user.getEmail())) {
+            ownerCriteria.add(Criteria.where("reportedBy").is(user.getEmail()));
+
+            String emailPrefix = user.getEmail().contains("@")
+                    ? user.getEmail().substring(0, user.getEmail().indexOf('@'))
+                    : user.getEmail();
+            if (StringUtils.hasText(emailPrefix)) {
+                ownerCriteria.add(Criteria.where("reportedBy").is(emailPrefix));
+            }
+        }
+
+        if (ownerCriteria.isEmpty()) {
+            return Criteria.where("reportedBy").is("__no_owner__");
+        }
+
+        return new Criteria().orOperator(ownerCriteria.toArray(new Criteria[0]));
     }
 
     private UserSnapshot resolveTechnicianSnapshot(String technicianId) {
