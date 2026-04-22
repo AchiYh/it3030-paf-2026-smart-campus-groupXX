@@ -22,7 +22,6 @@ function CreateTicketPage() {
     category: '',
     priority: 'MEDIUM',
     reportedBy: toReporterId(user?.email),
-    assignedTo: '',
   });
   const [images, setImages] = useState([]);
   const [errors, setErrors] = useState({});
@@ -63,10 +62,6 @@ function CreateTicketPage() {
 
     if (!/^[a-zA-Z0-9_-]{3,60}$/.test(formData.reportedBy || '')) {
       nextErrors.reportedBy = 'Reporter ID must be 3-60 chars using letters, numbers, _ or -.';
-    }
-
-    if (formData.assignedTo && !/^[a-zA-Z0-9_-]{3,60}$/.test(formData.assignedTo)) {
-      nextErrors.assignedTo = 'Assignee must be 3-60 chars using letters, numbers, _ or -.';
     }
 
     if (images.length > MAX_IMAGES) {
@@ -141,7 +136,6 @@ function CreateTicketPage() {
         category: formData.category.trim(),
         priority: formData.priority,
         reportedBy: formData.reportedBy.trim(),
-        assignedTo: formData.assignedTo.trim(),
       };
 
       const createResponse = await ticketService.createTicket(payload);
@@ -265,7 +259,7 @@ function CreateTicketPage() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.85rem', marginTop: '1rem' }}>
+        <div style={{ marginTop: '1rem' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label htmlFor="reportedBy">Reporter ID</label>
             <input
@@ -278,20 +272,6 @@ function CreateTicketPage() {
               maxLength={60}
             />
             {errors.reportedBy && <p style={{ color: '#fca5a5', marginTop: '0.35rem', fontSize: '0.8rem' }}>{errors.reportedBy}</p>}
-          </div>
-
-          <div className="form-group" style={{ marginBottom: 0 }}>
-            <label htmlFor="assignedTo">Assigned Technician ID (optional)</label>
-            <input
-              id="assignedTo"
-              name="assignedTo"
-              className="form-control"
-              value={formData.assignedTo}
-              onChange={handleChange}
-              placeholder="tech_001"
-              maxLength={60}
-            />
-            {errors.assignedTo && <p style={{ color: '#fca5a5', marginTop: '0.35rem', fontSize: '0.8rem' }}>{errors.assignedTo}</p>}
           </div>
         </div>
 
