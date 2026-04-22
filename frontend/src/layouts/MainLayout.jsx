@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from '../components/member4/NotificationBell';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function MainLayout({ children }) {
   const { isAuthenticated, user, logout } = useAuth();
@@ -9,28 +9,19 @@ function MainLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [bookingsOpen, setBookingsOpen] = useState(false);
 
-  if (location.pathname === '/login') {
-    return <>{children}</>;
-  }
-
-  const isActive = (path) => {
-    if (path === '/') return location.pathname === '/';
-    return location.pathname === path;
-  };
-
-  const isBookingActive = () => {
-    return ['/bookings', '/bookings/find', '/bookings/my'].includes(location.pathname);
-  };
-
-  const toggleDropdown = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setBookingsOpen(!bookingsOpen);
-  };
-  // Don't show layout on login or oauth redirect pages
+  // Hide layout on login pages
   if (location.pathname === '/login' || location.pathname === '/oauth2/redirect') {
     return <>{children}</>;
   }
+
+  // Auto open dropdown when inside bookings
+  useEffect(() => {
+    if (location.pathname.startsWith('/bookings')) {
+      setBookingsOpen(true);
+    }
+  }, [location.pathname]);
+
+  const isActive = (path) => location.pathname === path;
 
   const navItems = [
     { label: 'Home', path: '/', icon: '🏠' },
@@ -44,6 +35,7 @@ function MainLayout({ children }) {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
+
       {/* Sidebar */}
       <aside style={{
         width: sidebarOpen ? '260px' : '0px',
@@ -64,27 +56,42 @@ function MainLayout({ children }) {
 
         <nav style={{ padding: '0 0.75rem' }}>
           <p style={{
-            fontSize: '0.625rem', fontWeight: 600, textTransform: 'uppercase',
-            letterSpacing: '0.1em', color: 'var(--text-muted)',
-            padding: '0.75rem 0.75rem 0.5rem', whiteSpace: 'nowrap',
+            fontSize: '0.625rem',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            color: 'var(--text-muted)',
+            padding: '0.75rem 0.75rem 0.5rem',
+            whiteSpace: 'nowrap',
           }}>
             Main Menu
           </p>
 
-          {/* Home link */}
-          <Link to="/" style={{
-            display: 'flex', alignItems: 'center', gap: '0.75rem',
-            padding: '0.625rem 0.75rem', borderRadius: '8px',
-            color: isActive('/') ? 'var(--primary-light)' : 'var(--text-secondary)',
-            background: isActive('/') ? 'rgba(99,102,241,0.1)' : 'transparent',
-            marginBottom: '0.25rem', whiteSpace: 'nowrap', fontSize: '0.875rem',
-            transition: 'var(--transition)',
-            textDecoration: 'none',
-          }}>
-            <span>🏠</span> Home
-          </Link>
+          {/* NORMAL ITEMS */}
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.625rem 0.75rem',
+                borderRadius: '8px',
+                color: isActive(item.path) ? 'var(--primary-light)' : 'var(--text-secondary)',
+                background: isActive(item.path) ? 'rgba(99,102,241,0.1)' : 'transparent',
+                marginBottom: '0.25rem',
+                whiteSpace: 'nowrap',
+                fontSize: '0.875rem',
+                transition: 'var(--transition)',
+                textDecoration: 'none'
+              }}
+            >
+              <span>{item.icon}</span> {item.label}
+            </Link>
+          ))}
 
-          {/* Booking Dashboard dropdown */}
+          {/* BOOKINGS DROPDOWN */}
           <div>
             <div style={{
               display: 'flex',
@@ -100,8 +107,12 @@ function MainLayout({ children }) {
                   gap: '0.75rem',
                   padding: '0.625rem 0.75rem',
                   borderRadius: '8px',
-                  color: isBookingActive() ? 'var(--primary-light)' : 'var(--text-secondary)',
-                  background: isBookingActive() ? 'rgba(99,102,241,0.1)' : 'transparent',
+                  color: location.pathname.startsWith('/bookings')
+                    ? 'var(--primary-light)'
+                    : 'var(--text-secondary)',
+                  background: location.pathname.startsWith('/bookings')
+                    ? 'rgba(99,102,241,0.1)'
+                    : 'transparent',
                   whiteSpace: 'nowrap',
                   fontSize: '0.875rem',
                   transition: 'var(--transition)',
@@ -109,24 +120,18 @@ function MainLayout({ children }) {
                   flex: 1,
                 }}
               >
-                <span>📊</span> Booking Dashboard
+                <span>📊</span> Bookings
               </Link>
+
               <button
-                onClick={toggleDropdown}
+                onClick={() => setBookingsOpen(!bookingsOpen)}
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: 'var(--text-secondary)',
                   cursor: 'pointer',
-                  fontSize: '0.75rem',
-                  padding: '0.625rem 0.5rem',
-                  borderRadius: '8px',
-                  transition: 'var(--transition)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  padding: '0.5rem',
+                  fontSize: '0.75rem'
                 }}
-                aria-label="Toggle bookings menu"
               >
                 {bookingsOpen ? '▼' : '▶'}
               </button>
@@ -145,11 +150,11 @@ function MainLayout({ children }) {
                     fontSize: '0.8rem',
                     textDecoration: 'none',
                     marginBottom: '0.2rem',
-                    transition: 'var(--transition)',
                   }}
                 >
                   🔍 Find Resources
                 </Link>
+
                 <Link
                   to="/bookings/my"
                   style={{
@@ -160,8 +165,6 @@ function MainLayout({ children }) {
                     background: isActive('/bookings/my') ? 'rgba(99,102,241,0.1)' : 'transparent',
                     fontSize: '0.8rem',
                     textDecoration: 'none',
-                    marginBottom: '0.2rem',
-                    transition: 'var(--transition)',
                   }}
                 >
                   📋 My Bookings
@@ -174,16 +177,22 @@ function MainLayout({ children }) {
 
       {/* Main Content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+
         {/* Top Bar */}
         <header style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           padding: '0.875rem 1.5rem',
           background: 'var(--bg-secondary)',
           borderBottom: '1px solid var(--border-color)',
         }}>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{
-            background: 'none', border: 'none', color: 'var(--text-secondary)',
-            fontSize: '1.25rem', cursor: 'pointer',
+            background: 'none',
+            border: 'none',
+            color: 'var(--text-secondary)',
+            fontSize: '1.25rem',
+            cursor: 'pointer',
           }}>
             ☰
           </button>
@@ -198,7 +207,11 @@ function MainLayout({ children }) {
                 <span className="badge badge-info" style={{ fontSize: '0.625rem' }}>
                   {user?.role}
                 </span>
-                <button onClick={logout} className="btn btn-secondary" style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem' }}>
+                <button
+                  onClick={logout}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem' }}
+                >
                   Logout
                 </button>
               </div>
