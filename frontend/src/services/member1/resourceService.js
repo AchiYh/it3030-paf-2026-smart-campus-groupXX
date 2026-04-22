@@ -22,6 +22,9 @@ export const getAllResources = () =>
 export const getResourceById = (id) =>
   resourceAPI.get(`/${id}`, getAuthConfig());
 
+export const createResource = (data) =>
+  resourceAPI.post('', data, getAuthConfig());
+
 export const searchResources = (params = {}) => {
   const queryParams = {};
 

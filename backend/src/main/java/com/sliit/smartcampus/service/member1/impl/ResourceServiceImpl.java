@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.sliit.smartcampus.dto.member1.ResourceRequestDTO;
 import com.sliit.smartcampus.dto.member1.ResourceResponseDTO;
 import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member1.Resource;
@@ -33,6 +34,21 @@ public class ResourceServiceImpl implements ResourceService {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + id));
         return mapToDTO(resource);
+    }
+
+    @Override
+    public ResourceResponseDTO createResource(ResourceRequestDTO dto) {
+        Resource resource = new Resource();
+        resource.setName(dto.getName());
+        resource.setType(dto.getType());
+        resource.setCapacity(dto.getCapacity());
+        resource.setLocation(dto.getLocation());
+        resource.setAvailabilityWindows(dto.getAvailabilityWindows());
+        resource.setDescription(dto.getDescription());
+        resource.setStatus(ResourceStatus.ACTIVE);
+
+        Resource savedResource = resourceRepository.save(resource);
+        return mapToDTO(savedResource);
     }
 
     @Override

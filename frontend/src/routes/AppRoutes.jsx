@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../pages/member4/Login';
 import ResourceListPage from '../pages/member1/ResourceListPage';
+import ResourceFormPage from '../pages/member1/ResourceFormPage';
 import TicketBaseLayout from '../layouts/member3/TicketBaseLayout';
 import TicketOverview from '../pages/member3/ticketing/TicketOverview';
 import TicketListPage from '../pages/member3/ticketing/TicketListPage';
@@ -62,6 +63,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ResourceListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/resources/new"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <ResourceFormPage />
           </ProtectedRoute>
         }
       />

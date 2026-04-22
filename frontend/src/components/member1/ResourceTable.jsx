@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const toReadableType = (type) => {
   if (!type) return '-';
@@ -11,34 +12,38 @@ const toReadableType = (type) => {
 
 function ResourceTable({ resources, loading, error }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  let content;
 
   if (loading) {
-    return (
+    content = (
       <div className="flex items-center justify-center py-16">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-300 border-t-indigo-600" />
       </div>
     );
   }
 
-  if (error) {
-    return (
+  if (!content && error) {
+    content = (
       <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-red-300">
         {error}
       </div>
     );
   }
 
-  if (!resources || resources.length === 0) {
-    return (
+  if (!content && (!resources || resources.length === 0)) {
+    content = (
       <div className="rounded-xl border border-slate-700 bg-slate-800/70 p-8 text-center text-slate-300">
         No resources found yet
       </div>
     );
   }
 
-  return (
-    <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800/70 shadow-xl">
-      <div className="overflow-x-auto">
+  if (!content) {
+    content = (
+      <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-800/70 shadow-xl">
+        <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-700">
           <thead className="bg-slate-900/60">
             <tr className="text-left text-xs font-semibold uppercase tracking-wider text-slate-300">
@@ -72,7 +77,7 @@ function ResourceTable({ resources, loading, error }) {
                   <button
                     type="button"
                     onClick={() => navigate(`/resources/${resource.id}`)}
-                    className="rounded-md bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500"
+                   className="btn btn-secondary px-3 py-2 text-xs"
                   >
                     View Details
                   </button>
@@ -81,7 +86,26 @@ function ResourceTable({ resources, loading, error }) {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="mb-4 flex justify-end" >
+       
+        {user?.role === 'ADMIN' && (
+          <button
+            type="button"
+            onClick={() => navigate('/resources/new')}
+            className="btn btn-primary"
+          >
+            Add New Resource
+          </button>
+        )}
+      </div>
+      {content}
     </div>
   );
 }
