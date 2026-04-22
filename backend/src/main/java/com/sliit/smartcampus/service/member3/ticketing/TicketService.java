@@ -74,6 +74,8 @@ public class TicketService {
 
         if (currentUser.getRole() == User.Role.USER) {
             criteria.add(buildTicketOwnerCriteria(currentUser));
+        } else if (currentUser.getRole() == User.Role.TECHNICIAN) {
+            criteria.add(buildTechnicianAssignmentCriteria(currentUser));
         }
 
         if (status != null) {
@@ -123,6 +125,10 @@ public class TicketService {
         User currentUser = getCurrentUser();
 
         if (currentUser.getRole() == User.Role.USER && !isTicketOwner(ticket, currentUser)) {
+            throw new AccessDeniedException("You are not authorized to view this ticket");
+        }
+
+        if (currentUser.getRole() == User.Role.TECHNICIAN && !isTicketAssignedToTechnician(ticket, currentUser)) {
             throw new AccessDeniedException("You are not authorized to view this ticket");
         }
 
@@ -349,6 +355,28 @@ public class TicketService {
         }
 
         return new Criteria().orOperator(ownerCriteria.toArray(new Criteria[0]));
+    }
+
+    private Criteria buildTechnicianAssignmentCriteria(User user) {
+        List<Criteria> technicianCriteria = new ArrayList<>();
+
+        if (StringUtils.hasText(user.getId())) {
+            technicianCriteria.add(Criteria.where("assignedTo").is(user.getId()));
+        }
+
+        if (technicianCriteria.isEmpty()) {
+            return Criteria.where("assignedTo").is("__no_assignment__");
+        }
+
+        return new Criteria().orOperator(technicianCriteria.toArray(new Criteria[0]));
+    }
+
+    private boolean isTicketAssignedToTechnician(Ticket ticket, User user) {
+        if (ticket == null || user == null || !StringUtils.hasText(ticket.getAssignedTo()) || !StringUtils.hasText(user.getId())) {
+            return false;
+        }
+
+        return ticket.getAssignedTo().equalsIgnoreCase(user.getId());
     }
 
     private UserSnapshot resolveTechnicianSnapshot(String technicianId) {
