@@ -2,7 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 function TicketBaseLayout() {
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, isTechnician, user } = useAuth();
   const isUser = user?.role === 'USER';
 
   const navLinkStyle = ({ isActive }) => ({
@@ -37,9 +37,8 @@ function TicketBaseLayout() {
         }}
       >
         {!isUser && <NavLink to="/tickets" end style={navLinkStyle}>Overview</NavLink>}
-        {!isAdmin && <NavLink to="/tickets/new" style={navLinkStyle}>Create Ticket</NavLink>}
+        {!isAdmin && !isTechnician && <NavLink to="/tickets/new" style={navLinkStyle}>Create Ticket</NavLink>}
         <NavLink to="/tickets/list" style={navLinkStyle}>List View</NavLink>
-        {!isUser && <NavLink to="/tickets/board" style={navLinkStyle}>Board View</NavLink>}
       </div>
 
       <Outlet />

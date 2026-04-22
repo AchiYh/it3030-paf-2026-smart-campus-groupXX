@@ -4,7 +4,6 @@ import Login from '../pages/member4/Login';
 import TicketBaseLayout from '../layouts/member3/TicketBaseLayout';
 import TicketOverview from '../pages/member3/ticketing/TicketOverview';
 import TicketListPage from '../pages/member3/ticketing/TicketListPage';
-import TicketBoardPage from '../pages/member3/ticketing/TicketBoardPage';
 import TicketDetailsPage from '../pages/member3/ticketing/TicketDetailsPage';
 import CreateTicketPage from '../pages/member3/ticketing/CreateTicketPage';
 
@@ -32,12 +31,12 @@ function TicketOverviewRoute() {
   return <TicketOverview />;
 }
 
-function TicketBoardRoute() {
+function TicketCreateRoute() {
   const { user } = useAuth();
-  if (user?.role === 'USER') {
+  if (user?.role === 'USER' || user?.role === 'TECHNICIAN') {
     return <Navigate to="/tickets/list" replace />;
   }
-  return <TicketBoardPage />;
+  return <CreateTicketPage />;
 }
 
 function AppRoutes() {
@@ -81,9 +80,8 @@ function AppRoutes() {
         }
       >
         <Route index element={<TicketOverviewRoute />} />
-        <Route path="new" element={<CreateTicketPage />} />
+        <Route path="new" element={<TicketCreateRoute />} />
         <Route path="list" element={<TicketListPage />} />
-        <Route path="board" element={<TicketBoardRoute />} />
         <Route path=":ticketId" element={<TicketDetailsPage />} />
       </Route>
 

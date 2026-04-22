@@ -17,10 +17,10 @@ function TechnicianDashboard() {
           borderRadius: '12px',
           border: '1px solid var(--border-color)',
         }}>
-          <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>Assigned Tasks</h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>Manage incident tickets assigned to you.</p>
-          <Link to="/tickets/board" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-            Open Kanban Board
+          <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>Assigned Tickets</h3>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>View only the tickets assigned to you.</p>
+          <Link to="/tickets/list" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+            Open My Tickets
           </Link>
         </div>
 

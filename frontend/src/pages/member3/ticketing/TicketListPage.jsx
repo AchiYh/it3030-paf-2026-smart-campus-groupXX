@@ -92,7 +92,6 @@ function TicketListPage() {
     <div className="card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2>Ticket List</h2>
-        <Link className="btn btn-primary" to="/tickets/new">+ New Ticket</Link>
       </div>
 
       <form onSubmit={handleApplyFilters} style={{ marginBottom: '1rem' }}>
