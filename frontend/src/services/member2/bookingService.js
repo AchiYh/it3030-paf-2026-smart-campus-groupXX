@@ -33,7 +33,6 @@ const cancelBooking = async (bookingId) => {
   return response;
 };
 
-// Admin approve/reject (if not already present)
 const approveBooking = async (bookingId) => {
   const response = await API.patch(`${BASE_URL}/${bookingId}/approve`);
   return response;
@@ -44,9 +43,14 @@ const rejectBooking = async (bookingId, reason) => {
   return response;
 };
 
-// Equipment API
 const getAllEquipment = async () => {
   const response = await API.get(EQUIPMENT_URL);
+  return response;
+};
+
+// NEW: Cancel a PENDING booking
+const cancelPendingBooking = async (bookingId) => {
+  const response = await API.patch(`${BASE_URL}/${bookingId}/cancel-pending`);
   return response;
 };
 
@@ -60,6 +64,7 @@ const bookingService = {
   approveBooking,
   rejectBooking,
   getAllEquipment,
+  cancelPendingBooking,
 };
 
 export default bookingService;

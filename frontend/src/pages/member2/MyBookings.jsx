@@ -69,7 +69,6 @@ function MyBookings() {
   };
 
   const sortedBookings = [...bookings].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-
   const filteredBookings = activeTab === 'ALL'
     ? sortedBookings
     : sortedBookings.filter(b => b.status === activeTab);
@@ -79,8 +78,9 @@ function MyBookings() {
     return bookings.filter(b => b.status === status).length;
   };
 
+  // Cancel an APPROVED booking (existing endpoint DELETE /bookings/{id}/cancel)
   const handleCancel = async (bookingId) => {
-    if (!window.confirm('Cancel this booking?')) return;
+    if (!window.confirm('Cancel this approved booking?')) return;
     try {
       await bookingService.cancelBooking(bookingId);
       await loadBookings();
@@ -90,14 +90,15 @@ function MyBookings() {
     }
   };
 
-  const handleDelete = async (bookingId) => {
-    if (!window.confirm('Permanently delete this booking?')) return;
+  // Cancel a PENDING booking (new endpoint PATCH /bookings/{id}/cancel-pending)
+  const handleCancelPending = async (bookingId) => {
+    if (!window.confirm('Cancel this pending booking? It will be moved to Cancelled.')) return;
     try {
-      await bookingService.deleteBooking(bookingId);
+      await bookingService.cancelPendingBooking(bookingId);
       await loadBookings();
-      setSuccessMessage('Booking deleted successfully.');
+      setSuccessMessage('Booking cancelled successfully.');
     } catch (err) {
-      setError(err.response?.data?.message || 'Unable to delete booking.');
+      setError(err.response?.data?.message || 'Unable to cancel pending booking.');
     }
   };
 
@@ -120,16 +121,6 @@ function MyBookings() {
       const message = err.response?.data?.message || 'Unable to update booking.';
       setError(message);
       throw new Error(message);
-    }
-  };
-
-  const getResourceIcon = (type) => {
-    switch (type) {
-      case 'Lecture Halls': return '🏛️';
-      case 'Labs': return '💻';
-      case 'Meeting Rooms': return '📚';
-      case 'Equipment': return '📹';
-      default: return '📦';
     }
   };
 
@@ -203,8 +194,8 @@ function MyBookings() {
               booking={booking}
               isOwner={booking.userEmail === user?.email}
               onEdit={handleEditClick}
-              onDelete={handleDelete}
-              onCancel={handleCancel}
+              onDelete={handleCancelPending}   // For PENDING bookings, this will cancel (soft delete)
+              onCancel={handleCancel}          // For APPROVED bookings, this will cancel
             />
           ))}
         </div>

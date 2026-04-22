@@ -15,6 +15,7 @@
   font-family: 'Inter', sans-serif;
 }
 
+/* Hero with total on right */
 .bdb-hero {
   display: flex;
   justify-content: space-between;
@@ -24,6 +25,50 @@
   padding: 2rem 2rem;
   margin-bottom: 2rem;
   color: white;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.bdb-hero-text {
+  flex: 1;
+}
+
+.bdb-hero-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.bdb-total-stat {
+  text-align: right;
+  background: rgba(255,255,255,0.1);
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.bdb-total-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.bdb-total-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.bdb-role-tag {
+  background: rgba(255,255,255,0.12);
+  padding: 0.4rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 .bdb-greeting {
@@ -44,15 +89,7 @@
   margin: 0;
 }
 
-.bdb-role-tag {
-  background: rgba(255,255,255,0.12);
-  padding: 0.4rem 1rem;
-  border-radius: 2rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
+/* Stats grid – 4 columns for Pending, Approved, Rejected, Cancelled */
 .bdb-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -61,7 +98,9 @@
 }
 
 @media (max-width: 768px) {
-  .bdb-stats { grid-template-columns: repeat(2, 1fr); }
+  .bdb-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .bdb-stat-card {
@@ -81,18 +120,28 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 
-.bdb-stat-total { border-left-color: #6366f1; }
-.bdb-stat-pending { border-left-color: #f59e0b; }
+.bdb-stat-pending  { border-left-color: #f59e0b; }
 .bdb-stat-approved { border-left-color: #10b981; }
-.bdb-stat-cancelled { border-left-color: #ef4444; }
+.bdb-stat-rejected { border-left-color: #ef4444; }
+.bdb-stat-cancelled { border-left-color: #6b7280; }
 
-.bdb-stat-icon { font-size: 1.8rem; }
+.bdb-stat-icon {
+  font-size: 1.8rem;
+}
+
+.bdb-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
 .bdb-stat-value {
   font-size: 1.6rem;
   font-weight: 700;
   color: #0f172a;
   line-height: 1;
 }
+
 .bdb-stat-label {
   font-size: 0.7rem;
   font-weight: 600;
@@ -100,6 +149,7 @@
   text-transform: uppercase;
 }
 
+/* CTA Actions (unchanged) */
 .bdb-actions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -139,7 +189,7 @@
 .bdb-cta-arrow { margin-left: auto; font-size: 1.2rem; transition: transform 0.2s; }
 .bdb-cta:hover .bdb-cta-arrow { transform: translateX(4px); }
 
-/* ===== RECENT ACTIVITY SECTION – FIXED VISIBILITY ===== */
+/* Recent Activity (unchanged) */
 .bdb-section-head {
   display: flex;
   justify-content: space-between;
@@ -150,7 +200,7 @@
 .bdb-section-head h2 {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #dfe2ea;
+  color: #b9c7e8;
   margin: 0;
   letter-spacing: -0.01em;
 }
@@ -246,6 +296,7 @@
   flex-direction: column;
   gap: 0.75rem;
 }
+
 .bdb-skeleton {
   height: 70px;
   background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);

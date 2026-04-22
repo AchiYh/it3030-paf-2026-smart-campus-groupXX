@@ -175,6 +175,25 @@ public class BookingService {
         return BookingResponseDTO.fromBooking(cancelled);
     }
 
+    // NEW: Cancel a PENDING booking (soft delete – moves to CANCELLED status)
+    @Transactional
+    public BookingResponseDTO cancelPendingBooking(String id, String currentUserEmail) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
+
+        if (!booking.getUserEmail().equals(currentUserEmail)) {
+            throw new BadRequestException("You can only cancel your own bookings");
+        }
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new BadRequestException("Only PENDING bookings can be cancelled this way");
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking.setUpdatedAt(LocalDateTime.now());
+        Booking cancelled = bookingRepository.save(booking);
+        return BookingResponseDTO.fromBooking(cancelled);
+    }
+
     @Transactional
     public BookingResponseDTO approveBooking(String id) {
         Booking booking = bookingRepository.findById(id)

@@ -68,6 +68,7 @@ public class BookingController {
         return ResponseEntity.noContent().build();
     }
 
+    // Cancel an APPROVED booking
     @DeleteMapping("/{id}/cancel")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<BookingResponseDTO> cancelBooking(@PathVariable String id) {
@@ -75,7 +76,19 @@ public class BookingController {
         return ResponseEntity.ok(cancelled);
     }
 
-    // ----- Admin endpoints for approve/reject -----
+    // NEW: Cancel a PENDING booking (soft delete – moves to CANCELLED status)
+    @PatchMapping("/{id}/cancel-pending")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BookingResponseDTO> cancelPendingBooking(
+            @PathVariable String id,
+            Authentication authentication
+    ) {
+        String currentUserEmail = authentication.getName();
+        BookingResponseDTO cancelled = bookingService.cancelPendingBooking(id, currentUserEmail);
+        return ResponseEntity.ok(cancelled);
+    }
+
+    // Admin endpoints
     @PatchMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BookingResponseDTO> approveBooking(@PathVariable String id) {

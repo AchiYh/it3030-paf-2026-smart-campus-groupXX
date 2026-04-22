@@ -31,6 +31,7 @@ function BookingDashboard() {
     total: bookings.length,
     pending: bookings.filter(b => b.status === 'PENDING').length,
     approved: bookings.filter(b => b.status === 'APPROVED').length,
+    rejected: bookings.filter(b => b.status === 'REJECTED').length,
     cancelled: bookings.filter(b => b.status === 'CANCELLED').length,
   };
 
@@ -62,27 +63,24 @@ function BookingDashboard() {
 
   return (
     <div className="bdb-container">
-      {/* Hero Welcome */}
+      {/* Hero Welcome with Total on the right */}
       <div className="bdb-hero">
         <div className="bdb-hero-text">
           <p className="bdb-greeting">Good day,</p>
           <h1 className="bdb-title">{firstName} 👋</h1>
           <p className="bdb-subtitle">Manage your campus resource bookings from one place.</p>
         </div>
-        <div className="bdb-hero-badge">
-          <span className="bdb-role-tag">{user?.role || 'USER'}</span>
+        <div className="bdb-hero-total">
+          <div className="bdb-total-stat">
+            <div className="bdb-total-value">{loading ? '—' : stats.total}</div>
+            <div className="bdb-total-label">Total Bookings</div>
+          </div>
+          <div className="bdb-role-tag">{user?.role || 'USER'}</div>
         </div>
       </div>
 
-      {/* Stats Row */}
+      {/* Stats Row: Pending, Approved, Rejected, Cancelled */}
       <div className="bdb-stats">
-        <div className="bdb-stat-card bdb-stat-total">
-          <div className="bdb-stat-icon">📦</div>
-          <div className="bdb-stat-info">
-            <span className="bdb-stat-value">{loading ? '—' : stats.total}</span>
-            <span className="bdb-stat-label">Total Bookings</span>
-          </div>
-        </div>
         <div className="bdb-stat-card bdb-stat-pending">
           <div className="bdb-stat-icon">⏳</div>
           <div className="bdb-stat-info">
@@ -97,8 +95,15 @@ function BookingDashboard() {
             <span className="bdb-stat-label">Approved</span>
           </div>
         </div>
-        <div className="bdb-stat-card bdb-stat-cancelled">
+        <div className="bdb-stat-card bdb-stat-rejected">
           <div className="bdb-stat-icon">❌</div>
+          <div className="bdb-stat-info">
+            <span className="bdb-stat-value">{loading ? '—' : stats.rejected}</span>
+            <span className="bdb-stat-label">Rejected</span>
+          </div>
+        </div>
+        <div className="bdb-stat-card bdb-stat-cancelled">
+          <div className="bdb-stat-icon">🚫</div>
           <div className="bdb-stat-info">
             <span className="bdb-stat-value">{loading ? '—' : stats.cancelled}</span>
             <span className="bdb-stat-label">Cancelled</span>
@@ -106,7 +111,7 @@ function BookingDashboard() {
         </div>
       </div>
 
-      {/* CTA Actions */}
+      {/* CTA Actions (unchanged) */}
       <div className="bdb-actions">
         <button className="bdb-cta bdb-cta-primary" onClick={() => navigate('/bookings/find')}>
           <span className="bdb-cta-icon">➕</span>
@@ -136,7 +141,7 @@ function BookingDashboard() {
         </button>
       </div>
 
-      {/* Recent Bookings */}
+      {/* Recent Bookings (unchanged) */}
       <div className="bdb-recent">
         <div className="bdb-section-head">
           <h2>🕐 Recent Activity</h2>
