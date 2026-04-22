@@ -7,16 +7,26 @@ function MainLayout({ children }) {
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [bookingsOpen, setBookingsOpen] = useState(false);
 
-  // Don't show layout on login page
   if (location.pathname === '/login') {
     return <>{children}</>;
   }
 
-  const navItems = [
-    { label: 'Home', path: '/', icon: '🏠' },
-    { label: 'My Bookings', path: '/bookings', icon: '📅' },
-  ];
+  const isActive = (path) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname === path;
+  };
+
+  const isBookingActive = () => {
+    return ['/bookings', '/bookings/find', '/bookings/my'].includes(location.pathname);
+  };
+
+  const toggleDropdown = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBookingsOpen(!bookingsOpen);
+  };
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -46,18 +56,105 @@ function MainLayout({ children }) {
           }}>
             Main Menu
           </p>
-          {navItems.map((item) => (
-            <Link key={item.path} to={item.path} style={{
-              display: 'flex', alignItems: 'center', gap: '0.75rem',
-              padding: '0.625rem 0.75rem', borderRadius: '8px',
-              color: location.pathname === item.path ? 'var(--primary-light)' : 'var(--text-secondary)',
-              background: location.pathname === item.path ? 'rgba(99,102,241,0.1)' : 'transparent',
-              marginBottom: '0.25rem', whiteSpace: 'nowrap', fontSize: '0.875rem',
-              transition: 'var(--transition)',
+
+          {/* Home link */}
+          <Link to="/" style={{
+            display: 'flex', alignItems: 'center', gap: '0.75rem',
+            padding: '0.625rem 0.75rem', borderRadius: '8px',
+            color: isActive('/') ? 'var(--primary-light)' : 'var(--text-secondary)',
+            background: isActive('/') ? 'rgba(99,102,241,0.1)' : 'transparent',
+            marginBottom: '0.25rem', whiteSpace: 'nowrap', fontSize: '0.875rem',
+            transition: 'var(--transition)',
+            textDecoration: 'none',
+          }}>
+            <span>🏠</span> Home
+          </Link>
+
+          {/* Booking Dashboard dropdown */}
+          <div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.25rem',
             }}>
-              <span>{item.icon}</span> {item.label}
-            </Link>
-          ))}
+              <Link
+                to="/bookings"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.625rem 0.75rem',
+                  borderRadius: '8px',
+                  color: isBookingActive() ? 'var(--primary-light)' : 'var(--text-secondary)',
+                  background: isBookingActive() ? 'rgba(99,102,241,0.1)' : 'transparent',
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.875rem',
+                  transition: 'var(--transition)',
+                  textDecoration: 'none',
+                  flex: 1,
+                }}
+              >
+                <span>📊</span> Booking Dashboard
+              </Link>
+              <button
+                onClick={toggleDropdown}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  padding: '0.625rem 0.5rem',
+                  borderRadius: '8px',
+                  transition: 'var(--transition)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                aria-label="Toggle bookings menu"
+              >
+                {bookingsOpen ? '▼' : '▶'}
+              </button>
+            </div>
+
+            {bookingsOpen && (
+              <div style={{ marginLeft: '1.5rem', marginBottom: '0.5rem' }}>
+                <Link
+                  to="/bookings/find"
+                  style={{
+                    display: 'block',
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '6px',
+                    color: isActive('/bookings/find') ? 'var(--primary-light)' : 'var(--text-secondary)',
+                    background: isActive('/bookings/find') ? 'rgba(99,102,241,0.1)' : 'transparent',
+                    fontSize: '0.8rem',
+                    textDecoration: 'none',
+                    marginBottom: '0.2rem',
+                    transition: 'var(--transition)',
+                  }}
+                >
+                  🔍 Find Resources
+                </Link>
+                <Link
+                  to="/bookings/my"
+                  style={{
+                    display: 'block',
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '6px',
+                    color: isActive('/bookings/my') ? 'var(--primary-light)' : 'var(--text-secondary)',
+                    background: isActive('/bookings/my') ? 'rgba(99,102,241,0.1)' : 'transparent',
+                    fontSize: '0.8rem',
+                    textDecoration: 'none',
+                    marginBottom: '0.2rem',
+                    transition: 'var(--transition)',
+                  }}
+                >
+                  📋 My Bookings
+                </Link>
+              </div>
+            )}
+          </div>
         </nav>
       </aside>
 

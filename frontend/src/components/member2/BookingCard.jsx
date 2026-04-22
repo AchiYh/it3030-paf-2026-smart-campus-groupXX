@@ -1,104 +1,98 @@
-import React, { useState } from 'react';
-import bookingService from '../../services/member2/bookingService';
+import './BookingCard.css';
 
-const statusConfig = {
-  PENDING: { class: 'status-pending', label: 'PENDING' },
-  APPROVED: { class: 'status-approved', label: 'APPROVED' },
-  REJECTED: { class: 'status-rejected', label: 'REJECTED' },
-  CANCELLED: { class: 'status-cancelled', label: 'CANCELLED' }
+const TYPE_ICONS = {
+  'Lecture Halls': '🏛️',
+  'Labs': '💻',
+  'Meeting Rooms': '📚',
+  'Equipment': '📹',
 };
 
-function BookingCard({ booking, isOwner, onEdit, onDelete, onCancel, onRefresh, setSuccessMessage, setError }) {
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancelReason, setCancelReason] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  const status = statusConfig[booking.status] || statusConfig.PENDING;
-  const isEquipment = booking.resourceType === 'Equipment';
-
-  const handleCancelConfirm = async () => {
-    if (!cancelReason.trim()) {
-      setError('Please provide a reason for cancellation');
-      return;
-    }
-    setSubmitting(true);
-    try {
-      await bookingService.cancelBooking(booking.id);
-      setSuccessMessage('Booking cancelled successfully');
-      onRefresh();
-      setShowCancelModal(false);
-      setCancelReason('');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Unable to cancel booking');
-    } finally {
-      setSubmitting(false);
+function BookingCard({ booking, isOwner, onEdit, onCancel, onDelete }) {
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'PENDING':   return 'bc-status-pending';
+      case 'APPROVED':  return 'bc-status-approved';
+      case 'REJECTED':  return 'bc-status-rejected';
+      case 'CANCELLED': return 'bc-status-cancelled';
+      default: return '';
     }
   };
 
+  const icon = TYPE_ICONS[booking.resourceType] || '📦';
+  const canEdit   = isOwner && booking.status === 'PENDING';
+  const canCancel = isOwner && booking.status === 'APPROVED';
+  const canDelete = isOwner && booking.status === 'PENDING';
+
   return (
-    <>
-      <div className="booking-card">
-        <div className="booking-header">
-          <h3>{booking.resourceName}</h3>
-          <span className={`status-badge ${status.class}`}>{status.label}</span>
-        </div>
+    <div className="bc-card">
+      <div className="bc-left">
+        <div className="bc-icon-wrap">{icon}</div>
+      </div>
 
-        <div className="booking-details">
-          <p>📅 {booking.date} | 🕐 {booking.startTime} - {booking.endTime}</p>
-          {/* Show Quantity for equipment, Attendees for rooms */}
-          {isEquipment ? (
-            <p>📦 Quantity: {booking.quantity || 1}</p>
-          ) : (
-            <p>👥 Attendees: {booking.attendees}</p>
-          )}
-          <p>📝 {booking.purpose}</p>
-          {booking.rejectReason && (
-            <p className="reject-reason">❌ Rejection reason: {booking.rejectReason}</p>
-          )}
-        </div>
-
-        {isOwner && booking.status === 'PENDING' && (
-          <div className="booking-actions">
-            <button className="edit-btn" onClick={() => onEdit(booking)}>✏️ Edit</button>
-            <button className="delete-btn" onClick={() => onDelete(booking.id)}>🗑️ Delete</button>
+      <div className="bc-body">
+        <div className="bc-top">
+          <div>
+            <h3 className="bc-name">{booking.resourceName}</h3>
+            <p className="bc-type">{booking.resourceType}</p>
           </div>
-        )}
+          <span className={`bc-status ${getStatusClass(booking.status)}`}>
+            {booking.status}
+          </span>
+        </div>
 
-        {isOwner && booking.status === 'APPROVED' && (
-          <div className="booking-actions">
-            <button className="cancel-btn" onClick={() => setShowCancelModal(true)}>❌ Cancel</button>
+        <div className="bc-details">
+          <div className="bc-detail-item">
+            <span className="bc-detail-icon">📅</span>
+            <span>{booking.date}</span>
+          </div>
+          <div className="bc-detail-item">
+            <span className="bc-detail-icon">🕐</span>
+            <span>{booking.startTime} – {booking.endTime}</span>
+          </div>
+          {booking.attendees && (
+            <div className="bc-detail-item">
+              <span className="bc-detail-icon">👥</span>
+              <span>
+                {booking.resourceType === 'Equipment'
+                  ? `Qty: ${booking.attendees}`
+                  : `${booking.attendees} attendees`}
+              </span>
+            </div>
+          )}
+          {booking.purpose && (
+            <div className="bc-detail-item bc-purpose">
+              <span className="bc-detail-icon">📝</span>
+              <span>{booking.purpose}</span>
+            </div>
+          )}
+          {booking.rejectionReason && (
+            <div className="bc-rejection">
+              ❌ Reason: {booking.rejectionReason}
+            </div>
+          )}
+        </div>
+
+        {(canEdit || canCancel || canDelete) && (
+          <div className="bc-actions">
+            {canEdit && (
+              <button className="bc-btn bc-btn-edit" onClick={() => onEdit(booking)}>
+                ✏️ Edit
+              </button>
+            )}
+            {canDelete && (
+              <button className="bc-btn bc-btn-delete" onClick={() => onDelete(booking.id)}>
+                🗑️ Delete
+              </button>
+            )}
+            {canCancel && (
+              <button className="bc-btn bc-btn-cancel" onClick={() => onCancel(booking.id)}>
+                🚫 Cancel
+              </button>
+            )}
           </div>
         )}
       </div>
-
-      {/* Cancel Reason Modal (same as before) */}
-      {showCancelModal && (
-        <div className="modal-overlay" onClick={() => setShowCancelModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Cancel Booking</h2>
-              <button className="modal-close" onClick={() => setShowCancelModal(false)}>✕</button>
-            </div>
-            <div className="modal-field">
-              <label>Reason for cancellation *</label>
-              <textarea
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                rows="3"
-                placeholder="Please explain why you are cancelling this booking..."
-                required
-              />
-            </div>
-            <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setShowCancelModal(false)}>Back</button>
-              <button className="btn-primary" onClick={handleCancelConfirm} disabled={submitting}>
-                {submitting ? 'Processing...' : 'Confirm Cancellation'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 }
 

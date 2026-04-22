@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import './BookingModal.css';
 
 function BookingModal({ resource, userEmail, onClose, onCreate }) {
   const [formData, setFormData] = useState({
@@ -18,7 +19,7 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
 
   const isEquipment = resource?.type === 'Equipment';
   const maxQuantity = isEquipment ? resource?.availableCount : resource?.capacity;
-  const quantityLabel = isEquipment ? 'Quantity' : 'Attendees';
+  const quantityLabel = isEquipment ? 'Quantity Needed' : 'Attendees';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -31,14 +32,14 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
     setModalError('');
 
     if (formData.startTime >= formData.endTime) {
-      setModalError('End time must be after start time');
+      setModalError('End time must be after start time.');
       setSubmitting(false);
       return;
     }
 
     const valueToCheck = isEquipment ? formData.quantity : formData.attendees;
     if (valueToCheck > maxQuantity) {
-      setModalError(`${quantityLabel} cannot exceed ${maxQuantity}`);
+      setModalError(`${quantityLabel} cannot exceed ${maxQuantity}.`);
       setSubmitting(false);
       return;
     }
@@ -58,49 +59,61 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
       };
       await onCreate(bookingData);
     } catch (err) {
-      setModalError(err.message || 'Failed to create booking');
+      setModalError(err.message || 'Failed to create booking.');
       setSubmitting(false);
     }
   };
 
   const today = new Date().toISOString().split('T')[0];
 
+  const TYPE_ICONS = {
+    'Lecture Halls': '🏛️',
+    'Labs': '💻',
+    'Meeting Rooms': '📚',
+    'Equipment': '📹',
+  };
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>📅 Book {resource?.name}</h2>
-          <button className="modal-close" onClick={onClose}>✕</button>
+    <div className="bm-overlay" onClick={onClose}>
+      <div className="bm-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="bm-header">
+          <div className="bm-header-icon">{TYPE_ICONS[resource?.type] || '📅'}</div>
+          <div>
+            <h2 className="bm-header-title">Book {resource?.name}</h2>
+            <p className="bm-header-sub">{resource?.type} · {resource?.location}</p>
+          </div>
+          <button className="bm-close" onClick={onClose}>✕</button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="modal-info-section">
-            <div className="modal-info-row">
-              <div className="modal-info-field">
-                <label>📍 Location</label>
-                <div className="info-value">{resource?.location || 'Not specified'}</div>
-              </div>
-              <div className="modal-info-field">
-                <label>{isEquipment ? '📊 Available' : '👥 Max Capacity'}</label>
-                <div className="info-value">
-                  {isEquipment 
-                    ? `${resource?.availableCount} out of ${resource?.totalCount}` 
-                    : `${resource?.capacity} people`}
-                </div>
-              </div>
+        {/* Resource Info Strip */}
+        <div className="bm-info-strip">
+          {resource?.roomNumber && (
+            <div className="bm-info-item">
+              <span className="bm-info-label">Room</span>
+              <span className="bm-info-value">{resource.roomNumber}</span>
             </div>
-            {resource?.roomNumber && (
-              <div className="modal-info-row" style={{ marginTop: '0.5rem' }}>
-                <div className="modal-info-field">
-                  <label>🏠 Room Number</label>
-                  <div className="info-value">{resource.roomNumber}</div>
-                </div>
-              </div>
-            )}
+          )}
+          <div className="bm-info-item">
+            <span className="bm-info-label">📍 Location</span>
+            <span className="bm-info-value">{resource?.location || '—'}</span>
           </div>
+          <div className="bm-info-item">
+            <span className="bm-info-label">
+              {isEquipment ? '📊 Available' : '👥 Capacity'}
+            </span>
+            <span className="bm-info-value">
+              {isEquipment
+                ? `${resource?.availableCount} / ${resource?.totalCount}`
+                : `${resource?.capacity?.toLocaleString()} people`}
+            </span>
+          </div>
+        </div>
 
-          <div className="modal-field">
-            <label>📅 Date *</label>
+        <form onSubmit={handleSubmit} className="bm-form">
+          {/* Date */}
+          <div className="bm-field">
+            <label className="bm-label">📅 Date <span className="bm-req">*</span></label>
             <input
               type="date"
               name="date"
@@ -108,34 +121,42 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
               onChange={handleChange}
               required
               min={today}
+              className="bm-input"
             />
           </div>
 
-          <div className="modal-row">
-            <div className="modal-field">
-              <label>🕐 Start Time *</label>
+          {/* Time Row */}
+          <div className="bm-row">
+            <div className="bm-field">
+              <label className="bm-label">🕐 Start Time <span className="bm-req">*</span></label>
               <input
                 type="time"
                 name="startTime"
                 value={formData.startTime}
                 onChange={handleChange}
                 required
+                className="bm-input"
               />
             </div>
-            <div className="modal-field">
-              <label>🕐 End Time *</label>
+            <div className="bm-field">
+              <label className="bm-label">🕐 End Time <span className="bm-req">*</span></label>
               <input
                 type="time"
                 name="endTime"
                 value={formData.endTime}
                 onChange={handleChange}
                 required
+                className="bm-input"
               />
             </div>
           </div>
 
-          <div className="modal-field">
-            <label>{quantityLabel} *</label>
+          {/* Attendees / Quantity */}
+          <div className="bm-field">
+            <label className="bm-label">
+              {isEquipment ? '📦' : '👥'} {quantityLabel} <span className="bm-req">*</span>
+              <span className="bm-max-hint">Max: {maxQuantity}</span>
+            </label>
             <input
               type="number"
               name={isEquipment ? 'quantity' : 'attendees'}
@@ -144,14 +165,16 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
               min="1"
               max={maxQuantity}
               required
+              className="bm-input"
             />
             {isEquipment && resource?.availableCount <= 3 && resource?.availableCount > 0 && (
-              <div className="field-warning">⚠️ Only {resource?.availableCount} items left in stock!</div>
+              <p className="bm-warn">⚠️ Only {resource?.availableCount} items left in stock!</p>
             )}
           </div>
 
-          <div className="modal-field">
-            <label>📝 Purpose *</label>
+          {/* Purpose */}
+          <div className="bm-field">
+            <label className="bm-label">📝 Purpose <span className="bm-req">*</span></label>
             <textarea
               name="purpose"
               value={formData.purpose}
@@ -159,15 +182,23 @@ function BookingModal({ resource, userEmail, onClose, onCreate }) {
               required
               rows="3"
               placeholder="Describe the purpose of this booking..."
+              className="bm-textarea"
             />
           </div>
 
-          {modalError && <div className="modal-error">{modalError}</div>}
+          {modalError && <div className="bm-error">{modalError}</div>}
 
-          <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={submitting}>
-              {submitting ? 'Creating...' : 'Create Booking'}
+          {/* Actions */}
+          <div className="bm-actions">
+            <button type="button" className="bm-cancel-btn" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="bm-submit-btn" disabled={submitting}>
+              {submitting ? (
+                <span className="bm-spinner">⏳ Creating...</span>
+              ) : (
+                '📅 Confirm Booking'
+              )}
             </button>
           </div>
         </form>
