@@ -22,16 +22,34 @@ function MainLayout({ children }) {
   }, [location.pathname]);
 
   const isActive = (path) => location.pathname === path;
+  const isActivePrefix = (prefix) => location.pathname.startsWith(prefix);
 
-  const navItems = [
-    { label: 'Home', path: '/', icon: '🏠' },
-    { label: 'Tickets', path: '/tickets', icon: '🎫' },
-  ];
+  // Get navigation items based on user role
+  const getNavItems = () => {
+    if (user?.role === 'ADMIN') {
+      return [
+        { label: 'Home', path: '/', icon: '🏠' },
+        { label: 'Admin Dashboard', path: '/admin/dashboard', icon: '📊' },
+        { label: 'Manage Bookings', path: '/admin/bookings', icon: '📋' },
+        { label: 'Tickets', path: '/tickets', icon: '🎫' },
+        { label: 'Users', path: '/users', icon: '👥' },
+        { label: 'Add Technician', path: '/users/technicians/new', icon: '➕' },
+      ];
+    } else if (user?.role === 'TECHNICIAN') {
+      return [
+        { label: 'Home', path: '/', icon: '🏠' },
+        { label: 'Tickets', path: '/tickets', icon: '🎫' },
+      ];
+    } else {
+      // USER role
+      return [
+        { label: 'Home', path: '/', icon: '🏠' },
+        { label: 'Tickets', path: '/tickets', icon: '🎫' },
+      ];
+    }
+  };
 
-  if (user?.role === 'ADMIN') {
-    navItems.push({ label: 'Add Technician', path: '/users/technicians/new', icon: '➕' });
-    navItems.push({ label: 'Users', path: '/users', icon: '👥' });
-  }
+  const navItems = getNavItems();
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -67,7 +85,7 @@ function MainLayout({ children }) {
             Main Menu
           </p>
 
-          {/* NORMAL ITEMS */}
+          {/* Regular Nav Items */}
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -91,87 +109,92 @@ function MainLayout({ children }) {
             </Link>
           ))}
 
-          {/* BOOKINGS DROPDOWN */}
-          <div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '0.25rem',
-            }}>
-              <Link
-                to="/bookings"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.625rem 0.75rem',
-                  borderRadius: '8px',
-                  color: location.pathname.startsWith('/bookings')
-                    ? 'var(--primary-light)'
-                    : 'var(--text-secondary)',
-                  background: location.pathname.startsWith('/bookings')
-                    ? 'rgba(99,102,241,0.1)'
-                    : 'transparent',
-                  whiteSpace: 'nowrap',
-                  fontSize: '0.875rem',
-                  transition: 'var(--transition)',
-                  textDecoration: 'none',
-                  flex: 1,
-                }}
-              >
-                <span>📊</span> Bookings
-              </Link>
-
-              <button
-                onClick={() => setBookingsOpen(!bookingsOpen)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '0.5rem',
-                  fontSize: '0.75rem'
-                }}
-              >
-                {bookingsOpen ? '▼' : '▶'}
-              </button>
-            </div>
-
-            {bookingsOpen && (
-              <div style={{ marginLeft: '1.5rem', marginBottom: '0.5rem' }}>
+          {/* BOOKINGS DROPDOWN - Only for non-admin users */}
+          {user?.role !== 'ADMIN' && (
+            <div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '0.25rem',
+              }}>
                 <Link
-                  to="/bookings/find"
+                  to="/bookings"
                   style={{
-                    display: 'block',
-                    padding: '0.5rem 0.75rem',
-                    borderRadius: '6px',
-                    color: isActive('/bookings/find') ? 'var(--primary-light)' : 'var(--text-secondary)',
-                    background: isActive('/bookings/find') ? 'rgba(99,102,241,0.1)' : 'transparent',
-                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '0.625rem 0.75rem',
+                    borderRadius: '8px',
+                    color: isActivePrefix('/bookings')
+                      ? 'var(--primary-light)'
+                      : 'var(--text-secondary)',
+                    background: isActivePrefix('/bookings')
+                      ? 'rgba(99,102,241,0.1)'
+                      : 'transparent',
+                    whiteSpace: 'nowrap',
+                    fontSize: '0.875rem',
+                    transition: 'var(--transition)',
                     textDecoration: 'none',
-                    marginBottom: '0.2rem',
+                    flex: 1,
                   }}
                 >
-                  🔍 Find Resources
+                  <span>📊</span> Bookings
                 </Link>
 
-                <Link
-                  to="/bookings/my"
+                <button
+                  onClick={() => setBookingsOpen(!bookingsOpen)}
                   style={{
-                    display: 'block',
-                    padding: '0.5rem 0.75rem',
-                    borderRadius: '6px',
-                    color: isActive('/bookings/my') ? 'var(--primary-light)' : 'var(--text-secondary)',
-                    background: isActive('/bookings/my') ? 'rgba(99,102,241,0.1)' : 'transparent',
-                    fontSize: '0.8rem',
-                    textDecoration: 'none',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0.5rem',
+                    fontSize: '0.75rem',
+                    color: 'var(--text-secondary)',
                   }}
                 >
-                  📋 My Bookings
-                </Link>
+                  {bookingsOpen ? '▼' : '▶'}
+                </button>
               </div>
-            )}
-          </div>
+
+              {bookingsOpen && (
+                <div style={{ marginLeft: '1.5rem', marginBottom: '0.5rem' }}>
+                  <Link
+                    to="/bookings/find"
+                    style={{
+                      display: 'block',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '6px',
+                      color: isActive('/bookings/find') ? 'var(--primary-light)' : 'var(--text-secondary)',
+                      background: isActive('/bookings/find') ? 'rgba(99,102,241,0.1)' : 'transparent',
+                      fontSize: '0.8rem',
+                      textDecoration: 'none',
+                      marginBottom: '0.2rem',
+                      transition: 'var(--transition)',
+                    }}
+                  >
+                    🔍 Find Resources
+                  </Link>
+
+                  <Link
+                    to="/bookings/my"
+                    style={{
+                      display: 'block',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '6px',
+                      color: isActive('/bookings/my') ? 'var(--primary-light)' : 'var(--text-secondary)',
+                      background: isActive('/bookings/my') ? 'rgba(99,102,241,0.1)' : 'transparent',
+                      fontSize: '0.8rem',
+                      textDecoration: 'none',
+                      transition: 'var(--transition)',
+                    }}
+                  >
+                    📋 My Bookings
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </nav>
       </aside>
 

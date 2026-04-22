@@ -41,6 +41,7 @@ function MyBookings() {
   const [editingBooking, setEditingBooking] = useState(null);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [selectedRejectionDetails, setSelectedRejectionDetails] = useState(null);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -60,7 +61,14 @@ function MyBookings() {
     setLoading(true);
     try {
       const response = await bookingService.getMyBookings(user.email);
-      setBookings(response.data || []);
+      // Ensure each booking has a rejectionReason field (from backend)
+      const bookingsWithReasons = (response.data || []).map(booking => ({
+        ...booking,
+        rejectionReason: booking.rejectionReason || null,
+        rejectedBy: booking.rejectedBy || null,
+        rejectedAt: booking.rejectedAt || null,
+      }));
+      setBookings(bookingsWithReasons);
     } catch (err) {
       setError('Unable to load your bookings.');
     } finally {
@@ -122,6 +130,22 @@ function MyBookings() {
       setError(message);
       throw new Error(message);
     }
+  };
+
+  const handleViewRejectionDetails = (booking) => {
+    setSelectedRejectionDetails({
+      resourceName: booking.resourceName,
+      date: booking.date,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      reason: booking.rejectionReason || 'No specific reason provided.',
+      rejectedBy: booking.rejectedBy || 'Administrator',
+      rejectedAt: booking.rejectedAt || booking.updatedAt,
+    });
+  };
+
+  const closeRejectionModal = () => {
+    setSelectedRejectionDetails(null);
   };
 
   return (
@@ -194,10 +218,56 @@ function MyBookings() {
               booking={booking}
               isOwner={booking.userEmail === user?.email}
               onEdit={handleEditClick}
-              onDelete={handleCancelPending}   // For PENDING bookings, this will cancel (soft delete)
-              onCancel={handleCancel}          // For APPROVED bookings, this will cancel
+              onDelete={handleCancelPending}
+              onCancel={handleCancel}
+              onViewRejection={handleViewRejectionDetails}
             />
           ))}
+        </div>
+      )}
+
+      {/* Rejection Details Modal */}
+      {selectedRejectionDetails && (
+        <div className="rejection-modal-overlay" onClick={closeRejectionModal}>
+          <div className="rejection-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="rejection-modal-header">
+              <h2>❌ Booking Rejection Details</h2>
+              <button className="rejection-modal-close" onClick={closeRejectionModal}>✕</button>
+            </div>
+            <div className="rejection-modal-body">
+              <div className="rejection-detail-item">
+                <label>Resource:</label>
+                <p>{selectedRejectionDetails.resourceName}</p>
+              </div>
+              <div className="rejection-detail-item">
+                <label>Date:</label>
+                <p>{selectedRejectionDetails.date}</p>
+              </div>
+              <div className="rejection-detail-item">
+                <label>Time Slot:</label>
+                <p>{selectedRejectionDetails.startTime} – {selectedRejectionDetails.endTime}</p>
+              </div>
+              <div className="rejection-detail-item">
+                <label>Reason for Rejection:</label>
+                <div className="rejection-reason-box">
+                  {selectedRejectionDetails.reason}
+                </div>
+              </div>
+              <div className="rejection-detail-item">
+                <label>Rejected By:</label>
+                <p>{selectedRejectionDetails.rejectedBy}</p>
+              </div>
+              <div className="rejection-detail-item">
+                <label>Rejected On:</label>
+                <p>{new Date(selectedRejectionDetails.rejectedAt).toLocaleString()}</p>
+              </div>
+            </div>
+            <div className="rejection-modal-footer">
+              <button className="rejection-modal-btn" onClick={closeRejectionModal}>
+                Got it, thanks
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

@@ -78,6 +78,13 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    // NEW: Get all bookings for admin
+    public List<BookingResponseDTO> getAllBookings() {
+        return bookingRepository.findAll().stream()
+                .map(BookingResponseDTO::fromBooking)
+                .collect(Collectors.toList());
+    }
+
     public BookingResponseDTO getBookingById(String id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
@@ -230,7 +237,7 @@ public class BookingService {
         return BookingResponseDTO.fromBooking(rejected);
     }
 
-    // ---------- Private helper methods (unchanged) ----------
+    // ---------- Private helper methods ----------
     private void checkForConflicts(BookingRequestDTO request, String excludedBookingId) {
         List<Booking> existingBookings;
         if (excludedBookingId == null) {

@@ -106,4 +106,12 @@ public class BookingController {
         BookingResponseDTO rejected = bookingService.rejectBooking(id, reason);
         return ResponseEntity.ok(rejected);
     }
+
+    // NEW: Admin only – get all bookings for management
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<BookingResponseDTO>> getAllBookings() {
+        List<BookingResponseDTO> allBookings = bookingService.getAllBookings();
+        return ResponseEntity.ok(allBookings);
+    }
 }

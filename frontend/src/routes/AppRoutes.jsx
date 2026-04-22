@@ -4,21 +4,33 @@ import Login from '../pages/member4/Login';
 import BookingDashboard from '../pages/member2/BookingDashboard';
 import FindResources from '../pages/member2/FindResources';
 import MyBookings from '../pages/member2/MyBookings';
+// Import your admin booking pages (directly from member2 folder)
+import AdminBookingDashboard from '../pages/member2/AdminDashboard';
+import ManageBookings from '../pages/member2/ManageBookings';
 import TicketBaseLayout from '../layouts/member3/TicketBaseLayout';
 import TicketOverview from '../pages/member3/ticketing/TicketOverview';
 import TicketListPage from '../pages/member3/ticketing/TicketListPage';
 import TicketBoardPage from '../pages/member3/ticketing/TicketBoardPage';
 import TicketDetailsPage from '../pages/member3/ticketing/TicketDetailsPage';
 import CreateTicketPage from '../pages/member3/ticketing/CreateTicketPage';
-
 import OAuth2RedirectHandler from '../pages/member4/OAuth2RedirectHandler';
-
 import AdminDashboard from '../pages/member4/AdminDashboard';
 import UserDashboard from '../pages/member4/UserDashboard';
 import TechnicianDashboard from '../pages/member4/TechnicianDashboard';
 import UserManagement from '../pages/member4/UserManagement';
 import AddTechnicianPage from '../pages/member4/AddTechnicianPage';
 import { useAuth } from '../context/AuthContext';
+
+// Role-based redirect component
+function RootRedirect() {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  
+  if (user?.role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
+  if (user?.role === 'TECHNICIAN') return <Navigate to="/tickets" replace />;
+  return <Navigate to="/bookings" replace />;
+}
 
 function DashboardRouter() {
   const { user } = useAuth();
@@ -46,20 +58,21 @@ function TicketBoardRoute() {
 function AppRoutes() {
   return (
     <Routes>
+      {/* Public routes – no layout */}
       <Route path="/login" element={<Login />} />
       <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
+      {/* Root route with role-based redirect */}
       <Route
         path="/"
         element={
           <ProtectedRoute>
-            <div style={{ padding: '2rem', fontSize: '1rem' }}>
-              Welcome to the Smart Campus portal. Use the menu to manage your bookings and notifications.
-            </div>
-            <DashboardRouter />
+            <RootRedirect />
           </ProtectedRoute>
         }
       />
+
+      {/* User Booking Routes */}
       <Route
         path="/bookings"
         element={
@@ -84,6 +97,26 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Admin Booking Routes */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <AdminBookingDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/bookings"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <ManageBookings />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* User Management Routes (Admin only) */}
       <Route
         path="/users"
         element={
@@ -92,7 +125,6 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/users/technicians/new"
         element={
@@ -102,6 +134,7 @@ function AppRoutes() {
         }
       />
 
+      {/* Tickets Routes */}
       <Route
         path="/tickets"
         element={
@@ -117,6 +150,7 @@ function AppRoutes() {
         <Route path=":ticketId" element={<TicketDetailsPage />} />
       </Route>
 
+      {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

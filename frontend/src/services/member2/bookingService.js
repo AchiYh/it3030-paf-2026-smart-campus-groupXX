@@ -48,9 +48,15 @@ const getAllEquipment = async () => {
   return response;
 };
 
-// NEW: Cancel a PENDING booking
+// Cancel a PENDING booking (soft delete – moves to CANCELLED status)
 const cancelPendingBooking = async (bookingId) => {
   const response = await API.patch(`${BASE_URL}/${bookingId}/cancel-pending`);
+  return response;
+};
+
+// NEW: Get all bookings for admin
+const getAllBookings = async () => {
+  const response = await API.get(`${BASE_URL}/all`);
   return response;
 };
 
@@ -65,6 +71,7 @@ const bookingService = {
   rejectBooking,
   getAllEquipment,
   cancelPendingBooking,
+  getAllBookings,   // <-- added
 };
 
 export default bookingService;
