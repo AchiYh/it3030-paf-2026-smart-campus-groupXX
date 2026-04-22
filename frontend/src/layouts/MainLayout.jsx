@@ -27,6 +27,20 @@ function MainLayout({ children }) {
     e.stopPropagation();
     setBookingsOpen(!bookingsOpen);
   };
+  // Don't show layout on login or oauth redirect pages
+  if (location.pathname === '/login' || location.pathname === '/oauth2/redirect') {
+    return <>{children}</>;
+  }
+
+  const navItems = [
+    { label: 'Home', path: '/', icon: '🏠' },
+    { label: 'Tickets', path: '/tickets', icon: '🎫' },
+  ];
+
+  if (user?.role === 'ADMIN') {
+    navItems.push({ label: 'Add Technician', path: '/users/technicians/new', icon: '➕' });
+    navItems.push({ label: 'Users', path: '/users', icon: '👥' });
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>

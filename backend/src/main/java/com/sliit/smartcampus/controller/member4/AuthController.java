@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -39,6 +40,12 @@ public class AuthController {
                 request.email(), request.fullName(), request.provider(), request.providerId()
         );
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, String>> me() {
+        return ResponseEntity.ok(authService.getCurrentUserProfile());
     }
 
     // ── Request Records ─────────────────────────────────────────
