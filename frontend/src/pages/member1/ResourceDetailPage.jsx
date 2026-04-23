@@ -215,42 +215,25 @@ function ResourceDetailPage() {
       </div>
 
       {user?.role === 'ADMIN' && (
-        <div style={{ backgroundColor: 'rgba(30,41,59,0.7)', border: '1px solid rgba(71,85,105,0.8)', borderRadius: '12px', padding: '20px' }}>
-          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#ffffff' }}>Admin Actions</h2>
-          <div style={{ display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              onClick={() => navigate(`/resources/${id}/edit`)}
-              style={{
-                padding: '10px 20px',
-                borderRadius: '8px',
-                backgroundColor: 'rgba(99,102,241,0.2)',
-                border: '1px solid rgba(99,102,241,0.4)',
-                color: '#a5b4fc',
-                cursor: 'pointer',
-                fontSize: '14px',
-              }}
-            >
-              ✏️ Edit Resource
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={actionLoading}
-              style={{
-                padding: '10px 20px',
-                borderRadius: '8px',
-                backgroundColor: 'rgba(239,68,68,0.2)',
-                border: '1px solid rgba(239,68,68,0.4)',
-                color: '#f87171',
-                cursor: 'pointer',
-                fontSize: '14px',
-                opacity: actionLoading ? 0.7 : 1,
-              }}
-            >
-              🗑️ Delete Resource
-            </button>
-          </div>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => navigate('/resources/' + id + '/edit')}
+          >
+            ✏️ Edit Resource
+          </button>
+          <button
+            className="btn btn-danger"
+            onClick={() => {
+              if (window.confirm('Are you sure you want to delete this resource?')) {
+                deleteResource(id)
+                  .then(() => navigate('/resources'))
+                  .catch(() => setError('Failed to delete resource'));
+              }
+            }}
+          >
+            🗑️ Delete Resource
+          </button>
         </div>
       )}
     </div>

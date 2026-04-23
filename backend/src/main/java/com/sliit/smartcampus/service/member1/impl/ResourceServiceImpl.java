@@ -52,6 +52,21 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public ResourceResponseDTO updateResource(
+            String id, ResourceRequestDTO dto) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Resource not found with id: " + id));
+        resource.setName(dto.getName());
+        resource.setType(dto.getType());
+        resource.setCapacity(dto.getCapacity());
+        resource.setLocation(dto.getLocation());
+        resource.setAvailabilityWindows(dto.getAvailabilityWindows());
+        resource.setDescription(dto.getDescription());
+        return mapToDTO(resourceRepository.save(resource));
+    }
+
+    @Override
     public List<ResourceResponseDTO> searchResources(ResourceType type, String location, Integer minCapacity,
             ResourceStatus status) {
         List<Resource> resources = location != null && !location.isBlank()

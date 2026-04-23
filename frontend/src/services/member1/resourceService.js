@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const RESOURCE_BASE_URL = 'http://localhost:8081/api/resources';
+const BASE_URL = RESOURCE_BASE_URL;
 
 const resourceAPI = axios.create({
   baseURL: RESOURCE_BASE_URL,
@@ -27,6 +28,13 @@ export const deleteResource = (id) =>
 
 export const createResource = (data) =>
   resourceAPI.post('', data, getAuthConfig());
+
+export const updateResource = (id, data) => {
+  const token = localStorage.getItem('token');
+  return axios.put(`${BASE_URL}/${id}`, data, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
 
 export const searchResources = (params = {}) => {
   const queryParams = {};

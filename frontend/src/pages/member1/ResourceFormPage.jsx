@@ -1,13 +1,26 @@
-import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 
 import ResourceForm from '../../components/member1/ResourceForm';
 import { useAuth } from '../../context/AuthContext';
-import { createResource } from '../../services/member1/resourceService';
+import { createResource, getResourceById, updateResource } from '../../services/member1/resourceService';
+
+const loadingSpinnerStyle = {
+  width: '44px',
+  height: '44px',
+  borderRadius: '9999px',
+  border: '4px solid rgba(165,180,252,0.25)',
+  borderTop: '4px solid #6366f1',
+  animation: 'spin 0.9s linear infinite',
+};
 
 function ResourceFormPage() {
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [initialData, setInitialData] = useState({});
+  const [isFetching, setIsFetching] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -15,20 +28,53 @@ function ResourceFormPage() {
     return <Navigate to="/resources" replace />;
   }
 
+  useEffect(() => {
+    if (!isEditMode) {
+      setInitialData({});
+      return;
+    }
+
+    const fetchResource = async () => {
+      setIsFetching(true);
+      setMessage({ type: '', text: '' });
+      try {
+        const response = await getResourceById(id);
+        setInitialData(response.data || {});
+      } catch (error) {
+        setMessage({
+          type: 'error',
+          text: error.response?.data?.message || 'Failed to load resource. Please try again.',
+        });
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    fetchResource();
+  }, [id, isEditMode]);
+
   const handleSubmit = async (data) => {
     setIsLoading(true);
     setMessage({ type: '', text: '' });
 
     try {
-      await createResource(data);
-      setMessage({ type: 'success', text: 'Resource created successfully.' });
-      setTimeout(() => {
-        navigate('/resources');
-      }, 1500);
+      if (isEditMode) {
+        await updateResource(id, data);
+        setMessage({ type: 'success', text: 'Resource updated successfully.' });
+        setTimeout(() => {
+          navigate('/resources/' + id);
+        }, 1500);
+      } else {
+        await createResource(data);
+        setMessage({ type: 'success', text: 'Resource created successfully.' });
+        setTimeout(() => {
+          navigate('/resources');
+        }, 1500);
+      }
     } catch (error) {
       setMessage({
         type: 'error',
-        text: error.response?.data?.message || 'Failed to create resource. Please try again.',
+        text: error.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'create'} resource. Please try again.`,
       });
     } finally {
       setIsLoading(false);
@@ -62,10 +108,24 @@ function ResourceFormPage() {
             }}
           >
             <span aria-hidden="true" className="text-2xl">🏢</span>
-            Add New Resource
+            {isEditMode ? '✏️ Edit Resource' : 'Add New Resource'}
           </h1>
      
         </div>
+
+        {isEditMode && isFetching && (
+          <div
+            style={{
+              maxWidth: '680px',
+              margin: '0 auto 16px auto',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <div style={loadingSpinnerStyle} />
+          </div>
+        )}
 
         {message.text && (
           <div
@@ -98,10 +158,10 @@ function ResourceFormPage() {
         )}
 
         <ResourceForm
-          initialData={{}}
+          initialData={initialData}
           onSubmit={handleSubmit}
           isLoading={isLoading}
-          submitLabel="Create Resource"
+          submitLabel={isEditMode ? 'Update Resource' : 'Create Resource'}
         />
       </div>
     </div>

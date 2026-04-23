@@ -15,6 +15,8 @@ public interface ResourceService {
 
     ResourceResponseDTO createResource(ResourceRequestDTO dto);
 
+    ResourceResponseDTO updateResource(String id, ResourceRequestDTO dto);
+
     List<ResourceResponseDTO> searchResources(ResourceType type, String location, Integer minCapacity, ResourceStatus status);
 }
 

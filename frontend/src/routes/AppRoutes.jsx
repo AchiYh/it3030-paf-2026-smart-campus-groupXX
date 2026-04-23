@@ -68,18 +68,26 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/resources/:id"
-        element={
-          <ProtectedRoute>
-            <ResourceDetailPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/resources/new"
         element={
           <ProtectedRoute roles={['ADMIN']}>
             <ResourceFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/resources/:id/edit"
+        element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <ResourceFormPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/resources/:id"
+        element={
+          <ProtectedRoute>
+            <ResourceDetailPage />
           </ProtectedRoute>
         }
       />

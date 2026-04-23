@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const typeOptions = [
@@ -23,6 +23,19 @@ function ResourceForm({ initialData, onSubmit, isLoading, submitLabel }) {
   const [errors, setErrors] = useState({});
 
   const resolvedSubmitLabel = useMemo(() => submitLabel || 'Create Resource', [submitLabel]);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        type: initialData.type || '',
+        capacity: initialData.capacity || '',
+        location: initialData.location || '',
+        availabilityWindows: initialData.availabilityWindows || '',
+        description: initialData.description || '',
+      });
+    }
+  }, [initialData]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
