@@ -216,6 +216,17 @@ function ResourceDetailPage() {
         </div>
       </div>
 
+      {user?.role !== 'ADMIN' && (
+        <div style={{ marginTop: '16px', marginBottom: '20px' }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate('/bookings/new?resourceId=' + id)}
+          >
+            📅 Book Now
+          </button>
+        </div>
+      )}
+
       {user?.role === 'ADMIN' && (
         <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
           <button

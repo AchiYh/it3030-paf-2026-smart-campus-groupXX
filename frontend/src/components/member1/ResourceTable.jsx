@@ -71,7 +71,9 @@ function ResourceTable({ resources, loading, error, onStatusChange }) {
                 <th className="px-6 py-4">Location</th>
                 <th className="px-6 py-4">Capacity</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Actions</th>
+                {user?.role !== 'TECHNICIAN' && (
+                  <th className="px-6 py-4">Actions</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/70">
@@ -92,64 +94,83 @@ function ResourceTable({ resources, loading, error, onStatusChange }) {
                   </td>
                   <td className="px-6 py-4">
                     {resource.status === 'ACTIVE' ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-green-500/30 bg-green-500/20 px-2 py-1 text-xs font-medium text-green-400">
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '3px 10px',
+                        borderRadius: '999px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                        color: '#4ade80',
+                        border: '1px solid rgba(34, 197, 94, 0.3)'
+                      }}>
                         ● Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/20 px-2 py-1 text-xs font-medium text-red-400">
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '3px 10px',
+                        borderRadius: '999px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                        color: '#f87171',
+                        border: '1px solid rgba(239, 68, 68, 0.3)'
+                      }}>
                         ● Out of Service
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/resources/${resource._id || resource.id}`)}
-                        className="btn btn-secondary px-3 py-2 text-xs"
-                      >
-                        View Details
-                      </button>
-                      {user?.role === 'ADMIN' && (
-                        <>
-                          <button
-                            type="button"
-                            className="btn btn-secondary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate('/resources/' + (resource.id) + '/edit');
-                            }}
-                          >
-                            ✏️ Edit
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-secondary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleStatus(resource._id || resource.id, resource.status);
-                            }}
-                          >
-                            {resource.status === 'ACTIVE' ? '⏸ Set Unavailable' : '▶ Set Available'}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-danger"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteModal({
-                                isOpen: true,
-                                resourceId: resource._id || resource.id,
-                                resourceName: resource.name
-                              });
-                            }}
-                          >
-                            🗑️ Delete
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
+                  {user?.role !== 'TECHNICIAN' && (
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-4">
+                        {user?.role === 'ADMIN' ? (
+                          <>
+                            <button
+                              type="button"
+                              className="btn btn-secondary px-3 py-2 min-h-[38px]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate('/resources/' + (resource.id) + '/edit');
+                              }}
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-secondary px-3 py-2 min-h-[38px]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleStatus(resource._id || resource.id, resource.status);
+                              }}
+                            >
+                              {resource.status === 'ACTIVE' ? '⏸ Set Unavailable' : '▶ Set Available'}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-danger px-3 py-2 min-h-[38px]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteModal({
+                                  isOpen: true,
+                                  resourceId: resource._id || resource.id,
+                                  resourceName: resource.name
+                                });
+                              }}
+                            >
+                              🗑️ Delete
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-xs text-slate-500">No actions</span>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
