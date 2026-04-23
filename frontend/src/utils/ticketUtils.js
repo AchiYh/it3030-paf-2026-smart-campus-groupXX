@@ -1,49 +1,78 @@
+const KEYWORDS = {
+  critical: ['fire', 'danger', 'unauthorized entry', 'intruder', 'intrusion', 'security breach'],
+  plumbingHigh: ['flood', 'flooding', 'water leak', 'leak', 'burst pipe', 'overflow'],
+  electricalHigh: ['power', 'voltage', 'short circuit', 'spark'],
+  networkMedium: ['wifi', 'wi-fi', 'internet', 'network', 'slow', 'latency', 'connection'],
+  cleaningLow: ['dirty', 'dust', 'cleaning', 'trash', 'garbage'],
+};
+
+function normalize(value) {
+  return String(value || '').toLowerCase().trim();
+}
+
+function hasAny(text, keywords) {
+  return keywords.some((keyword) => text.includes(keyword));
+}
+
 /**
- * Suggests a priority level based on ticket description and category
- * Uses keyword analysis to recommend appropriate priority
- * 
- * Rules:
- * 1. IF description contains "fire" OR "danger" → CRITICAL
- * 2. ELSE IF category = "Electrical" OR description contains "power" → HIGH
- * 3. ELSE IF description contains "equipment" → MEDIUM
- * 4. ELSE → LOW
- * 
- * @param {string} description - Ticket description
- * @param {string} category - Ticket category
- * @returns {Object} { priority: string, reason: string }
+ * Suggests ticket priority by combining category and description signals.
+ *
+ * Example mappings:
+ * - ELECTRICAL + "Fire near switch" => CRITICAL
+ * - NETWORK + "WiFi slow" => MEDIUM
+ * - PLUMBING + "Water leak flooding" => HIGH
+ * - CLEANING + "Room dirty" => LOW
+ * - SECURITY + "Unauthorized entry" => CRITICAL
  */
 export function suggestPriority(description = '', category = '') {
-  const desc = (description || '').toLowerCase().trim();
-  const cat = (category || '').toLowerCase().trim();
+  const desc = normalize(description);
+  const cat = normalize(category);
 
-  // Rule 1: Check for critical keywords
-  if (desc.includes('fire') || desc.includes('danger')) {
+  if (hasAny(desc, KEYWORDS.critical)) {
     return {
       priority: 'CRITICAL',
-      reason: 'Critical incident detected (fire/danger keywords)',
+      reason: 'Critical risk detected from description keywords',
     };
   }
 
-  // Rule 2: Check for electrical/power keywords
-  if (cat.includes('electrical') || desc.includes('power')) {
+  if (cat === 'security') {
+    return {
+      priority: 'CRITICAL',
+      reason: 'Security-related issues are prioritized as critical',
+    };
+  }
+
+  if (cat === 'plumbing' && hasAny(desc, KEYWORDS.plumbingHigh)) {
     return {
       priority: 'HIGH',
-      reason: 'Electrical/power-related issue detected',
+      reason: 'Plumbing issue with leak/flood risk detected',
     };
   }
 
-  // Rule 3: Check for equipment keywords
-  if (desc.includes('equipment')) {
+  if (cat === 'electrical' || hasAny(desc, KEYWORDS.electricalHigh)) {
+    return {
+      priority: 'HIGH',
+      reason: 'Electrical or power-related issue detected',
+    };
+  }
+
+  if (cat === 'network' || hasAny(desc, KEYWORDS.networkMedium)) {
     return {
       priority: 'MEDIUM',
-      reason: 'Equipment issue detected',
+      reason: 'Network/connectivity performance issue detected',
     };
   }
 
-  // Rule 4: Default to LOW
+  if (cat === 'cleaning' || hasAny(desc, KEYWORDS.cleaningLow)) {
+    return {
+      priority: 'LOW',
+      reason: 'Cleaning/housekeeping issue detected',
+    };
+  }
+
   return {
     priority: 'LOW',
-    reason: 'No urgent keywords detected',
+    reason: 'No urgent risk keywords detected',
   };
 }
 
