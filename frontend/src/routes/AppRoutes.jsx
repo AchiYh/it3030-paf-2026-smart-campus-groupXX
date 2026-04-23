@@ -21,17 +21,7 @@ import UserManagement from '../pages/member4/UserManagement';
 import AddTechnicianPage from '../pages/member4/AddTechnicianPage';
 import { useAuth } from '../context/AuthContext';
 
-// Role-based redirect component
-function RootRedirect() {
-  const { user, isAuthenticated } = useAuth();
-  
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  
-  if (user?.role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
-  if (user?.role === 'TECHNICIAN') return <Navigate to="/tickets" replace />;
-  return <Navigate to="/bookings" replace />;
-}
-
+// DashboardRouter - Shows role-specific dashboard (original behavior)
 function DashboardRouter() {
   const { user } = useAuth();
   if (user?.role === 'ADMIN') return <AdminDashboard />;
@@ -62,12 +52,12 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
 
-      {/* Root route with role-based redirect */}
+      {/* Root route - Shows role-specific dashboard (original behavior) */}
       <Route
         path="/"
         element={
           <ProtectedRoute>
-            <RootRedirect />
+            <DashboardRouter />
           </ProtectedRoute>
         }
       />

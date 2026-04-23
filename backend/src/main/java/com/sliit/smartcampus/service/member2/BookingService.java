@@ -172,6 +172,7 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
+        booking.setUpdatedAt(LocalDateTime.now());  // ← ADDED: Update timestamp
         Booking cancelled = bookingRepository.save(booking);
 
         // Increment equipment stock back if equipment – TEMPORARILY DISABLED
@@ -211,6 +212,7 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.APPROVED);
+        booking.setUpdatedAt(LocalDateTime.now());  // ← ADDED: Update timestamp when approved
         Booking approved = bookingRepository.save(booking);
         // For equipment, stock already decreased at creation – but creation stock change is disabled, so no change
         return BookingResponseDTO.fromBooking(approved);
@@ -227,6 +229,7 @@ public class BookingService {
 
         booking.setStatus(BookingStatus.REJECTED);
         booking.setRejectReason(reason);
+        booking.setUpdatedAt(LocalDateTime.now());  // ← ADDED: Update timestamp when rejected
         Booking rejected = bookingRepository.save(booking);
 
         // Increment equipment stock back if equipment – TEMPORARILY DISABLED

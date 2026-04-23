@@ -65,9 +65,9 @@ function BookingCard({ booking, isOwner, onEdit, onCancel, onDelete }) {
               <span>{booking.purpose}</span>
             </div>
           )}
-          {booking.rejectionReason && (
+          {booking.rejectReason && (
             <div className="bc-rejection">
-              ❌ Reason: {booking.rejectionReason}
+              ❌ Reason: {booking.rejectReason}
             </div>
           )}
         </div>

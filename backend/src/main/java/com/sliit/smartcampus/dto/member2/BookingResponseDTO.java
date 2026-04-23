@@ -26,7 +26,9 @@ public record BookingResponseDTO(
         BookingStatus status,
         String rejectReason,
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime updatedAt          // ← NEW
+        LocalDateTime createdAt,
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime updatedAt
 ) {
     public static BookingResponseDTO fromBooking(Booking booking) {
         return new BookingResponseDTO(
@@ -43,7 +45,8 @@ public record BookingResponseDTO(
                 booking.getQuantity(),
                 booking.getStatus(),
                 booking.getRejectReason(),
-                booking.getUpdatedAt()    // ← NEW
+                booking.getCreatedAt(),
+                booking.getUpdatedAt()
         );
     }
 }

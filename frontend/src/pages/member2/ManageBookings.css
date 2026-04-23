@@ -396,6 +396,12 @@
 .modal-field textarea::placeholder {
   color: #94a3b8;
 }
+.modal-field small {
+  color: #64748b;
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+  display: block;
+}
 
 .conflict-warning {
   background: #fef3c7;
@@ -465,7 +471,83 @@
   background: #e2e8f0;
 }
 
-/* Responsive Design */
+/* ============================================ */
+/* REJECTION REASON STYLES */
+/* ============================================ */
+
+/* Rejection Reason Column */
+.rejection-reason-cell {
+  max-width: 350px;
+  min-width: 250px;
+}
+
+/* Rejection Reason Display Container */
+.rejection-reason-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Rejection Icon */
+.rejection-icon {
+  font-size: 0.8rem;
+}
+
+/* Rejection Reason Text */
+.rejection-reason-text {
+  color: #991b1b;
+  font-size: 0.8rem;
+  word-break: break-word;
+}
+
+/* No Reason Placeholder */
+.no-reason {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Tooltip style for full reason on hover */
+.rejection-reason-cell[title] {
+  cursor: help;
+}
+
+/* View Full Reason Button */
+.view-full-reason-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: white;
+  border: none;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+
+.view-full-reason-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+}
+
+/* Modal Rejection Reason Display */
+.rejection-reason-box {
+  background: #fef2f2;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: #991b1b;
+  font-weight: 500;
+  border-left: 3px solid #ef4444;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+/* ============================================ */
+/* RESPONSIVE DESIGN */
+/* ============================================ */
+
 @media (max-width: 768px) {
   .manage-container {
     padding: 1rem;
@@ -500,9 +582,20 @@
   .modal-body {
     padding: 1rem;
   }
+  .rejection-reason-cell {
+    max-width: 200px;
+    min-width: 150px;
+  }
+  .view-full-reason-btn {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.6rem;
+  }
 }
 
-/* Scrollbar Styling */
+/* ============================================ */
+/* SCROLLBAR STYLING */
+/* ============================================ */
+
 .modal-content::-webkit-scrollbar {
   width: 8px;
 }

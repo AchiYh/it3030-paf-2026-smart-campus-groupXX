@@ -39,7 +39,9 @@ const approveBooking = async (bookingId) => {
 };
 
 const rejectBooking = async (bookingId, reason) => {
+  console.log('📤 REJECTING BOOKING:', { bookingId, reason });
   const response = await API.patch(`${BASE_URL}/${bookingId}/reject`, { reason });
+  console.log('📥 REJECTION RESPONSE:', response.data);
   return response;
 };
 
@@ -48,15 +50,14 @@ const getAllEquipment = async () => {
   return response;
 };
 
-// Cancel a PENDING booking (soft delete – moves to CANCELLED status)
 const cancelPendingBooking = async (bookingId) => {
   const response = await API.patch(`${BASE_URL}/${bookingId}/cancel-pending`);
   return response;
 };
 
-// NEW: Get all bookings for admin
 const getAllBookings = async () => {
   const response = await API.get(`${BASE_URL}/all`);
+  console.log('📋 GET ALL BOOKINGS RESPONSE:', response.data);
   return response;
 };
 
@@ -71,7 +72,7 @@ const bookingService = {
   rejectBooking,
   getAllEquipment,
   cancelPendingBooking,
-  getAllBookings,   // <-- added
+  getAllBookings,
 };
 
 export default bookingService;
