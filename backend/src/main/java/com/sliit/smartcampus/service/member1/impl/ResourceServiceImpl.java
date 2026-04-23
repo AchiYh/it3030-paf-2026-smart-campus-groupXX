@@ -71,7 +71,12 @@ public class ResourceServiceImpl implements ResourceService {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Resource not found with id: " + id));
-        resource.setStatus(ResourceStatus.valueOf(status));
+        try {
+            ResourceStatus statusEnum = ResourceStatus.valueOf(status.toUpperCase());
+            resource.setStatus(statusEnum);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status value: " + status);
+        }
         return mapToDTO(resourceRepository.save(resource));
     }
 

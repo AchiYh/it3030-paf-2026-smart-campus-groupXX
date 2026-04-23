@@ -31,6 +31,7 @@ function ResourceTable({ resources, loading, error, onStatusChange }) {
       }
     } catch (err) {
       console.error('Status update failed', err);
+      alert('Status update failed. Please try again.');
     }
   };
 
@@ -111,6 +112,16 @@ function ResourceTable({ resources, loading, error, onStatusChange }) {
                       </button>
                       {user?.role === 'ADMIN' && (
                         <>
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate('/resources/' + (resource.id) + '/edit');
+                            }}
+                          >
+                            ✏️ Edit
+                          </button>
                           <button
                             type="button"
                             className="btn btn-secondary"

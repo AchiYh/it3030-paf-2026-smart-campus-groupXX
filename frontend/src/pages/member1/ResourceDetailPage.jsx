@@ -72,21 +72,6 @@ function ResourceDetailPage() {
     };
   }, [id]);
 
-  const handleDelete = async () => {
-    const confirmed = window.confirm('Delete this resource?');
-    if (!confirmed) return;
-
-    setActionLoading(true);
-    try {
-      await deleteResource(id);
-      navigate('/resources');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete resource.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   const handleToggleStatus = async () => {
     const newStatus = currentStatus === 'ACTIVE' ? 'OUT_OF_SERVICE' : 'ACTIVE';
     setActionLoading(true);
