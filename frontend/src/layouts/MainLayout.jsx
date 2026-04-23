@@ -8,23 +8,45 @@ function MainLayout({ children }) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Don't show layout on login or oauth redirect pages
+  // Hide layout on login pages
   if (location.pathname === '/login' || location.pathname === '/oauth2/redirect') {
     return <>{children}</>;
   }
 
-  const navItems = [
-    { label: 'Home', path: '/', icon: '🏠' },
-    { label: 'Tickets', path: '/tickets', icon: '🎫' },
-  ];
+  const isActive = (path) => location.pathname === path;
+  const isActivePrefix = (prefix) => location.pathname.startsWith(prefix);
 
-  if (user?.role === 'ADMIN') {
-    navItems.push({ label: 'Add Technician', path: '/users/technicians/new', icon: '➕' });
-    navItems.push({ label: 'Users', path: '/users', icon: '👥' });
-  }
+  // Get navigation items based on user role
+  const getNavItems = () => {
+    if (user?.role === 'ADMIN') {
+      return [
+        { label: 'Home', path: '/', icon: '🏠' },
+        { label: 'Admin Dashboard', path: '/admin/dashboard', icon: '📊' },
+        { label: 'Manage Bookings', path: '/admin/bookings', icon: '📋' },
+        { label: 'Tickets', path: '/tickets', icon: '🎫' },
+        { label: 'Users', path: '/users', icon: '👥' },
+        { label: 'Add Technician', path: '/users/technicians/new', icon: '➕' },
+      ];
+    } else if (user?.role === 'TECHNICIAN') {
+      return [
+        { label: 'Home', path: '/', icon: '🏠' },
+        { label: 'Tickets', path: '/tickets', icon: '🎫' },
+      ];
+    } else {
+      // USER role - Booking links are now directly in main menu (no dropdown)
+      return [
+        { label: 'Home', path: '/', icon: '🏠' },
+        { label: 'Booking Dashboard', path: '/bookings', icon: '📊' },
+        { label: 'Tickets', path: '/tickets', icon: '🎫' },
+      ];
+    }
+  };
+
+  const navItems = getNavItems();
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
+
       {/* Sidebar */}
       <aside style={{
         width: sidebarOpen ? '260px' : '0px',
@@ -45,21 +67,41 @@ function MainLayout({ children }) {
 
         <nav style={{ padding: '0 0.75rem' }}>
           <p style={{
-            fontSize: '0.625rem', fontWeight: 600, textTransform: 'uppercase',
-            letterSpacing: '0.1em', color: 'var(--text-muted)',
-            padding: '0.75rem 0.75rem 0.5rem', whiteSpace: 'nowrap',
+            fontSize: '0.625rem',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            color: 'var(--text-muted)',
+            padding: '0.75rem 0.75rem 0.5rem',
+            whiteSpace: 'nowrap',
           }}>
             Main Menu
           </p>
+
+          {/* Regular Nav Items */}
           {navItems.map((item) => (
-            <Link key={item.path} to={item.path} style={{
-              display: 'flex', alignItems: 'center', gap: '0.75rem',
-              padding: '0.625rem 0.75rem', borderRadius: '8px',
-              color: location.pathname === item.path ? 'var(--primary-light)' : 'var(--text-secondary)',
-              background: location.pathname === item.path ? 'rgba(99,102,241,0.1)' : 'transparent',
-              marginBottom: '0.25rem', whiteSpace: 'nowrap', fontSize: '0.875rem',
-              transition: 'var(--transition)',
-            }}>
+            <Link
+              key={item.path}
+              to={item.path}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.625rem 0.75rem',
+                borderRadius: '8px',
+                color: isActive(item.path) || (item.path === '/bookings' && isActivePrefix('/bookings')) 
+                  ? 'var(--primary-light)' 
+                  : 'var(--text-secondary)',
+                background: isActive(item.path) || (item.path === '/bookings' && isActivePrefix('/bookings'))
+                  ? 'rgba(99,102,241,0.1)' 
+                  : 'transparent',
+                marginBottom: '0.25rem',
+                whiteSpace: 'nowrap',
+                fontSize: '0.875rem',
+                transition: 'var(--transition)',
+                textDecoration: 'none'
+              }}
+            >
               <span>{item.icon}</span> {item.label}
             </Link>
           ))}
@@ -68,16 +110,22 @@ function MainLayout({ children }) {
 
       {/* Main Content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+
         {/* Top Bar */}
         <header style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           padding: '0.875rem 1.5rem',
           background: 'var(--bg-secondary)',
           borderBottom: '1px solid var(--border-color)',
         }}>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{
-            background: 'none', border: 'none', color: 'var(--text-secondary)',
-            fontSize: '1.25rem', cursor: 'pointer',
+            background: 'none',
+            border: 'none',
+            color: 'var(--text-secondary)',
+            fontSize: '1.25rem',
+            cursor: 'pointer',
           }}>
             ☰
           </button>
@@ -92,7 +140,11 @@ function MainLayout({ children }) {
                 <span className="badge badge-info" style={{ fontSize: '0.625rem' }}>
                   {user?.role}
                 </span>
-                <button onClick={logout} className="btn btn-secondary" style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem' }}>
+                <button
+                  onClick={logout}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.375rem 0.75rem', fontSize: '0.75rem' }}
+                >
                   Logout
                 </button>
               </div>

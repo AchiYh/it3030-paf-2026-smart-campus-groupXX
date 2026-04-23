@@ -1,0 +1,78 @@
+import API from '../../services/api';
+
+const BASE_URL = '/bookings';
+const EQUIPMENT_URL = '/equipment';
+
+const createBooking = async (bookingData) => {
+  const response = await API.post(BASE_URL, bookingData);
+  return response;
+};
+
+const getMyBookings = async (email) => {
+  const response = await API.get(`${BASE_URL}/my/${encodeURIComponent(email)}`);
+  return response;
+};
+
+const getBookingById = async (id) => {
+  const response = await API.get(`${BASE_URL}/${id}`);
+  return response;
+};
+
+const updateBooking = async (bookingId, bookingData) => {
+  const response = await API.put(`${BASE_URL}/${bookingId}`, bookingData);
+  return response;
+};
+
+const deleteBooking = async (bookingId) => {
+  const response = await API.delete(`${BASE_URL}/${bookingId}`);
+  return response;
+};
+
+const cancelBooking = async (bookingId) => {
+  const response = await API.delete(`${BASE_URL}/${bookingId}/cancel`);
+  return response;
+};
+
+const approveBooking = async (bookingId) => {
+  const response = await API.patch(`${BASE_URL}/${bookingId}/approve`);
+  return response;
+};
+
+const rejectBooking = async (bookingId, reason) => {
+  console.log('📤 REJECTING BOOKING:', { bookingId, reason });
+  const response = await API.patch(`${BASE_URL}/${bookingId}/reject`, { reason });
+  console.log('📥 REJECTION RESPONSE:', response.data);
+  return response;
+};
+
+const getAllEquipment = async () => {
+  const response = await API.get(EQUIPMENT_URL);
+  return response;
+};
+
+const cancelPendingBooking = async (bookingId) => {
+  const response = await API.patch(`${BASE_URL}/${bookingId}/cancel-pending`);
+  return response;
+};
+
+const getAllBookings = async () => {
+  const response = await API.get(`${BASE_URL}/all`);
+  console.log('📋 GET ALL BOOKINGS RESPONSE:', response.data);
+  return response;
+};
+
+const bookingService = {
+  createBooking,
+  getMyBookings,
+  getBookingById,
+  updateBooking,
+  deleteBooking,
+  cancelBooking,
+  approveBooking,
+  rejectBooking,
+  getAllEquipment,
+  cancelPendingBooking,
+  getAllBookings,
+};
+
+export default bookingService;
