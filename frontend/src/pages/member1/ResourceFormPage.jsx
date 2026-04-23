@@ -36,10 +36,31 @@ function ResourceFormPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 px-4 py-8 text-white sm:px-6 lg:px-8">
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+        padding: '32px 16px',
+      }}
+    >
       <div className="mx-auto w-full max-w-4xl">
-        <div className="mb-6 rounded-xl border border-indigo-500/20 bg-slate-800/70 p-6 shadow-xl backdrop-blur-sm">
-          <h1 className="inline-flex items-center gap-2 text-3xl font-bold tracking-tight text-white">
+        <div
+          style={{
+            maxWidth: '680px',
+            margin: '0 auto 24px auto',
+          }}
+        >
+          <h1
+            style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginBottom: '4px',
+            }}
+          >
             <span aria-hidden="true" className="text-2xl">🏢</span>
             Add New Resource
           </h1>
@@ -48,11 +69,29 @@ function ResourceFormPage() {
 
         {message.text && (
           <div
-            className={`mb-4 rounded-xl border p-4 text-sm ${
+            style={
               message.type === 'success'
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
-                : 'border-red-500/40 bg-red-500/10 text-red-300'
-            }`}
+                ? {
+                    padding: '12px 16px',
+                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                    border: '1px solid rgba(34, 197, 94, 0.3)',
+                    borderRadius: '8px',
+                    color: '#4ade80',
+                    fontSize: '14px',
+                    maxWidth: '680px',
+                    margin: '0 auto 16px auto',
+                  }
+                : {
+                    padding: '12px 16px',
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '8px',
+                    color: '#f87171',
+                    fontSize: '14px',
+                    maxWidth: '680px',
+                    margin: '0 auto 16px auto',
+                  }
+            }
           >
             {message.text}
           </div>
