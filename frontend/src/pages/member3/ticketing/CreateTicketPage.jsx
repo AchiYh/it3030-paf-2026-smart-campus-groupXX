@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import ticketService from '../../../services/member3/ticketService';
+import { suggestPriority } from '../../../utils/ticketUtils';
 
 const MAX_IMAGES = 3;
 
@@ -35,6 +36,7 @@ function CreateTicketPage() {
   const [apiError, setApiError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [suggestedPriority, setSuggestedPriority] = useState(null);
 
   if (isAdmin) {
     return <Navigate to="/tickets/list" replace />;
@@ -48,6 +50,10 @@ function CreateTicketPage() {
 
   const imageCountLabel = useMemo(() => `${images.length}/${MAX_IMAGES} images selected`, [images.length]);
   const dueDatePreview = useMemo(() => calculateDueDatePreview(formData.priority), [formData.priority]);
+  const prioritySuggestion = useMemo(
+    () => suggestPriority(formData.description, formData.category),
+    [formData.description, formData.category]
+  );
 
   const validateForm = () => {
     const nextErrors = {};
@@ -267,6 +273,52 @@ function CreateTicketPage() {
             <p style={{ color: 'var(--text-muted)', marginTop: '0.35rem', fontSize: '0.8rem' }}>
               Due date will be auto-set to: {dueDatePreview}
             </p>
+
+            {prioritySuggestion && prioritySuggestion.priority !== formData.priority && (
+              <div style={{
+                marginTop: '0.75rem',
+                padding: '0.75rem 0.85rem',
+                borderRadius: '8px',
+                background: 'rgba(59,130,246,0.12)',
+                border: '1px solid rgba(59,130,246,0.3)',
+                fontSize: '0.85rem',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '0.75rem' }}>
+                  <div>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '0.3rem' }}>
+                      💡 <strong>Suggested:</strong> {prioritySuggestion.priority}
+                    </p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: 0 }}>
+                      {prioritySuggestion.reason}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, priority: prioritySuggestion.priority }))}
+                    style={{
+                      padding: '0.4rem 0.8rem',
+                      borderRadius: '6px',
+                      background: 'rgba(59,130,246,0.2)',
+                      border: '1px solid rgba(59,130,246,0.4)',
+                      color: '#93c5fd',
+                      fontSize: '0.75rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.background = 'rgba(59,130,246,0.3)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.background = 'rgba(59,130,246,0.2)';
+                    }}
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

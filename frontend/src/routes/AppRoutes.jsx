@@ -33,7 +33,7 @@ function TicketOverviewRoute() {
 
 function TicketCreateRoute() {
   const { user } = useAuth();
-  if (user?.role === 'USER' || user?.role === 'TECHNICIAN') {
+  if (user?.role === 'TECHNICIAN') {
     return <Navigate to="/tickets/list" replace />;
   }
   return <CreateTicketPage />;

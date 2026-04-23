@@ -46,6 +46,57 @@ function formatAssignee(ticket) {
   return ticket?.assignedTo || 'Unassigned';
 }
 
+function normalizeText(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function categoryKeywords(category) {
+  const normalized = normalizeText(category);
+  if (!normalized) return [];
+
+  const aliasMap = {
+    electrical: ['electrical', 'electric', 'power', 'wiring', 'voltage'],
+    plumbing: ['plumbing', 'pipe', 'water', 'leak', 'drain'],
+    networking: ['networking', 'network', 'internet', 'wifi', 'lan'],
+    hardware: ['hardware', 'computer', 'device', 'printer', 'equipment'],
+    software: ['software', 'application', 'system', 'login', 'bug'],
+    facilities: ['facilities', 'building', 'classroom', 'door', 'ac', 'air conditioning'],
+  };
+
+  const words = normalized.split(/[^a-z0-9]+/).filter(Boolean);
+  const keywordSet = new Set(words);
+
+  Object.entries(aliasMap).forEach(([key, aliases]) => {
+    if (normalized.includes(key) || aliases.some((alias) => normalized.includes(alias))) {
+      aliases.forEach((alias) => keywordSet.add(alias));
+      keywordSet.add(key);
+    }
+  });
+
+  return Array.from(keywordSet);
+}
+
+function getTechnicianScore(technician, category) {
+  const specialization = normalizeText(technician?.specialization || '');
+  const categoryText = normalizeText(category || '');
+  if (!specialization || !categoryText) return 0;
+
+  if (specialization === categoryText) return 100;
+  if (categoryText.includes(specialization) || specialization.includes(categoryText)) return 85;
+
+  const keywords = categoryKeywords(categoryText);
+  if (!keywords.length) return 0;
+
+  let score = 0;
+  keywords.forEach((keyword) => {
+    if (specialization.includes(keyword) || keyword.includes(specialization)) {
+      score += 20;
+    }
+  });
+
+  return Math.min(score, 80);
+}
+
 function TicketDetailsPage() {
   const { ticketId } = useParams();
   const navigate = useNavigate();
@@ -299,6 +350,33 @@ function TicketDetailsPage() {
   const showClose = canModerate && ticket?.status === 'RESOLVED';
   const showReject = isAdmin && ticket && ['OPEN', 'IN_PROGRESS', 'OVERDUE', 'RESOLVED'].includes(ticket.status);
 
+  const rankedTechnicians = useMemo(() => {
+    const targetCategory = ticket?.category || '';
+
+    return technicians
+      .map((tech) => {
+        const isCurrentAssignee = tech.id === ticket?.assignedTo;
+        const isBusy = busyTechnicianIds.has(tech.id) && !isCurrentAssignee;
+        const score = getTechnicianScore(tech, targetCategory);
+        return { ...tech, isBusy, score };
+      })
+      .sort((a, b) => {
+        if (a.isBusy !== b.isBusy) return a.isBusy ? 1 : -1;
+        if (a.score !== b.score) return b.score - a.score;
+        return String(a.fullName || '').localeCompare(String(b.fullName || ''));
+      });
+  }, [technicians, busyTechnicianIds, ticket?.assignedTo, ticket?.category]);
+
+  const suggestedTechnicians = useMemo(
+    () => rankedTechnicians.filter((tech) => !tech.isBusy && tech.score >= 20),
+    [rankedTechnicians]
+  );
+
+  const otherTechnicians = useMemo(() => {
+    const suggestedIds = new Set(suggestedTechnicians.map((tech) => tech.id));
+    return rankedTechnicians.filter((tech) => !suggestedIds.has(tech.id));
+  }, [rankedTechnicians, suggestedTechnicians]);
+
   return (
     <div className="fade-in" style={{ display: 'grid', gap: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -470,21 +548,35 @@ function TicketDetailsPage() {
                       required
                     >
                       <option value="">Select technician</option>
-                      {technicians.map((tech) => {
-                        const isCurrentAssignee = tech.id === ticket?.assignedTo;
-                        const isBusy = busyTechnicianIds.has(tech.id) && !isCurrentAssignee;
-                        const category = tech.specialization || 'General';
-                        return (
-                          <option key={tech.id} value={tech.id} disabled={isBusy}>
-                            {tech.fullName} - {category}{isBusy ? ' (Already Assigned)' : ''}
-                          </option>
-                        );
-                      })}
+                      {suggestedTechnicians.length > 0 && (
+                        <optgroup label="Recommended for this ticket">
+                          {suggestedTechnicians.map((tech) => {
+                            const category = tech.specialization || 'General';
+                            return (
+                              <option key={tech.id} value={tech.id}>
+                                {tech.fullName} - {category} (Recommended)
+                              </option>
+                            );
+                          })}
+                        </optgroup>
+                      )}
+                      {otherTechnicians.length > 0 && (
+                        <optgroup label={suggestedTechnicians.length > 0 ? 'Other technicians' : 'Technicians'}>
+                          {otherTechnicians.map((tech) => {
+                            const category = tech.specialization || 'General';
+                            return (
+                              <option key={tech.id} value={tech.id} disabled={tech.isBusy}>
+                                {tech.fullName} - {category}{tech.isBusy ? ' (Already Assigned)' : ''}
+                              </option>
+                            );
+                          })}
+                        </optgroup>
+                      )}
                     </select>
                     <button className="btn btn-primary" type="submit" disabled={actionLoading}>Assign</button>
                   </div>
                   <p style={{ marginTop: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                    Technicians already assigned to another active ticket are unavailable.
+                    Recommendations are based on ticket category and technician specialization. Busy technicians are unavailable.
                   </p>
                 </form>
               )}

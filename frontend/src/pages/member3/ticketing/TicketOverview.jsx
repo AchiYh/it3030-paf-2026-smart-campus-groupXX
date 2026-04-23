@@ -77,6 +77,13 @@ function formatShortDate(date) {
   return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
 }
 
+function toTitleCase(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function toCsv(rows) {
   if (!rows.length) return '';
   const headers = Object.keys(rows[0]);
@@ -157,11 +164,14 @@ function TicketOverview() {
 
     if (isAdmin) {
       return [
-        { label: 'TOTAL TICKETS', value: total, accent: '#5e86ba', spot: 'rgba(94, 134, 186, 0.14)', subLabel: 'In selected period' },
-        { label: 'OPEN TICKETS', value: open, accent: '#d5ad58', spot: 'rgba(213, 173, 88, 0.14)', subLabel: 'Awaiting action' },
-        { label: 'OVERDUE', value: overdue, accent: '#ef4444', spot: 'rgba(239, 68, 68, 0.16)', subLabel: 'Past deadline' },
-        { label: 'RESOLVED', value: resolved, accent: '#8fb478', spot: 'rgba(143, 180, 120, 0.14)', subLabel: 'Successfully closed' },
-        { label: 'AVG RESOLUTION', value: avgResolutionHours, accent: '#a678af', spot: 'rgba(166, 120, 175, 0.14)', subLabel: 'Created to resolved/closed' },
+        { label: 'Total Tickets', value: total, accent: '#5e86ba', spot: 'rgba(94, 134, 186, 0.14)', subLabel: 'Created in this period' },
+        { label: 'Open Tickets', value: open, accent: '#d5ad58', spot: 'rgba(213, 173, 88, 0.14)', subLabel: 'Waiting to be picked up' },
+        { label: 'In Progress', value: inProgress, accent: '#a678af', spot: 'rgba(166, 120, 175, 0.14)', subLabel: 'Currently being worked on' },
+        { label: 'Overdue', value: overdue, accent: '#ef4444', spot: 'rgba(239, 68, 68, 0.16)', subLabel: 'Past the due date' },
+        { label: 'Resolved', value: resolved, accent: '#8fb478', spot: 'rgba(143, 180, 120, 0.14)', subLabel: 'Fixed and marked resolved' },
+        { label: 'Rejected', value: rejected, accent: '#e17f7f', spot: 'rgba(225, 127, 127, 0.14)', subLabel: 'Requests not accepted' },
+        { label: 'Closed', value: closed, accent: '#7f8999', spot: 'rgba(127, 137, 153, 0.14)', subLabel: 'Finished and closed' },
+        { label: 'Avg Resolution Time', value: avgResolutionHours, accent: '#a678af', spot: 'rgba(166, 120, 175, 0.14)', subLabel: 'Average time from create to finish' },
       ];
     }
 
@@ -216,6 +226,7 @@ function TicketOverview() {
           inProgress: 0,
           overdue: 0,
           resolved: 0,
+          rejected: 0,
           closed: 0,
         };
       }
@@ -225,6 +236,7 @@ function TicketOverview() {
       if (status === STATUS.IN_PROGRESS) acc[key].inProgress += 1;
       if (status === STATUS.OVERDUE) acc[key].overdue += 1;
       if (status === STATUS.RESOLVED) acc[key].resolved += 1;
+      if (status === STATUS.REJECTED) acc[key].rejected += 1;
       if (status === STATUS.CLOSED) acc[key].closed += 1;
       return acc;
     }, {});
@@ -271,7 +283,7 @@ function TicketOverview() {
       <div>
         <h2 style={{ marginBottom: '0.35rem' }}>Ticket Workspace Overview</h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          Status snapshot across all tickets.
+          Quick summary of workload, urgency, and progress across tickets.
         </p>
       </div>
 
@@ -293,7 +305,7 @@ function TicketOverview() {
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <div>
               <h3 style={{ marginBottom: '0.25rem' }}>Analytics & Reports</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Insights and exportable reports across tickets</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Track trends, monitor work, and export reports in one place</p>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button className="btn btn-success" type="button" onClick={handleExportCsv}>
@@ -311,7 +323,9 @@ function TicketOverview() {
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{filteredTickets.length} tickets in range</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+              Showing {filteredTickets.length} tickets for {selectedRangeLabel.toLowerCase()}.
+            </p>
           </div>
         </div>
       )}
@@ -380,14 +394,14 @@ function TicketOverview() {
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1rem' }}>
             <section className="card" style={{ padding: '1rem' }}>
-              <h3 style={{ marginBottom: '0.9rem' }}>Category Distribution</h3>
+              <h3 style={{ marginBottom: '0.9rem' }}>Category Breakdown</h3>
               <div style={{ display: 'grid', gap: '0.6rem' }}>
                 {categoryDistribution.length === 0 && (
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No category data in selected range.</p>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No category data available for this period.</p>
                 )}
                 {categoryDistribution.map((item) => (
                   <div key={item.label} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 110px', alignItems: 'center', gap: '0.6rem' }}>
-                    <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{item.label}</span>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{toTitleCase(item.label)}</span>
                     <div style={{ height: '10px', borderRadius: '999px', background: 'rgba(148,163,184,0.18)', overflow: 'hidden' }}>
                       <div style={{ width: `${item.percent}%`, height: '100%', background: '#5e86ba' }} />
                     </div>
@@ -398,10 +412,10 @@ function TicketOverview() {
             </section>
 
             <section className="card" style={{ padding: '1rem' }}>
-              <h3 style={{ marginBottom: '0.9rem' }}>Priority Distribution</h3>
+              <h3 style={{ marginBottom: '0.9rem' }}>Priority Breakdown</h3>
               <div style={{ display: 'grid', gap: '0.8rem' }}>
                 {priorityDistribution.length === 0 && (
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No priority data in selected range.</p>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No priority data available for this period.</p>
                 )}
                 {priorityDistribution.map((item) => {
                   const tone = item.label === 'CRITICAL'
@@ -427,24 +441,25 @@ function TicketOverview() {
           </div>
 
           <section className="card" style={{ padding: '1rem' }}>
-            <h3 style={{ marginBottom: '0.8rem' }}>Status Trend - {selectedRangeLabel}</h3>
+            <h3 style={{ marginBottom: '0.8rem' }}>Daily Status Trend - {selectedRangeLabel}</h3>
             <div className="table-container">
               <table>
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th>Open</th>
-                    <th>In Progress</th>
-                    <th>Overdue</th>
+                    <th>New</th>
+                    <th>Working</th>
+                    <th>Late</th>
                     <th>Resolved</th>
+                    <th>Rejected</th>
                     <th>Closed</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visibleTrendRows.length === 0 && (
                     <tr>
-                      <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                        No status activity for the selected range.
+                      <td colSpan="7" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                        No status changes found for the selected period.
                       </td>
                     </tr>
                   )}
@@ -455,6 +470,7 @@ function TicketOverview() {
                       <td>{row.inProgress}</td>
                       <td>{row.overdue}</td>
                       <td>{row.resolved}</td>
+                      <td>{row.rejected}</td>
                       <td>{row.closed}</td>
                     </tr>
                   ))}
