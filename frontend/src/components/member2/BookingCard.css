@@ -1,0 +1,198 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+
+:root {
+  --bc-bg: #ffffff;
+  --bc-border: #eef2f6;
+  --bc-hover-border: #cbd5e1;
+  --bc-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  --bc-shadow-hover: 0 12px 24px -8px rgba(0, 0, 0, 0.1);
+  --bc-text-primary: #0f172a;
+  --bc-text-secondary: #475569;
+  --bc-text-muted: #64748b;
+  --bc-icon-bg: #f1f5f9;
+  --bc-icon-border: #e2e8f0;
+  --bc-pending-bg: #fffbeb;
+  --bc-pending-text: #b45309;
+  --bc-approved-bg: #ecfdf5;
+  --bc-approved-text: #065f46;
+  --bc-rejected-bg: #fef2f2;
+  --bc-rejected-text: #991b1b;
+  --bc-cancelled-bg: #f8fafc;
+  --bc-cancelled-text: #475569;
+}
+
+.bc-card {
+  display: flex;
+  gap: 1rem;
+  background: var(--bc-bg);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid var(--bc-border);
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.bc-card:hover {
+  border-color: var(--bc-hover-border);
+  box-shadow: var(--bc-shadow-hover);
+  transform: translateX(4px);
+}
+
+.bc-left {
+  flex-shrink: 0;
+}
+
+.bc-icon-wrap {
+  width: 52px;
+  height: 52px;
+  background: var(--bc-icon-bg);
+  border: 1px solid var(--bc-icon-border);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  transition: transform 0.2s;
+}
+
+.bc-card:hover .bc-icon-wrap {
+  transform: scale(1.02);
+}
+
+.bc-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.bc-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.bc-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--bc-text-primary);
+  margin: 0 0 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bc-type {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--bc-text-muted);
+  margin: 0;
+}
+
+.bc-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bc-status-pending  { background: var(--bc-pending-bg); color: var(--bc-pending-text); }
+.bc-status-approved { background: var(--bc-approved-bg); color: var(--bc-approved-text); }
+.bc-status-rejected { background: var(--bc-rejected-bg); color: var(--bc-rejected-text); }
+.bc-status-cancelled { background: var(--bc-cancelled-bg); color: var(--bc-cancelled-text); }
+
+.bc-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.bc-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--bc-text-secondary);
+  font-weight: 500;
+}
+
+.bc-detail-icon {
+  flex-shrink: 0;
+}
+
+.bc-purpose {
+  width: 100%;
+  color: var(--bc-text-muted);
+  font-style: normal;
+}
+
+.bc-rejection {
+  background: var(--bc-rejected-bg);
+  color: var(--bc-rejected-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  margin-top: 0.5rem;
+  display: inline-block;
+}
+
+.bc-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.bc-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+  border: none;
+}
+
+.bc-btn-edit {
+  background: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #c7d2fe;
+}
+
+.bc-btn-edit:hover {
+  background: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.bc-btn-delete {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.bc-btn-delete:hover {
+  background: #dc2626;
+  color: white;
+  border-color: #dc2626;
+}
+
+.bc-btn-cancel {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+}
+
+.bc-btn-cancel:hover {
+  background: #ea580c;
+  color: white;
+  border-color: #ea580c;
+}
