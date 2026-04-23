@@ -17,6 +17,8 @@ public interface ResourceService {
 
     ResourceResponseDTO updateResource(String id, ResourceRequestDTO dto);
 
+    void deleteResource(String id);
+
     List<ResourceResponseDTO> searchResources(ResourceType type, String location, Integer minCapacity, ResourceStatus status);
 }
 

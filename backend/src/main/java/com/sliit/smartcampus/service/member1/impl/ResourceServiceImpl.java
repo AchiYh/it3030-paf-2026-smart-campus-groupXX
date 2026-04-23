@@ -67,6 +67,15 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public void deleteResource(String id) {
+        if (!resourceRepository.existsById(id)) {
+            throw new ResourceNotFoundException(
+                    "Resource not found with id: " + id);
+        }
+        resourceRepository.deleteById(id);
+    }
+
+    @Override
     public List<ResourceResponseDTO> searchResources(ResourceType type, String location, Integer minCapacity,
             ResourceStatus status) {
         List<Resource> resources = location != null && !location.isBlank()
