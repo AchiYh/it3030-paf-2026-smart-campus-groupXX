@@ -149,11 +149,11 @@
   text-transform: uppercase;
 }
 
-/* CTA Actions (unchanged) */
+/* CTA Actions - Now only 2 buttons */
 .bdb-actions {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5rem;
   margin-bottom: 2rem;
 }
 
@@ -181,7 +181,6 @@
 
 .bdb-cta-primary { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; border: none; }
 .bdb-cta-secondary { background: linear-gradient(135deg, #0891b2, #0e7490); color: white; border: none; }
-.bdb-cta-tertiary { background: linear-gradient(135deg, #059669, #047857); color: white; border: none; }
 
 .bdb-cta-icon { font-size: 1.5rem; }
 .bdb-cta-title { font-weight: 700; margin-bottom: 0.2rem; }
@@ -189,7 +188,7 @@
 .bdb-cta-arrow { margin-left: auto; font-size: 1.2rem; transition: transform 0.2s; }
 .bdb-cta:hover .bdb-cta-arrow { transform: translateX(4px); }
 
-/* Recent Activity (unchanged) */
+/* Recent Activity */
 .bdb-section-head {
   display: flex;
   justify-content: space-between;
@@ -200,7 +199,7 @@
 .bdb-section-head h2 {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #b9c7e8;
+  color: #9eb2d4;
   margin: 0;
   letter-spacing: -0.01em;
 }
@@ -310,10 +309,72 @@
   100% { background-position: -200% 0; }
 }
 
+/* Empty State - Improved "Make your first booking" button */
 .bdb-empty {
   text-align: center;
-  padding: 2rem;
+  padding: 3rem 2rem;
   background: white;
   border-radius: 1rem;
   border: 2px dashed #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.bdb-empty-icon {
+  font-size: 4rem;
+  opacity: 0.6;
+}
+
+.bdb-empty p {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.bdb-empty-cta {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: white;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+}
+
+.bdb-empty-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+  background: linear-gradient(135deg, #4338ca, #4f46e5);
+}
+
+.bdb-empty-cta:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments for empty state */
+@media (max-width: 768px) {
+  .bdb-empty {
+    padding: 2rem 1rem;
+  }
+  
+  .bdb-empty-icon {
+    font-size: 3rem;
+  }
+  
+  .bdb-empty p {
+    font-size: 0.875rem;
+  }
+  
+  .bdb-empty-cta {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.8rem;
+  }
 }

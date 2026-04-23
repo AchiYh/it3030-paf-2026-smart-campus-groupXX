@@ -111,7 +111,7 @@ function BookingDashboard() {
         </div>
       </div>
 
-      {/* CTA Actions (unchanged) */}
+      {/* CTA Actions - Only Book Now and My Bookings */}
       <div className="bdb-actions">
         <button className="bdb-cta bdb-cta-primary" onClick={() => navigate('/bookings/find')}>
           <span className="bdb-cta-icon">➕</span>
@@ -130,18 +130,9 @@ function BookingDashboard() {
           </div>
           <span className="bdb-cta-arrow">→</span>
         </button>
-
-        <button className="bdb-cta bdb-cta-tertiary" onClick={() => navigate('/bookings/find')}>
-          <span className="bdb-cta-icon">🔍</span>
-          <div>
-            <div className="bdb-cta-title">Find Resources</div>
-            <div className="bdb-cta-desc">Browse halls, labs & equipment</div>
-          </div>
-          <span className="bdb-cta-arrow">→</span>
-        </button>
       </div>
 
-      {/* Recent Bookings (unchanged) */}
+      {/* Recent Bookings */}
       <div className="bdb-recent">
         <div className="bdb-section-head">
           <h2>🕐 Recent Activity</h2>

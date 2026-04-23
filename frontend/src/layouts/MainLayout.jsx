@@ -1,25 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from '../components/member4/NotificationBell';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 function MainLayout({ children }) {
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [bookingsOpen, setBookingsOpen] = useState(false);
 
   // Hide layout on login pages
   if (location.pathname === '/login' || location.pathname === '/oauth2/redirect') {
     return <>{children}</>;
   }
-
-  // Auto open dropdown when inside bookings
-  useEffect(() => {
-    if (location.pathname.startsWith('/bookings')) {
-      setBookingsOpen(true);
-    }
-  }, [location.pathname]);
 
   const isActive = (path) => location.pathname === path;
   const isActivePrefix = (prefix) => location.pathname.startsWith(prefix);
@@ -41,9 +33,10 @@ function MainLayout({ children }) {
         { label: 'Tickets', path: '/tickets', icon: '🎫' },
       ];
     } else {
-      // USER role
+      // USER role - Booking links are now directly in main menu (no dropdown)
       return [
         { label: 'Home', path: '/', icon: '🏠' },
+        { label: 'Booking Dashboard', path: '/bookings', icon: '📊' },
         { label: 'Tickets', path: '/tickets', icon: '🎫' },
       ];
     }
@@ -96,8 +89,12 @@ function MainLayout({ children }) {
                 gap: '0.75rem',
                 padding: '0.625rem 0.75rem',
                 borderRadius: '8px',
-                color: isActive(item.path) ? 'var(--primary-light)' : 'var(--text-secondary)',
-                background: isActive(item.path) ? 'rgba(99,102,241,0.1)' : 'transparent',
+                color: isActive(item.path) || (item.path === '/bookings' && isActivePrefix('/bookings')) 
+                  ? 'var(--primary-light)' 
+                  : 'var(--text-secondary)',
+                background: isActive(item.path) || (item.path === '/bookings' && isActivePrefix('/bookings'))
+                  ? 'rgba(99,102,241,0.1)' 
+                  : 'transparent',
                 marginBottom: '0.25rem',
                 whiteSpace: 'nowrap',
                 fontSize: '0.875rem',
@@ -108,93 +105,6 @@ function MainLayout({ children }) {
               <span>{item.icon}</span> {item.label}
             </Link>
           ))}
-
-          {/* BOOKINGS DROPDOWN - Only for non-admin users */}
-          {user?.role !== 'ADMIN' && (
-            <div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '0.25rem',
-              }}>
-                <Link
-                  to="/bookings"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '0.625rem 0.75rem',
-                    borderRadius: '8px',
-                    color: isActivePrefix('/bookings')
-                      ? 'var(--primary-light)'
-                      : 'var(--text-secondary)',
-                    background: isActivePrefix('/bookings')
-                      ? 'rgba(99,102,241,0.1)'
-                      : 'transparent',
-                    whiteSpace: 'nowrap',
-                    fontSize: '0.875rem',
-                    transition: 'var(--transition)',
-                    textDecoration: 'none',
-                    flex: 1,
-                  }}
-                >
-                  <span>📊</span> Bookings
-                </Link>
-
-                <button
-                  onClick={() => setBookingsOpen(!bookingsOpen)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: '0.5rem',
-                    fontSize: '0.75rem',
-                    color: 'var(--text-secondary)',
-                  }}
-                >
-                  {bookingsOpen ? '▼' : '▶'}
-                </button>
-              </div>
-
-              {bookingsOpen && (
-                <div style={{ marginLeft: '1.5rem', marginBottom: '0.5rem' }}>
-                  <Link
-                    to="/bookings/find"
-                    style={{
-                      display: 'block',
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: '6px',
-                      color: isActive('/bookings/find') ? 'var(--primary-light)' : 'var(--text-secondary)',
-                      background: isActive('/bookings/find') ? 'rgba(99,102,241,0.1)' : 'transparent',
-                      fontSize: '0.8rem',
-                      textDecoration: 'none',
-                      marginBottom: '0.2rem',
-                      transition: 'var(--transition)',
-                    }}
-                  >
-                    🔍 Find Resources
-                  </Link>
-
-                  <Link
-                    to="/bookings/my"
-                    style={{
-                      display: 'block',
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: '6px',
-                      color: isActive('/bookings/my') ? 'var(--primary-light)' : 'var(--text-secondary)',
-                      background: isActive('/bookings/my') ? 'rgba(99,102,241,0.1)' : 'transparent',
-                      fontSize: '0.8rem',
-                      textDecoration: 'none',
-                      transition: 'var(--transition)',
-                    }}
-                  >
-                    📋 My Bookings
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
         </nav>
       </aside>
 
