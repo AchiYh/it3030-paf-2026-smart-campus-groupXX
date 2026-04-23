@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../pages/member4/Login';
 import ResourceListPage from '../pages/member1/ResourceListPage';
+import ResourceDetailPage from '../pages/member1/ResourceDetailPage';
 import ResourceFormPage from '../pages/member1/ResourceFormPage';
 import TicketBaseLayout from '../layouts/member3/TicketBaseLayout';
 import TicketOverview from '../pages/member3/ticketing/TicketOverview';
@@ -63,6 +64,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ResourceListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/resources/:id"
+        element={
+          <ProtectedRoute>
+            <ResourceDetailPage />
           </ProtectedRoute>
         }
       />
