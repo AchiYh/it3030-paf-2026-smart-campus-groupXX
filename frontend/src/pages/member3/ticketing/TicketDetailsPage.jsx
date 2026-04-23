@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import ticketService from '../../../services/member3/ticketService';
+import API from '../../../services/api';
 import { useAuth } from '../../../context/AuthContext';
 
 function toActorId(email) {
@@ -21,6 +22,7 @@ function statusBadgeClass(status) {
   const value = (status || '').toUpperCase();
   if (value === 'OPEN') return 'badge-open';
   if (value === 'IN_PROGRESS') return 'badge-in-progress';
+  if (value === 'OVERDUE') return 'badge-overdue';
   if (value === 'RESOLVED') return 'badge-resolved';
   if (value === 'CLOSED') return 'badge-closed';
   if (value === 'REJECTED') return 'badge-rejected';
@@ -29,9 +31,10 @@ function statusBadgeClass(status) {
 
 function priorityBadgeClass(priority) {
   const value = (priority || '').toUpperCase();
-  if (value === 'LOW') return 'badge-info';
-  if (value === 'MEDIUM') return 'badge-warning';
-  if (value === 'HIGH' || value === 'CRITICAL') return 'badge-danger';
+  if (value === 'CRITICAL') return 'badge-priority-critical';
+  if (value === 'HIGH') return 'badge-priority-high';
+  if (value === 'MEDIUM') return 'badge-priority-medium';
+  if (value === 'LOW') return 'badge-priority-low';
   return 'badge-info';
 }
 
@@ -41,6 +44,57 @@ function formatAssignee(ticket) {
     return `${snapshot.fullName}${snapshot.id ? ` (${snapshot.id})` : ''}`;
   }
   return ticket?.assignedTo || 'Unassigned';
+}
+
+function normalizeText(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function categoryKeywords(category) {
+  const normalized = normalizeText(category);
+  if (!normalized) return [];
+
+  const aliasMap = {
+    electrical: ['electrical', 'electric', 'power', 'wiring', 'voltage'],
+    plumbing: ['plumbing', 'pipe', 'water', 'leak', 'drain'],
+    networking: ['networking', 'network', 'internet', 'wifi', 'lan'],
+    hardware: ['hardware', 'computer', 'device', 'printer', 'equipment'],
+    software: ['software', 'application', 'system', 'login', 'bug'],
+    facilities: ['facilities', 'building', 'classroom', 'door', 'ac', 'air conditioning'],
+  };
+
+  const words = normalized.split(/[^a-z0-9]+/).filter(Boolean);
+  const keywordSet = new Set(words);
+
+  Object.entries(aliasMap).forEach(([key, aliases]) => {
+    if (normalized.includes(key) || aliases.some((alias) => normalized.includes(alias))) {
+      aliases.forEach((alias) => keywordSet.add(alias));
+      keywordSet.add(key);
+    }
+  });
+
+  return Array.from(keywordSet);
+}
+
+function getTechnicianScore(technician, category) {
+  const specialization = normalizeText(technician?.specialization || '');
+  const categoryText = normalizeText(category || '');
+  if (!specialization || !categoryText) return 0;
+
+  if (specialization === categoryText) return 100;
+  if (categoryText.includes(specialization) || specialization.includes(categoryText)) return 85;
+
+  const keywords = categoryKeywords(categoryText);
+  if (!keywords.length) return 0;
+
+  let score = 0;
+  keywords.forEach((keyword) => {
+    if (specialization.includes(keyword) || keyword.includes(specialization)) {
+      score += 20;
+    }
+  });
+
+  return Math.min(score, 80);
 }
 
 function TicketDetailsPage() {
@@ -59,6 +113,9 @@ function TicketDetailsPage() {
   const [assignTo, setAssignTo] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [rejectReason, setRejectReason] = useState('');
+  const [technicians, setTechnicians] = useState([]);
+  const [busyTechnicianIds, setBusyTechnicianIds] = useState(new Set());
+  const [loadingTechnicians, setLoadingTechnicians] = useState(false);
 
   const [commentContent, setCommentContent] = useState('');
   const [commentVisibility, setCommentVisibility] = useState('PUBLIC');
@@ -108,9 +165,31 @@ function TicketDetailsPage() {
       setTicket(ticketRes.data);
       setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
       setAssignTo(ticketRes.data?.assignedTo || '');
+
+      if (canModerate) {
+        setLoadingTechnicians(true);
+        const [techniciansRes, ticketsRes] = await Promise.all([
+          API.get('/users/technicians'),
+          ticketService.getTickets(),
+        ]);
+
+        const technicianList = Array.isArray(techniciansRes.data) ? techniciansRes.data : [];
+        const allTickets = Array.isArray(ticketsRes.data) ? ticketsRes.data : [];
+        const busy = new Set(
+          allTickets
+            .filter((item) => item?.id !== ticketId)
+            .filter((item) => item?.assignedTo)
+            .filter((item) => !['CLOSED', 'REJECTED'].includes(String(item?.status || '').toUpperCase()))
+            .map((item) => item.assignedTo)
+        );
+
+        setTechnicians(technicianList);
+        setBusyTechnicianIds(busy);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load ticket details.');
     } finally {
+      setLoadingTechnicians(false);
       setLoading(false);
     }
   };
@@ -136,6 +215,10 @@ function TicketDetailsPage() {
 
   const handleAssign = async (event) => {
     event.preventDefault();
+    if (!assignTo) {
+      setActionError('Please select a technician.');
+      return;
+    }
     await runAction(() => ticketService.assignTechnician(ticketId, { technicianId: assignTo.trim() }));
   };
 
@@ -263,9 +346,36 @@ function TicketDetailsPage() {
   };
 
   const showAssign = canModerate && ticket && !['CLOSED', 'REJECTED'].includes(ticket.status);
-  const showResolve = canModerate && ticket?.status === 'IN_PROGRESS';
+  const showResolve = isTechnician && ['IN_PROGRESS', 'OVERDUE'].includes(ticket?.status);
   const showClose = canModerate && ticket?.status === 'RESOLVED';
-  const showReject = isAdmin && ticket && ['OPEN', 'IN_PROGRESS', 'RESOLVED'].includes(ticket.status);
+  const showReject = isAdmin && ticket && ['OPEN', 'IN_PROGRESS', 'OVERDUE', 'RESOLVED'].includes(ticket.status);
+
+  const rankedTechnicians = useMemo(() => {
+    const targetCategory = ticket?.category || '';
+
+    return technicians
+      .map((tech) => {
+        const isCurrentAssignee = tech.id === ticket?.assignedTo;
+        const isBusy = busyTechnicianIds.has(tech.id) && !isCurrentAssignee;
+        const score = getTechnicianScore(tech, targetCategory);
+        return { ...tech, isBusy, score };
+      })
+      .sort((a, b) => {
+        if (a.isBusy !== b.isBusy) return a.isBusy ? 1 : -1;
+        if (a.score !== b.score) return b.score - a.score;
+        return String(a.fullName || '').localeCompare(String(b.fullName || ''));
+      });
+  }, [technicians, busyTechnicianIds, ticket?.assignedTo, ticket?.category]);
+
+  const suggestedTechnicians = useMemo(
+    () => rankedTechnicians.filter((tech) => !tech.isBusy && tech.score >= 20),
+    [rankedTechnicians]
+  );
+
+  const otherTechnicians = useMemo(() => {
+    const suggestedIds = new Set(suggestedTechnicians.map((tech) => tech.id));
+    return rankedTechnicians.filter((tech) => !suggestedIds.has(tech.id));
+  }, [rankedTechnicians, suggestedTechnicians]);
 
   return (
     <div className="fade-in" style={{ display: 'grid', gap: '1rem' }}>
@@ -329,10 +439,20 @@ function TicketDetailsPage() {
               <div><strong>Category:</strong> {ticket.category || '-'}</div>
               <div><strong>Reported By:</strong> {ticket.reportedBy || '-'}</div>
               <div><strong>Assigned To:</strong> {formatAssignee(ticket)}</div>
+              <div><strong>Due Date:</strong> {formatDate(ticket.dueAt)}</div>
               <div><strong>Created:</strong> {formatDate(ticket.createdAt)}</div>
               <div><strong>Resolved By:</strong> {ticket.resolvedBy || '-'}</div>
               <div><strong>Closed By:</strong> {ticket.closedBy || '-'}</div>
             </div>
+
+            {ticket.status === 'OVERDUE' && (
+              <div style={{ marginTop: '0.8rem', padding: '0.65rem', borderRadius: '8px', background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.35)' }}>
+                <strong style={{ color: '#fca5a5' }}>Overdue Ticket</strong>
+                <p style={{ marginTop: '0.35rem', color: '#fca5a5' }}>
+                  This ticket passed its deadline and needs immediate attention.
+                </p>
+              </div>
+            )}
 
             {ticket.resolutionNotes && (
               <div style={{ marginTop: '0.85rem', padding: '0.65rem', borderRadius: '8px', background: 'var(--bg-secondary)' }}>
@@ -419,16 +539,45 @@ function TicketDetailsPage() {
                 <form onSubmit={handleAssign} style={{ marginBottom: '0.8rem' }}>
                   <label style={{ display: 'block', marginBottom: '0.4rem' }}>Assign Technician</label>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <input
+                    <select
                       className="form-control"
                       style={{ minWidth: '220px', flex: 1 }}
                       value={assignTo}
                       onChange={(e) => setAssignTo(e.target.value)}
-                      placeholder="tech_001"
+                      disabled={loadingTechnicians || actionLoading}
                       required
-                    />
+                    >
+                      <option value="">Select technician</option>
+                      {suggestedTechnicians.length > 0 && (
+                        <optgroup label="Recommended for this ticket">
+                          {suggestedTechnicians.map((tech) => {
+                            const category = tech.specialization || 'General';
+                            return (
+                              <option key={tech.id} value={tech.id}>
+                                {tech.fullName} - {category} (Recommended)
+                              </option>
+                            );
+                          })}
+                        </optgroup>
+                      )}
+                      {otherTechnicians.length > 0 && (
+                        <optgroup label={suggestedTechnicians.length > 0 ? 'Other technicians' : 'Technicians'}>
+                          {otherTechnicians.map((tech) => {
+                            const category = tech.specialization || 'General';
+                            return (
+                              <option key={tech.id} value={tech.id} disabled={tech.isBusy}>
+                                {tech.fullName} - {category}{tech.isBusy ? ' (Already Assigned)' : ''}
+                              </option>
+                            );
+                          })}
+                        </optgroup>
+                      )}
+                    </select>
                     <button className="btn btn-primary" type="submit" disabled={actionLoading}>Assign</button>
                   </div>
+                  <p style={{ marginTop: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                    Recommendations are based on ticket category and technician specialization. Busy technicians are unavailable.
+                  </p>
                 </form>
               )}
 

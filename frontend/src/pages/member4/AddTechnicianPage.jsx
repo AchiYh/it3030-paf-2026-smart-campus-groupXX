@@ -20,37 +20,16 @@ function AddTechnicianPage() {
     phone: '',
     specialization: '',
     password: '',
-    profilePicture: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [imagePreview, setImagePreview] = useState('');
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setError('');
     setSuccess('');
-  };
-
-  const handleImageChange = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setError('Profile image must be an image file.');
-      event.target.value = '';
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result || '');
-      setFormData((prev) => ({ ...prev, profilePicture: result }));
-      setImagePreview(result);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (event) => {
@@ -72,12 +51,10 @@ function AddTechnicianPage() {
         phone: formData.phone.trim(),
         specialization: formData.specialization,
         password: formData.password,
-        profilePicture: formData.profilePicture,
       });
 
       setSuccess('Technician created successfully.');
-      setFormData({ fullName: '', email: '', phone: '', specialization: '', password: '', profilePicture: '' });
-      setImagePreview('');
+      setFormData({ fullName: '', email: '', phone: '', specialization: '', password: '' });
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create technician.');
     } finally {
@@ -184,32 +161,6 @@ function AddTechnicianPage() {
             </select>
           </div>
         </div>
-
-        <div className="form-group">
-          <label htmlFor="profilePicture">Profile Image</label>
-          <input
-            id="profilePicture"
-            name="profilePictureFile"
-            type="file"
-            accept="image/*"
-            className="form-control"
-            onChange={handleImageChange}
-          />
-          <p style={{ color: 'var(--text-muted)', marginTop: '0.35rem', fontSize: '0.8rem' }}>
-            Upload a profile image for the technician. It will be saved with the user profile.
-          </p>
-        </div>
-
-        {imagePreview && (
-          <div style={{ marginBottom: '1rem' }}>
-            <p style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Preview</p>
-            <img
-              src={imagePreview}
-              alt="Technician preview"
-              style={{ width: '110px', height: '110px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-color)' }}
-            />
-          </div>
-        )}
 
         <div className="form-group">
           <label htmlFor="password">Password</label>

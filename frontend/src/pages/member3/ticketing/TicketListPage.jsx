@@ -59,6 +59,7 @@ function TicketListPage() {
     const value = (status || '').toUpperCase();
     if (value === 'OPEN') return 'badge-open';
     if (value === 'IN_PROGRESS') return 'badge-in-progress';
+    if (value === 'OVERDUE') return 'badge-overdue';
     if (value === 'RESOLVED') return 'badge-resolved';
     if (value === 'CLOSED') return 'badge-closed';
     if (value === 'REJECTED') return 'badge-rejected';
@@ -67,9 +68,10 @@ function TicketListPage() {
 
   const getPriorityBadgeClass = (priority) => {
     const value = (priority || '').toUpperCase();
-    if (value === 'LOW') return 'badge-info';
-    if (value === 'MEDIUM') return 'badge-warning';
-    if (value === 'HIGH' || value === 'CRITICAL') return 'badge-danger';
+    if (value === 'CRITICAL') return 'badge-priority-critical';
+    if (value === 'HIGH') return 'badge-priority-high';
+    if (value === 'MEDIUM') return 'badge-priority-medium';
+    if (value === 'LOW') return 'badge-priority-low';
     return 'badge-info';
   };
 
@@ -92,7 +94,6 @@ function TicketListPage() {
     <div className="card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2>Ticket List</h2>
-        <Link className="btn btn-primary" to="/tickets/new">+ New Ticket</Link>
       </div>
 
       <form onSubmit={handleApplyFilters} style={{ marginBottom: '1rem' }}>
@@ -101,6 +102,7 @@ function TicketListPage() {
             <option value="">All Statuses</option>
             <option value="OPEN">OPEN</option>
             <option value="IN_PROGRESS">IN_PROGRESS</option>
+            <option value="OVERDUE">OVERDUE</option>
             <option value="RESOLVED">RESOLVED</option>
             <option value="CLOSED">CLOSED</option>
             <option value="REJECTED">REJECTED</option>
@@ -153,19 +155,20 @@ function TicketListPage() {
               <th>Priority</th>
               <th>Category</th>
               <th>Assignee</th>
+              <th>Due Date</th>
               <th>Created At</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Loading tickets...</td>
+                <td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Loading tickets...</td>
               </tr>
             )}
 
             {!loading && tickets.length === 0 && (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                <td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
                   No tickets found for selected filters.
                 </td>
               </tr>
@@ -185,6 +188,7 @@ function TicketListPage() {
                 </td>
                 <td>{ticket.category || '-'}</td>
                 <td>{formatAssignee(ticket)}</td>
+                <td>{formatDate(ticket.dueAt)}</td>
                 <td>{formatDate(ticket.createdAt)}</td>
               </tr>
             ))}

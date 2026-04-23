@@ -27,6 +27,18 @@ import java.util.List;
 @Service
 public class TicketService {
 
+    private static final List<Ticket.TicketStatus> ACTIVE_ASSIGNMENT_STATUSES = List.of(
+            Ticket.TicketStatus.OPEN,
+            Ticket.TicketStatus.IN_PROGRESS,
+        Ticket.TicketStatus.OVERDUE,
+            Ticket.TicketStatus.RESOLVED
+    );
+
+    private static final List<Ticket.TicketStatus> OVERDUE_CANDIDATE_STATUSES = List.of(
+        Ticket.TicketStatus.OPEN,
+        Ticket.TicketStatus.IN_PROGRESS
+    );
+
     private final TicketRepository ticketRepository;
     private final MongoTemplate mongoTemplate;
     private final UserRepository userRepository;
@@ -39,6 +51,7 @@ public class TicketService {
 
     public Ticket createTicket(TicketCreateRequest request) {
         UserSnapshot assignedTechnician = resolveTechnicianSnapshot(request.assignedTo());
+        LocalDateTime dueAt = calculateDueDate(request.priority());
         Ticket ticket = Ticket.builder()
                 .title(request.title())
                 .description(request.description())
@@ -47,7 +60,8 @@ public class TicketService {
                 .status(Ticket.TicketStatus.OPEN)
                 .reportedBy(request.reportedBy())
                 .assignedTo(request.assignedTo())
-            .assignedTechnician(assignedTechnician)
+                .assignedTechnician(assignedTechnician)
+                .dueAt(dueAt)
                 .build();
 
         return ticketRepository.save(ticket);
@@ -63,11 +77,14 @@ public class TicketService {
             LocalDateTime createdTo) {
 
         User currentUser = getCurrentUser();
+        refreshOverdueTickets();
 
         List<Criteria> criteria = new ArrayList<>();
 
         if (currentUser.getRole() == User.Role.USER) {
             criteria.add(buildTicketOwnerCriteria(currentUser));
+        } else if (currentUser.getRole() == User.Role.TECHNICIAN) {
+            criteria.add(buildTechnicianAssignmentCriteria(currentUser));
         }
 
         if (status != null) {
@@ -108,8 +125,9 @@ public class TicketService {
     }
 
     public Ticket getTicketById(String id) {
-        return ticketRepository.findById(id)
+        Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", id));
+        return refreshOverdueStatus(ticket);
     }
 
     public Ticket getTicketByIdForCurrentUser(String id) {
@@ -117,6 +135,10 @@ public class TicketService {
         User currentUser = getCurrentUser();
 
         if (currentUser.getRole() == User.Role.USER && !isTicketOwner(ticket, currentUser)) {
+            throw new AccessDeniedException("You are not authorized to view this ticket");
+        }
+
+        if (currentUser.getRole() == User.Role.TECHNICIAN && !isTicketAssignedToTechnician(ticket, currentUser)) {
             throw new AccessDeniedException("You are not authorized to view this ticket");
         }
 
@@ -174,6 +196,12 @@ public class TicketService {
             return ticket;
         }
 
+        if (assignedTechnician != null
+                && ticketRepository.existsByAssignedToAndStatusInAndIdNot(
+                assignedTechnician.getId(), ACTIVE_ASSIGNMENT_STATUSES, ticket.getId())) {
+            throw new BadRequestException("Technician is already assigned to another active ticket");
+        }
+
         ticket.setAssignedTo(assignedTechnician == null ? null : assignedTechnician.getId());
         ticket.setAssignedTechnician(assignedTechnician);
 
@@ -208,6 +236,11 @@ public class TicketService {
 
     public Ticket resolveTicket(String id, TicketResolveRequest request) {
         Ticket ticket = getTicketById(id);
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getRole() != User.Role.TECHNICIAN) {
+            throw new AccessDeniedException("Only technicians can resolve tickets");
+        }
 
         validateStatusTransition(ticket.getStatus(), Ticket.TicketStatus.RESOLVED);
         ticket.setStatus(Ticket.TicketStatus.RESOLVED);
@@ -240,6 +273,7 @@ public class TicketService {
     private void ensureStatusChangeAllowedInGenericUpdate(Ticket.TicketStatus status) {
         if (status == Ticket.TicketStatus.RESOLVED
                 || status == Ticket.TicketStatus.CLOSED
+                || status == Ticket.TicketStatus.OVERDUE
                 || status == Ticket.TicketStatus.REJECTED) {
             throw new BadRequestException(
                     "Use /resolve, /close, and /reject endpoints for workflow status updates");
@@ -253,8 +287,12 @@ public class TicketService {
 
         boolean allowed = switch (currentStatus) {
             case OPEN -> nextStatus == Ticket.TicketStatus.IN_PROGRESS
+                || nextStatus == Ticket.TicketStatus.OVERDUE
                 || nextStatus == Ticket.TicketStatus.REJECTED;
             case IN_PROGRESS -> nextStatus == Ticket.TicketStatus.RESOLVED
+                || nextStatus == Ticket.TicketStatus.OVERDUE
+                || nextStatus == Ticket.TicketStatus.REJECTED;
+            case OVERDUE -> nextStatus == Ticket.TicketStatus.RESOLVED
                 || nextStatus == Ticket.TicketStatus.REJECTED;
             case RESOLVED -> nextStatus == Ticket.TicketStatus.CLOSED
                 || nextStatus == Ticket.TicketStatus.REJECTED;
@@ -334,6 +372,28 @@ public class TicketService {
         return new Criteria().orOperator(ownerCriteria.toArray(new Criteria[0]));
     }
 
+    private Criteria buildTechnicianAssignmentCriteria(User user) {
+        List<Criteria> technicianCriteria = new ArrayList<>();
+
+        if (StringUtils.hasText(user.getId())) {
+            technicianCriteria.add(Criteria.where("assignedTo").is(user.getId()));
+        }
+
+        if (technicianCriteria.isEmpty()) {
+            return Criteria.where("assignedTo").is("__no_assignment__");
+        }
+
+        return new Criteria().orOperator(technicianCriteria.toArray(new Criteria[0]));
+    }
+
+    private boolean isTicketAssignedToTechnician(Ticket ticket, User user) {
+        if (ticket == null || user == null || !StringUtils.hasText(ticket.getAssignedTo()) || !StringUtils.hasText(user.getId())) {
+            return false;
+        }
+
+        return ticket.getAssignedTo().equalsIgnoreCase(user.getId());
+    }
+
     private UserSnapshot resolveTechnicianSnapshot(String technicianId) {
         if (!StringUtils.hasText(technicianId)) {
             return null;
@@ -351,7 +411,48 @@ public class TicketService {
                 .fullName(technician.getFullName())
                 .email(technician.getEmail())
                 .role(technician.getRole().name())
+                .phone(technician.getPhone())
+                .specialization(technician.getSpecialization())
                 .profilePicture(technician.getProfilePicture())
                 .build();
+    }
+
+    private LocalDateTime calculateDueDate(Ticket.TicketPriority priority) {
+        int days = switch (priority) {
+            case CRITICAL -> 1;
+            case HIGH -> 2;
+            case MEDIUM -> 3;
+            case LOW -> 5;
+        };
+        return LocalDateTime.now().plusDays(days);
+    }
+
+    private void refreshOverdueTickets() {
+        Query overdueQuery = new Query();
+        overdueQuery.addCriteria(Criteria.where("dueAt").lt(LocalDateTime.now()));
+        overdueQuery.addCriteria(Criteria.where("status").in(OVERDUE_CANDIDATE_STATUSES));
+
+        List<Ticket> overdueCandidates = mongoTemplate.find(overdueQuery, Ticket.class);
+        if (overdueCandidates.isEmpty()) {
+            return;
+        }
+
+        overdueCandidates.forEach(ticket -> ticket.setStatus(Ticket.TicketStatus.OVERDUE));
+        ticketRepository.saveAll(overdueCandidates);
+    }
+
+    private Ticket refreshOverdueStatus(Ticket ticket) {
+        if (ticket == null) {
+            return null;
+        }
+
+        if (ticket.getDueAt() != null
+                && ticket.getDueAt().isBefore(LocalDateTime.now())
+                && OVERDUE_CANDIDATE_STATUSES.contains(ticket.getStatus())) {
+            ticket.setStatus(Ticket.TicketStatus.OVERDUE);
+            return ticketRepository.save(ticket);
+        }
+
+        return ticket;
     }
 }
