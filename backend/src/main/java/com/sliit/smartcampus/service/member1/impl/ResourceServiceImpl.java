@@ -67,6 +67,15 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public ResourceResponseDTO updateStatus(String id, String status) {
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Resource not found with id: " + id));
+        resource.setStatus(ResourceStatus.valueOf(status));
+        return mapToDTO(resourceRepository.save(resource));
+    }
+
+    @Override
     public void deleteResource(String id) {
         if (!resourceRepository.existsById(id)) {
             throw new ResourceNotFoundException(

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { deleteResource } from '../../services/member1/resourceService';
+import { deleteResource, updateResourceStatus } from '../../services/member1/resourceService';
 import DeleteModal from './DeleteModal';
 
 const toReadableType = (type) => {
@@ -13,7 +13,7 @@ const toReadableType = (type) => {
     .join(' ');
 };
 
-function ResourceTable({ resources, loading, error }) {
+function ResourceTable({ resources, loading, error, onStatusChange }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [deleteModal, setDeleteModal] = useState({
@@ -21,6 +21,18 @@ function ResourceTable({ resources, loading, error }) {
     resourceId: null,
     resourceName: ''
   });
+
+  const handleToggleStatus = async (resourceId, currentStatus) => {
+    const newStatus = currentStatus === 'ACTIVE' ? 'OUT_OF_SERVICE' : 'ACTIVE';
+    try {
+      await updateResourceStatus(resourceId, newStatus);
+      if (onStatusChange) {
+        onStatusChange(resourceId, newStatus);
+      }
+    } catch (err) {
+      console.error('Status update failed', err);
+    }
+  };
 
   if (loading) {
     return (
@@ -98,20 +110,32 @@ function ResourceTable({ resources, loading, error }) {
                         View Details
                       </button>
                       {user?.role === 'ADMIN' && (
-                        <button
-                          type="button"
-                          className="btn btn-danger"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteModal({
-                              isOpen: true,
-                              resourceId: resource._id || resource.id,
-                              resourceName: resource.name
-                            });
-                          }}
-                        >
-                          🗑️ Delete
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleStatus(resource._id || resource.id, resource.status);
+                            }}
+                          >
+                            {resource.status === 'ACTIVE' ? '⏸ Set Unavailable' : '▶ Set Available'}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteModal({
+                                isOpen: true,
+                                resourceId: resource._id || resource.id,
+                                resourceName: resource.name
+                              });
+                            }}
+                          >
+                            🗑️ Delete
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>

@@ -36,6 +36,15 @@ export const updateResource = (id, data) => {
   });
 };
 
+export const updateResourceStatus = (id, status) => {
+  const token = localStorage.getItem('token');
+  return axios.patch(
+    `${BASE_URL}/${id}/status?status=${status}`,
+    {},
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+};
+
 export const searchResources = (params = {}) => {
   const queryParams = {};
 

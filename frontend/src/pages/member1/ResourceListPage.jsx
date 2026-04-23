@@ -47,6 +47,14 @@ function ResourceListPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleStatusChange = (resourceId, newStatus) => {
+    setResources(prev => prev.map(r =>
+      (r._id || r.id) === resourceId
+        ? { ...r, status: newStatus }
+        : r
+    ));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-7xl">
@@ -126,6 +134,7 @@ function ResourceListPage() {
               resources={resources}
               loading={loading}
               error={error}
+              onStatusChange={handleStatusChange}
             />
           </div>
         </div>

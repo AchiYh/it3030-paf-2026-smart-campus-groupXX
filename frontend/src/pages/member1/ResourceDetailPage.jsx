@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { deleteResource, getResourceById } from '../../services/member1/resourceService';
+import { deleteResource, getResourceById, updateResourceStatus } from '../../services/member1/resourceService';
 import { useAuth } from '../../context/AuthContext';
 import DeleteModal from '../../components/member1/DeleteModal';
 
@@ -38,6 +38,7 @@ function ResourceDetailPage() {
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -50,6 +51,7 @@ function ResourceDetailPage() {
         const response = await getResourceById(id);
         if (isMounted) {
           setResource(response.data);
+          setCurrentStatus(response.data.status);
         }
       } catch (err) {
         if (isMounted) {
@@ -80,6 +82,19 @@ function ResourceDetailPage() {
       navigate('/resources');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete resource.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async () => {
+    const newStatus = currentStatus === 'ACTIVE' ? 'OUT_OF_SERVICE' : 'ACTIVE';
+    setActionLoading(true);
+    try {
+      await updateResourceStatus(id, newStatus);
+      setCurrentStatus(newStatus);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update resource status.');
     } finally {
       setActionLoading(false);
     }
@@ -223,6 +238,13 @@ function ResourceDetailPage() {
             onClick={() => navigate('/resources/' + id + '/edit')}
           >
             ✏️ Edit Resource
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={handleToggleStatus}
+            disabled={actionLoading}
+          >
+            {currentStatus === 'ACTIVE' ? '⏸ Set Unavailable' : '▶ Set Available'}
           </button>
           <button
             className="btn btn-danger"
