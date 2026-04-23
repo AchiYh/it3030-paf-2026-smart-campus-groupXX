@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { deleteResource, getResourceById } from '../../services/member1/resourceService';
 import { useAuth } from '../../context/AuthContext';
+import DeleteModal from '../../components/member1/DeleteModal';
 
 const toReadableType = (type) => {
   if (!type) return '-';
@@ -36,6 +37,7 @@ function ResourceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -224,18 +226,25 @@ function ResourceDetailPage() {
           </button>
           <button
             className="btn btn-danger"
-            onClick={() => {
-              if (window.confirm('Are you sure you want to delete this resource?')) {
-                deleteResource(id)
-                  .then(() => navigate('/resources'))
-                  .catch(() => setError('Failed to delete resource'));
-              }
-            }}
+            onClick={() => setShowDeleteModal(true)}
           >
             🗑️ Delete Resource
           </button>
         </div>
       )}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        resourceName={resource?.name}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          deleteResource((resource?._id || resource?.id || id))
+            .then(() => {
+              setShowDeleteModal(false);
+              navigate('/resources');
+            })
+            .catch(() => setError('Failed to delete'));
+        }}
+      />
     </div>
   );
 }
