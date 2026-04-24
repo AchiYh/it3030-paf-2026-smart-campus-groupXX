@@ -2,15 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const typeOptions = [
-  { value: 'LECTURE_HALL', label: 'Lecture Hall' },
-  { value: 'LAB', label: 'Laboratory' },
-  { value: 'MEETING_ROOM', label: 'Meeting Room' },
-  { value: 'EQUIPMENT', label: 'Equipment' },
+  { value: "LECTURE_HALL", label: "Lecture Hall" },
+  { value: "LAB", label: "Laboratory" },
+  { value: "MEETING_ROOM", label: "Meeting Room" },
+  { value: "EQUIPMENT", label: "Equipment" },
 ];
 
 const getInitialFormState = (initialData) => ({
   name: initialData?.name ?? '',
-  type: initialData?.type ?? 'LECTURE_HALL',
+  type: initialData?.type ?? "LECTURE_HALL",
   capacity: initialData?.capacity ?? '',
   location: initialData?.location ?? '',
   availabilityWindows: initialData?.availabilityWindows ?? '',
@@ -28,7 +28,7 @@ function ResourceForm({ initialData, onSubmit, isLoading, submitLabel }) {
     if (initialData) {
       setFormData({
         name: initialData.name || '',
-        type: initialData.type || '',
+        type: initialData.type || 'LECTURE_HALL',
         capacity: initialData.capacity || '',
         location: initialData.location || '',
         availabilityWindows: initialData.availabilityWindows || '',
@@ -161,7 +161,7 @@ function ResourceForm({ initialData, onSubmit, isLoading, submitLabel }) {
               outline: 'none',
               boxSizing: 'border-box',
             }}
-            value={formData.type}
+            value={formData.type || 'LECTURE_HALL'}
             onChange={handleChange}
             required
           >
