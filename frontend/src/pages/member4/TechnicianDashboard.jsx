@@ -10,6 +10,7 @@ export default function TechnicianDashboard() {
     const { user, logout, isTechnician } = useAuth();
 
     const [time, setTime] = useState(new Date());
+    const [isAvailable, setIsAvailable] = useState(true);
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
@@ -78,14 +79,34 @@ export default function TechnicianDashboard() {
                     </nav>
 
                     <div className="sidebar-card">
-                        <p className="sidebar-label">Profile Status</p>
-                        <div className="sidebar-item">
-                            <span>Role</span>
-                            <strong>{roleLabel}</strong>
-                        </div>
-                        <div className="sidebar-item">
-                            <span>Status</span>
-                            <strong style={{color: '#10b981'}}>Active</strong>
+                        <p className="sidebar-label">Availability Status</p>
+                        <div style={{ padding: '8px 0' }}>
+                            <button 
+                                onClick={() => setIsAvailable(!isAvailable)}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '10px',
+                                    border: 'none',
+                                    background: isAvailable ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                                    color: isAvailable ? '#10b981' : '#ef4444',
+                                    fontWeight: '700',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <span style={{ 
+                                    width: '8px', 
+                                    height: '8px', 
+                                    borderRadius: '50%', 
+                                    background: isAvailable ? '#10b981' : '#ef4444' 
+                                }}></span>
+                                {isAvailable ? 'AVAILABLE' : 'BUSY'}
+                            </button>
                         </div>
                     </div>
 
@@ -130,17 +151,30 @@ export default function TechnicianDashboard() {
 
                     <div className="md-content-scroll">
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', padding: '2rem' }}>
-                            <div style={{
-                                background: 'var(--bg-secondary)',
-                                padding: '1.5rem',
-                                borderRadius: '12px',
-                                border: '1px solid var(--border-color)',
-                            }}>
-                                <h3 style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>Assigned Tickets</h3>
-                                <p style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>View only the tickets assigned to you.</p>
-                                <Link to="/tickets/list" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                                    Open My Tickets
-                                </Link>
+                            <div className="md-panel" style={{ padding: '1.5rem' }}>
+                                <h3 style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '1rem', fontWeight: '700' }}>Quick Actions</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <Link to="/tickets/list" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                                        View Assigned Tickets
+                                    </Link>
+                                    <Link to="/profile" className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                                        Update Specialization
+                                    </Link>
+                                </div>
+                            </div>
+
+                            <div className="md-panel" style={{ padding: '1.5rem' }}>
+                                <h3 style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '1rem', fontWeight: '700' }}>Task Overview</h3>
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <div style={{ flex: 1, padding: '1rem', background: '#1e293b', borderRadius: '12px', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#6366f1' }}>0</div>
+                                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>PENDING</div>
+                                    </div>
+                                    <div style={{ flex: 1, padding: '1rem', background: '#1e293b', borderRadius: '12px', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#10b981' }}>0</div>
+                                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>COMPLETED</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

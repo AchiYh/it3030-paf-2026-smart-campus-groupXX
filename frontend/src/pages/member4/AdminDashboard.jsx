@@ -12,6 +12,7 @@ export default function AdminDashboard() {
     const { user, logout, isAdmin } = useAuth();
 
     const [stats, setStats] = useState([]);
+    const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [time, setTime] = useState(new Date());
 
@@ -29,10 +30,11 @@ export default function AdminDashboard() {
     }, [isAdmin, navigate]);
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchData = async () => {
             try {
-                const response = await API.get('/user/admin/all');
-                const users = response.data;
+                // Fetch User Stats
+                const userRes = await API.get('/user/admin/all');
+                const users = userRes.data;
                 const counts = { USER: 0, ADMIN: 0, TECHNICIAN: 0 };
                 users.forEach(u => {
                     if (counts[u.role] !== undefined) {
@@ -46,8 +48,13 @@ export default function AdminDashboard() {
                     { name: 'Admins', value: counts.ADMIN || 0 },
                     { name: 'Technicians', value: counts.TECHNICIAN || 0 },
                 ]);
+
+                // Fetch Security Logs
+                const logRes = await API.get('/user/admin/logs');
+                setLogs(logRes.data);
+
             } catch (err) {
-                console.error("Failed to fetch user stats", err);
+                console.error("Failed to fetch dashboard data", err);
                 setStats([
                     { name: 'Users', value: 12 },
                     { name: 'Admins', value: 2 },
@@ -57,7 +64,7 @@ export default function AdminDashboard() {
                 setLoading(false);
             }
         };
-        fetchUsers();
+        fetchData();
     }, []);
 
     const handleLogout = () => {
@@ -84,6 +91,12 @@ export default function AdminDashboard() {
         ...Array.from({ length: calendarFirstDay }, () => null),
         ...Array.from({ length: calendarDaysCount }, (_, index) => index + 1),
     ];
+
+    const formatTimestamp = (ts) => {
+        if (!ts) return "";
+        const date = new Date(ts);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " | " + date.toLocaleDateString();
+    };
 
     return (
         <div className="md-screen">
@@ -170,11 +183,12 @@ export default function AdminDashboard() {
                     </header>
 
                     <div className="md-content-scroll">
-                        <div className="md-panel md-resource-wrapper" style={{ padding: '2rem' }}>
-                            <div className="md-panel-header" style={{ marginBottom: '1.5rem' }}>
-                                <h2>System User Distribution</h2>
+                        {/* Distribution Panel */}
+                        <div className="md-panel" style={{ padding: '24px' }}>
+                            <div className="md-panel-header" style={{ marginBottom: '16px' }}>
+                                <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>System User Distribution</h2>
                             </div>
-                            <div className="md-panel-body p-0" style={{ height: '400px' }}>
+                            <div style={{ height: '300px' }}>
                                 {loading ? (
                                     <p>Loading charts...</p>
                                 ) : (
@@ -194,13 +208,48 @@ export default function AdminDashboard() {
                                                 ))}
                                             </Pie>
                                             <Tooltip 
-                                                contentStyle={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
-                                                itemStyle={{ color: '#e2e8f0' }}
+                                                contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }}
                                             />
-                                            <Legend verticalAlign="bottom" height={36} wrapperStyle={{ color: 'var(--text-secondary)' }}/>
+                                            <Legend verticalAlign="bottom" height={36} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 )}
+                            </div>
+                        </div>
+
+                        {/* Audit Logs Panel */}
+                        <div className="md-panel" style={{ padding: '24px' }}>
+                            <div className="md-panel-header" style={{ marginBottom: '16px' }}>
+                                <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Security & Audit Logs</h2>
+                                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>Real-time monitoring of system activities</p>
+                            </div>
+                            <div className="table-container" style={{ border: '1px solid #334155', borderRadius: '12px', overflow: 'hidden' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ background: '#1e293b', textAlign: 'left' }}>
+                                            <th style={{ padding: '12px', fontSize: '0.8rem', color: '#94a3b8' }}>USER</th>
+                                            <th style={{ padding: '12px', fontSize: '0.8rem', color: '#94a3b8' }}>ACTION</th>
+                                            <th style={{ padding: '12px', fontSize: '0.8rem', color: '#94a3b8' }}>TIMESTAMP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {logs.length > 0 ? logs.map((log) => (
+                                            <tr key={log.id} style={{ borderBottom: '1px solid #334155' }}>
+                                                <td style={{ padding: '12px', fontSize: '0.85rem' }}>{log.userEmail}</td>
+                                                <td style={{ padding: '12px' }}>
+                                                    <span className={`badge ${log.action === 'LOGIN' ? 'badge-success' : 'badge-info'}`} style={{ fontSize: '0.7rem' }}>
+                                                        {log.action}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '12px', fontSize: '0.85rem', color: '#64748b' }}>{formatTimestamp(log.timestamp)}</td>
+                                            </tr>
+                                        )) : (
+                                            <tr>
+                                                <td colSpan="3" style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>No recent activities found</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

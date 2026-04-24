@@ -37,16 +37,19 @@ public class AuthService implements UserDetailsService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final EmailService emailService;
+    private final AuditService auditService;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        JwtTokenProvider jwtTokenProvider,
                        EmailService emailService,
+                       AuditService auditService,
                        @Lazy AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.emailService = emailService;
+        this.auditService = auditService;
         this.authenticationManager = authenticationManager;
     }
 
@@ -111,9 +114,11 @@ public class AuthService implements UserDetailsService {
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
-        setCookie(response, "ACCESS", accessToken, 15 * 60); // 15 mins
+        setCookie(response, "ACCESS", accessToken, 15 * 60); 
         setCookie(response, "accessToken", accessToken, 15 * 60); // Alias for frontend
         setCookie(response, "REFRESH", refreshToken, 7 * 24 * 60 * 60); // 7 days
+
+        auditService.log(user.getEmail(), "LOGIN", "User logged in successfully via standard credentials");
 
         return new AuthResponse(true, "Login successful", user.getRole().name());
     }
@@ -139,6 +144,8 @@ public class AuthService implements UserDetailsService {
         user.setVerifyCode(null);
         user.setVerifyCodeExpiry(null);
         userRepository.save(user);
+
+        auditService.log(user.getEmail(), "VERIFY", "Account verified successfully");
 
         return new AuthResponse(true, "Account verified successfully", user.getRole().name());
     }
@@ -208,6 +215,7 @@ public class AuthService implements UserDetailsService {
                 User user = userOpt.get();
                 user.setRefreshToken(null);
                 userRepository.save(user);
+                auditService.log(user.getEmail(), "LOGOUT", "User logged out successfully");
             }
         }
         
@@ -268,6 +276,8 @@ public class AuthService implements UserDetailsService {
                 Map.of("role", user.getRole().name()),
                 user
         );
+        
+        auditService.log(email, "LOGIN_OAUTH", "User logged in via " + provider);
 
         return Map.of(
             "token", token,

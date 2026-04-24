@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.sliit.smartcampus.service.member4.NotificationService;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,11 +41,14 @@ class TicketServiceStatusTransitionTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private NotificationService notificationService;
+
     private TicketService ticketService;
 
     @BeforeEach
     void setUp() {
-        ticketService = new TicketService(ticketRepository, mongoTemplate, userRepository);
+        ticketService = new TicketService(ticketRepository, mongoTemplate, userRepository, notificationService);
     }
 
     @AfterEach

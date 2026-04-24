@@ -8,6 +8,10 @@ import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member2.Booking;
 import com.sliit.smartcampus.model.member2.BookingStatus;
 import com.sliit.smartcampus.repository.member2.BookingRepository;
+import com.sliit.smartcampus.model.member4.User;
+import com.sliit.smartcampus.model.member4.Notification.NotificationType;
+import com.sliit.smartcampus.repository.member4.UserRepository;
+import com.sliit.smartcampus.service.member4.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +25,17 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final EquipmentService equipmentService;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
-    public BookingService(BookingRepository bookingRepository, EquipmentService equipmentService) {
+    public BookingService(BookingRepository bookingRepository, 
+                          EquipmentService equipmentService,
+                          NotificationService notificationService,
+                          UserRepository userRepository) {
         this.bookingRepository = bookingRepository;
         this.equipmentService = equipmentService;
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -64,10 +75,18 @@ public class BookingService {
 
         Booking saved = bookingRepository.save(booking);
 
-        // Decrement equipment stock if applicable – TEMPORARILY DISABLED (Equipment collection not seeded)
-        // if ("Equipment".equals(request.resourceType())) {
-        //     equipmentService.decrementAvailableCount(request.resourceId(), request.quantity());
-        // }
+        // Notify Admins about new booking
+        List<User> admins = userRepository.findByRole(User.Role.ADMIN);
+        for (User admin : admins) {
+            notificationService.createNotification(
+                admin.getId(),
+                "New Booking Request",
+                "User " + request.userEmail() + " requested " + request.resourceName(),
+                NotificationType.BOOKING,
+                saved.getId(),
+                "BOOKING"
+            );
+        }
 
         return BookingResponseDTO.fromBooking(saved);
     }
@@ -214,7 +233,19 @@ public class BookingService {
         booking.setStatus(BookingStatus.APPROVED);
         booking.setUpdatedAt(LocalDateTime.now());  // ← ADDED: Update timestamp when approved
         Booking approved = bookingRepository.save(booking);
-        // For equipment, stock already decreased at creation – but creation stock change is disabled, so no change
+        
+        // Notify User
+        userRepository.findByEmail(approved.getUserEmail()).ifPresent(user -> {
+            notificationService.createNotification(
+                user.getId(),
+                "Booking Approved ✅",
+                "Your booking for " + approved.getResourceName() + " has been approved.",
+                NotificationType.BOOKING,
+                approved.getId(),
+                "BOOKING"
+            );
+        });
+
         return BookingResponseDTO.fromBooking(approved);
     }
 
@@ -232,10 +263,17 @@ public class BookingService {
         booking.setUpdatedAt(LocalDateTime.now());  // ← ADDED: Update timestamp when rejected
         Booking rejected = bookingRepository.save(booking);
 
-        // Increment equipment stock back if equipment – TEMPORARILY DISABLED
-        // if ("Equipment".equals(booking.getResourceType())) {
-        //     equipmentService.incrementAvailableCount(booking.getResourceId(), booking.getQuantity());
-        // }
+        // Notify User
+        userRepository.findByEmail(rejected.getUserEmail()).ifPresent(user -> {
+            notificationService.createNotification(
+                user.getId(),
+                "Booking Rejected ❌",
+                "Reason: " + reason,
+                NotificationType.BOOKING,
+                rejected.getId(),
+                "BOOKING"
+            );
+        });
 
         return BookingResponseDTO.fromBooking(rejected);
     }

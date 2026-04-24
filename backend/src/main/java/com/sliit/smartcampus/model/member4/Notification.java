@@ -41,6 +41,8 @@ public class Notification {
         INFO,
         SUCCESS,
         WARNING,
-        ERROR
+        ERROR,
+        BOOKING,
+        TICKET
     }
 }

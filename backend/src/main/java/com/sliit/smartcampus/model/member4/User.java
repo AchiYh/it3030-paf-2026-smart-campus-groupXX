@@ -60,6 +60,7 @@ public class User implements UserDetails {
 
     private LocalDateTime verifyCodeExpiry;
 
+    @Builder.Default
     private boolean isVerified = false;
 
     private LocalDateTime lastOtpSentAt;

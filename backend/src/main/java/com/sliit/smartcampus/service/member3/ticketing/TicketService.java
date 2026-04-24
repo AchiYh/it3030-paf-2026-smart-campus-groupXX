@@ -9,8 +9,10 @@ import com.sliit.smartcampus.exception.ResourceNotFoundException;
 import com.sliit.smartcampus.model.member3.ticketing.Ticket;
 import com.sliit.smartcampus.model.member3.ticketing.UserSnapshot;
 import com.sliit.smartcampus.model.member4.User;
+import com.sliit.smartcampus.model.member4.Notification.NotificationType;
 import com.sliit.smartcampus.repository.member3.ticketing.TicketRepository;
 import com.sliit.smartcampus.repository.member4.UserRepository;
+import com.sliit.smartcampus.service.member4.NotificationService;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -42,11 +44,16 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final MongoTemplate mongoTemplate;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public TicketService(TicketRepository ticketRepository, MongoTemplate mongoTemplate, UserRepository userRepository) {
+    public TicketService(TicketRepository ticketRepository, 
+                         MongoTemplate mongoTemplate, 
+                         UserRepository userRepository,
+                         NotificationService notificationService) {
         this.ticketRepository = ticketRepository;
         this.mongoTemplate = mongoTemplate;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     public Ticket createTicket(TicketCreateRequest request) {
@@ -64,7 +71,22 @@ public class TicketService {
                 .dueAt(dueAt)
                 .build();
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+
+        // Notify Admins
+        List<User> admins = userRepository.findByRole(User.Role.ADMIN);
+        for (User admin : admins) {
+            notificationService.createNotification(
+                admin.getId(),
+                "New Ticket Created",
+                "Ticket #" + saved.getId() + ": " + saved.getTitle(),
+                NotificationType.TICKET,
+                saved.getId(),
+                "TICKET"
+            );
+        }
+
+        return saved;
     }
 
     public List<Ticket> getTickets(
@@ -209,7 +231,21 @@ public class TicketService {
             ticket.setStatus(Ticket.TicketStatus.IN_PROGRESS);
         }
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        
+        // Notify Technician
+        if (assignedTechnician != null) {
+            notificationService.createNotification(
+                assignedTechnician.getId(),
+                "New Ticket Assigned",
+                "You have been assigned to Ticket: " + saved.getTitle(),
+                NotificationType.TICKET,
+                saved.getId(),
+                "TICKET"
+            );
+        }
+
+        return saved;
     }
 
     public Ticket rejectTicket(String id, TicketRejectRequest request) {
@@ -231,7 +267,21 @@ public class TicketService {
         ticket.setClosedBy(null);
         ticket.setClosedAt(null);
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+
+        // Notify User
+        userRepository.findByEmail(saved.getReportedBy()).ifPresent(user -> {
+            notificationService.createNotification(
+                user.getId(),
+                "Ticket Rejected ❌",
+                "Your ticket was rejected. Reason: " + request.reason(),
+                NotificationType.TICKET,
+                saved.getId(),
+                "TICKET"
+            );
+        });
+
+        return saved;
     }
 
     public Ticket resolveTicket(String id, TicketResolveRequest request) {
@@ -248,7 +298,21 @@ public class TicketService {
         ticket.setResolvedBy(request.resolvedBy().trim());
         ticket.setResolvedAt(LocalDateTime.now());
 
-        return ticketRepository.save(ticket);
+        Ticket saved = ticketRepository.save(ticket);
+        
+        // Notify User
+        userRepository.findByEmail(saved.getReportedBy()).ifPresent(user -> {
+            notificationService.createNotification(
+                user.getId(),
+                "Ticket Resolved ✅",
+                "Your ticket has been resolved. Note: " + request.resolutionNotes(),
+                NotificationType.TICKET,
+                saved.getId(),
+                "TICKET"
+            );
+        });
+
+        return saved;
     }
 
     public Ticket closeTicket(String id, TicketCloseRequest request) {
