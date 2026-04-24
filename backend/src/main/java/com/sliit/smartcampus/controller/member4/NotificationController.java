@@ -18,19 +18,17 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Notification>> getUserNotifications(@PathVariable String userId) {
-        return ResponseEntity.ok(notificationService.getNotificationsByUser(userId));
+    @GetMapping("/my")
+    public ResponseEntity<List<Notification>> getMyNotifications(java.security.Principal principal) {
+        // Here we assume principal.getName() returns the user's email or ID. 
+        // In this implementation, the Jwt returns the email as the subject.
+        String userEmail = principal.getName();
+        return ResponseEntity.ok(notificationService.getNotificationsByUser(userEmail));
     }
 
-    @GetMapping("/user/{userId}/unread")
-    public ResponseEntity<List<Notification>> getUnreadNotifications(@PathVariable String userId) {
-        return ResponseEntity.ok(notificationService.getUnreadNotifications(userId));
-    }
-
-    @GetMapping("/user/{userId}/unread/count")
-    public ResponseEntity<Map<String, Long>> getUnreadCount(@PathVariable String userId) {
-        long count = notificationService.getUnreadCount(userId);
+    @GetMapping("/my/unread/count")
+    public ResponseEntity<Map<String, Long>> getMyUnreadCount(java.security.Principal principal) {
+        long count = notificationService.getUnreadCount(principal.getName());
         return ResponseEntity.ok(Map.of("count", count));
     }
 
@@ -39,9 +37,9 @@ public class NotificationController {
         return ResponseEntity.ok(notificationService.markAsRead(id));
     }
 
-    @PatchMapping("/user/{userId}/read-all")
-    public ResponseEntity<Void> markAllAsRead(@PathVariable String userId) {
-        notificationService.markAllAsRead(userId);
+    @PatchMapping("/my/read-all")
+    public ResponseEntity<Void> markAllAsRead(java.security.Principal principal) {
+        notificationService.markAllAsRead(principal.getName());
         return ResponseEntity.ok().build();
     }
 

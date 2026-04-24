@@ -8,7 +8,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+<<<<<<< HEAD
 import jakarta.servlet.http.Cookie;
+=======
+>>>>>>> develop-branch
 
 import java.io.IOException;
 import java.util.Map;
@@ -32,6 +35,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         String name = oAuth2User.getAttribute("name");
         String providerId = oAuth2User.getAttribute("sub"); // Google subject ID
         
+<<<<<<< HEAD
         try {
             Map<String, String> tokenData = authService.processOAuthLogin(email, name, "google", providerId);
             String token = tokenData.get("token");
@@ -57,5 +61,13 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);
+=======
+        Map<String, String> tokenData = authService.processOAuthLogin(email, name, "google", providerId);
+        String token = tokenData.get("token");
+
+        // Redirect to frontend with the token
+        String targetUrl = "http://localhost:5173/oauth2/redirect?token=" + token;
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+>>>>>>> develop-branch
     }
 }

@@ -220,7 +220,6 @@ public class AuthService implements UserDetailsService {
 
     public boolean isPhoneAvailable(String phone) {
         if (phone == null || phone.isBlank()) return true;
-        // Simplified check, add to Repo if required
         return userRepository.findAll().stream().noneMatch(u -> phone.equals(u.getPhone()));
     }
 
@@ -270,7 +269,12 @@ public class AuthService implements UserDetailsService {
                 user
         );
 
-        return Map.of("token", token, "email", email, "role", user.getRole().name());
+        return Map.of(
+            "token", token,
+            "id", user.getId(),
+            "email", email,
+            "role", user.getRole().name()
+        );
     }
 
     private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
@@ -280,6 +284,7 @@ public class AuthService implements UserDetailsService {
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);
     }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email)

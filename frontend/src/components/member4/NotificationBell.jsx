@@ -1,10 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNotifications } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
 
 function NotificationBell() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, loadNotifications, markAsRead, markAllAsRead } = useNotifications();
+  const { isAuthenticated } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    if (isAuthenticated && typeof loadNotifications === 'function') {
+      loadNotifications();
+      const interval = setInterval(loadNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, loadNotifications]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -51,7 +61,7 @@ function NotificationBell() {
           top: '100%',
           right: 0,
           marginTop: '0.5rem',
-          width: '300px',
+          width: '320px',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--border-color)',
           borderRadius: '8px',
