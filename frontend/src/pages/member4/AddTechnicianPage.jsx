@@ -45,7 +45,7 @@ function AddTechnicianPage() {
     setSuccess('');
 
     try {
-      await API.post('/users/admin/technicians', {
+      await API.post('/user/admin/technicians', {
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         phone: formData.phone.trim(),

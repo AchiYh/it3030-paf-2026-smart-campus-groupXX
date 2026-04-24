@@ -11,7 +11,7 @@ function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      const response = await API.get('/users/admin/all');
+      const response = await API.get('/user/admin/all');
       setUsers(response.data);
     } catch (error) {
       console.error("Error fetching users", error);
@@ -22,7 +22,7 @@ function UserManagement() {
 
   const handleRoleChange = async (userId, newRole) => {
     try {
-      await API.patch(`/users/admin/${userId}/role`, { role: newRole });
+      await API.patch(`/user/admin/${userId}/role`, { role: newRole });
       fetchUsers(); // Refresh the list
     } catch (error) {
       console.error("Error updating role", error);

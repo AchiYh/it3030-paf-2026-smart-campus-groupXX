@@ -107,7 +107,7 @@ export default function AdminDashboard() {
                         <Link className="sidebar-link active" to={homePath}>
                             {homeLabel}
                         </Link>
-                        <Link className="sidebar-link" to="/users">
+                        <Link className={`sidebar-link ${location.pathname === '/users' ? 'active' : ''}`} to="/users">
                             User Management
                         </Link>
                         <Link className="sidebar-link" to="/profile">
