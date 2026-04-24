@@ -1,59 +1,70 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import authService from '../services/member4/authService';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import api from '../api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+  const fetchUser = useCallback(async () => {
+    try {
+      const res = await api.get('/auth/me');
+      if (res.data?.authenticated && res.data?.user) {
+        // Normalize role structure if needed
+        const fetchedUser = {
+          ...res.data.user,
+          role: res.data.user.role || 'USER'
+        };
+        setUser(fetchedUser);
+      } else {
+        setUser(null);
+      }
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
-    const response = await authService.login(email, password);
-    const { token: newToken, email: userEmail, role } = response.data;
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify({ email: userEmail, role }));
-    setToken(newToken);
-    setUser({ email: userEmail, role });
-    return response;
-  };
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
-  const register = async (fullName, email, password) => {
-    const response = await authService.register(fullName, email, password);
-    const { token: newToken, email: userEmail, role } = response.data;
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify({ email: userEmail, role }));
-    setToken(newToken);
-    setUser({ email: userEmail, role });
-    return response;
-  };
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      console.error("Logout failed", e);
+    } finally {
+      setUser(null);
+    }
+  }, []);
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
-    setUser(null);
-  };
+  // Backwards compatibility for authenticateWithToken if needed by oauth callback
+  const authenticateWithToken = useCallback(async () => {
+     // Token is set as cookie via backend, just fetch user
+     await fetchUser();
+     return true;
+  }, [fetchUser]);
 
-  const isAuthenticated = !!token;
+  const isAuthenticated = !!user;
   const isAdmin = user?.role === 'ADMIN';
   const isTechnician = user?.role === 'TECHNICIAN';
 
+  const value = {
+    user, 
+    loading, 
+    isAuthenticated, 
+    isAdmin, 
+    isTechnician,
+    logout, 
+    authenticateWithToken, 
+    fetchUser
+  };
+
   return (
-    <AuthContext.Provider value={{
-      user, token, loading, isAuthenticated, isAdmin, isTechnician,
-      login, register, logout
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -67,4 +78,4 @@ export function useAuth() {
   return context;
 }
 
-export default AuthContext;
+export { AuthContext };

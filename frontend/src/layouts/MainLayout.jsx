@@ -8,8 +8,9 @@ function MainLayout({ children }) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Don't show layout on login page
-  if (location.pathname === '/login') {
+  // Hide layout on login, signup, and verification pages
+  const authPaths = ['/login', '/signup', '/verify', '/forgot-password', '/oauth2/redirect'];
+  if (authPaths.includes(location.pathname)) {
     return <>{children}</>;
   }
 

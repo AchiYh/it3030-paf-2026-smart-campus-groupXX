@@ -36,6 +36,10 @@ public class User implements UserDetails {
 
     private String profilePicture;
 
+    private String phone;
+
+    private String specialization;
+
     private Role role;
 
     private boolean enabled;
@@ -43,6 +47,24 @@ public class User implements UserDetails {
     private String oauthProvider;
 
     private String oauthProviderId;
+
+    private String tempEmail;
+
+    private String year;
+
+    private String semester;
+
+    private String refreshToken;
+
+    private String verifyCode;
+
+    private LocalDateTime verifyCodeExpiry;
+
+    private boolean isVerified = false;
+
+    private LocalDateTime lastOtpSentAt;
+    
+    private Integer otpResendCount;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -83,6 +105,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return isVerified || enabled;
     }
 }

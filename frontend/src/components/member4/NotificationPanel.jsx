@@ -50,8 +50,8 @@ function NotificationPanel() {
               borderRadius: '8px',
               marginBottom: '0.5rem',
               cursor: 'pointer',
-              background: notification.read ? 'transparent' : 'rgba(99,102,241,0.05)',
-              borderLeft: notification.read ? 'none' : '3px solid var(--primary)',
+              background: notification.read ? 'transparent' : 'rgba(237, 123, 63, 0.05)',
+              borderLeft: notification.read ? 'none' : '3px solid #ed7b3f',
               transition: 'var(--transition)',
             }}
           >

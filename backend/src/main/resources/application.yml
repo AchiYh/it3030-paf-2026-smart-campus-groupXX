@@ -7,6 +7,18 @@ spring:
       uri: mongodb+srv://admin:12345@cluster0.gpd2z4o.mongodb.net/smartcampus?retryWrites=true&w=majority
       database: smartcampus
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:careers.lankads@gmail.com}
+    password: ${MAIL_PASSWORD:zvvaywiidnzuqfxe}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   security:
     oauth2:
       client:
@@ -34,9 +46,10 @@ springdoc:
     path: /swagger-ui.html
 
 # File Upload
-spring.servlet.multipart:
-  max-file-size: 10MB
-  max-request-size: 10MB
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 # Logging
 logging:
