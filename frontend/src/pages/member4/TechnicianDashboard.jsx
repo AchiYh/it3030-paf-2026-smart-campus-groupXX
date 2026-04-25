@@ -1,0 +1,185 @@
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from '../../context/AuthContext';
+import "./Dashboard.css";
+import "./Profile.css";
+
+export default function TechnicianDashboard() {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { user, logout, isTechnician } = useAuth();
+
+    const [time, setTime] = useState(new Date());
+    const [isAvailable, setIsAvailable] = useState(true);
+
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
+        if (!isTechnician) {
+            navigate("/", { replace: true });
+        }
+    }, [isTechnician, navigate]);
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login", { replace: true });
+    };
+
+    const roleLabel = "TECHNICIAN";
+    const dashboardTitle = "Tech Console";
+    const dashboardSubtitle = "Manage your assigned tickets and tasks.";
+    const homePath = "/";
+    const homeLabel = "Dashboard";
+    
+    const fullName = user?.fullName || user?.email?.split('@')[0] || "Tech";
+    const initials = fullName[0]?.toUpperCase() || "T";
+    const currentDay = time.getDate();
+    const calendarLabel = time.toLocaleString("default", { month: "long", year: "numeric" });
+    const clockLabel = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    const calendarYear = time.getFullYear();
+    const calendarMonth = time.getMonth();
+    const calendarFirstDay = new Date(calendarYear, calendarMonth, 1).getDay();
+    const calendarDaysCount = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    const calendarCells = [
+        ...Array.from({ length: calendarFirstDay }, () => null),
+        ...Array.from({ length: calendarDaysCount }, (_, index) => index + 1),
+    ];
+
+    return (
+        <div className="md-screen">
+            <div className="md-layout">
+                <aside className="md-sidebar profile-sidebar">
+                    <div className="sidebar-brand">
+                        <span
+                            className="brand-avatar"
+                            style={{ background: "linear-gradient(130deg, #ed7b3f, #ffc292)", color: "#fff" }}
+                        >
+                            {initials}
+                        </span>
+                        <div className="brand-info">
+                            <strong>{fullName}</strong>
+                            <small>{user?.email || "No email"}</small>
+                        </div>
+                    </div>
+
+                    <nav className="sidebar-nav">
+                        <p className="sidebar-label">Quick Navigation</p>
+                        <Link className="sidebar-link active" to={homePath}>
+                            {homeLabel}
+                        </Link>
+                        <Link className="sidebar-link" to="/tickets/list">
+                            My Assigned Tickets
+                        </Link>
+                        <Link className="sidebar-link" to="/profile">
+                            Profile
+                        </Link>
+                    </nav>
+
+                    <div className="sidebar-card">
+                        <p className="sidebar-label">Availability Status</p>
+                        <div style={{ padding: '8px 0' }}>
+                            <button 
+                                onClick={() => setIsAvailable(!isAvailable)}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '10px',
+                                    border: 'none',
+                                    background: isAvailable ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+                                    color: isAvailable ? '#10b981' : '#ef4444',
+                                    fontWeight: '700',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <span style={{ 
+                                    width: '8px', 
+                                    height: '8px', 
+                                    borderRadius: '50%', 
+                                    background: isAvailable ? '#10b981' : '#ef4444' 
+                                }}></span>
+                                {isAvailable ? 'AVAILABLE' : 'BUSY'}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="sidebar-calendar-card">
+                        <p className="sidebar-label">Calendar</p>
+                        <div className="sidebar-calendar-header">
+                            <strong>{calendarLabel}</strong>
+                            <span className="sidebar-today-badge">Today {currentDay}</span>
+                        </div>
+                        <div className="sidebar-clock">{clockLabel}</div>
+                        <div className="sidebar-calendar-grid">
+                            <div className="sidebar-calendar-weekdays">
+                                {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+                                    <span key={day} className="weekday">{day}</span>
+                                ))}
+                            </div>
+                            <div className="sidebar-calendar-days">
+                                {calendarCells.map((day, index) => (
+                                    <span
+                                        key={`day-${index}`}
+                                        className={`day${day === null ? " empty" : ""}${day === currentDay ? " today" : ""}`}
+                                        aria-hidden={day === null}
+                                    >
+                                        {day ?? ""}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <main className="md-main">
+                    <header className="md-topbar">
+                        <div className="md-topbar-left">
+                            <h1 className="md-title">{dashboardTitle}</h1>
+                            <p className="md-subtitle">{dashboardSubtitle}</p>
+                        </div>
+                        <div className="md-topbar-actions">
+                            <button className="md-btn-logout" onClick={handleLogout}>Logout</button>
+                        </div>
+                    </header>
+
+                    <div className="md-content-scroll">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', padding: '2rem' }}>
+                            <div className="md-panel" style={{ padding: '1.5rem' }}>
+                                <h3 style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '1rem', fontWeight: '700' }}>Quick Actions</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    <Link to="/tickets/list" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                                        View Assigned Tickets
+                                    </Link>
+                                    <Link to="/profile" className="btn btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                                        Update Specialization
+                                    </Link>
+                                </div>
+                            </div>
+
+                            <div className="md-panel" style={{ padding: '1.5rem' }}>
+                                <h3 style={{ marginBottom: '1rem', color: '#94a3b8', fontSize: '1rem', fontWeight: '700' }}>Task Overview</h3>
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <div style={{ flex: 1, padding: '1rem', background: '#1e293b', borderRadius: '12px', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#6366f1' }}>0</div>
+                                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>PENDING</div>
+                                    </div>
+                                    <div style={{ flex: 1, padding: '1rem', background: '#1e293b', borderRadius: '12px', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#10b981' }}>0</div>
+                                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>COMPLETED</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
+}

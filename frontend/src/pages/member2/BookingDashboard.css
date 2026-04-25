@@ -1,0 +1,380 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
+
+:root {
+  --bdb-bg: #f8fafc;
+  --bdb-card-bg: #ffffff;
+  --bdb-text: #0f172a;
+  --bdb-text-muted: #475569;
+  --bdb-primary: #4f46e5;
+}
+
+.bdb-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 0 2rem;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Hero with total on right */
+.bdb-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  border-radius: 1.5rem;
+  padding: 2rem 2rem;
+  margin-bottom: 2rem;
+  color: white;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.bdb-hero-text {
+  flex: 1;
+}
+
+.bdb-hero-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.bdb-total-stat {
+  text-align: right;
+  background: rgba(255,255,255,0.1);
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.bdb-total-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.bdb-total-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.bdb-role-tag {
+  background: rgba(255,255,255,0.12);
+  padding: 0.4rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.bdb-greeting {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 0.25rem;
+}
+
+.bdb-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.bdb-subtitle {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+/* Stats grid – 4 columns for Pending, Approved, Rejected, Cancelled */
+.bdb-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .bdb-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.bdb-stat-card {
+  background: var(--bdb-card-bg);
+  border-radius: 1rem;
+  padding: 1rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-left: 4px solid;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.bdb-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.bdb-stat-pending  { border-left-color: #f59e0b; }
+.bdb-stat-approved { border-left-color: #10b981; }
+.bdb-stat-rejected { border-left-color: #ef4444; }
+.bdb-stat-cancelled { border-left-color: #6b7280; }
+
+.bdb-stat-icon {
+  font-size: 1.8rem;
+}
+
+.bdb-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.bdb-stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.bdb-stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+/* CTA Actions - Now only 2 buttons */
+.bdb-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .bdb-actions { grid-template-columns: 1fr; }
+}
+
+.bdb-cta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  background: white;
+  border: 1px solid #eef2f6;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bdb-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  border-color: #cbd5e1;
+}
+
+.bdb-cta-primary { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; border: none; }
+.bdb-cta-secondary { background: linear-gradient(135deg, #0891b2, #0e7490); color: white; border: none; }
+
+.bdb-cta-icon { font-size: 1.5rem; }
+.bdb-cta-title { font-weight: 700; margin-bottom: 0.2rem; }
+.bdb-cta-desc { font-size: 0.7rem; opacity: 0.8; }
+.bdb-cta-arrow { margin-left: auto; font-size: 1.2rem; transition: transform 0.2s; }
+.bdb-cta:hover .bdb-cta-arrow { transform: translateX(4px); }
+
+/* Recent Activity */
+.bdb-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1rem;
+}
+
+.bdb-section-head h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #9eb2d4;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.bdb-view-all {
+  background: none;
+  border: none;
+  color: var(--bdb-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.bdb-view-all:hover {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
+.bdb-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bdb-recent-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid #eef2f6;
+  transition: all 0.2s;
+}
+
+.bdb-recent-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.bdb-recent-icon {
+  width: 48px;
+  height: 48px;
+  background: #f1f5f9;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.bdb-recent-info {
+  flex: 1;
+}
+
+.bdb-recent-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #0f172a;
+  margin-bottom: 0.2rem;
+}
+
+.bdb-recent-meta {
+  font-size: 0.75rem;
+  color: #475569;
+  margin-bottom: 0.15rem;
+}
+
+.bdb-recent-purpose {
+  font-size: 0.75rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bdb-status-badge {
+  padding: 0.25rem 0.7rem;
+  border-radius: 2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.status-pending  { background: #fef3c7; color: #b45309; }
+.status-approved { background: #d1fae5; color: #065f46; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
+.status-cancelled { background: #f1f5f9; color: #475569; }
+
+.bdb-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bdb-skeleton {
+  height: 70px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.875rem;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Empty State - Improved "Make your first booking" button */
+.bdb-empty {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: white;
+  border-radius: 1rem;
+  border: 2px dashed #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.bdb-empty-icon {
+  font-size: 4rem;
+  opacity: 0.6;
+}
+
+.bdb-empty p {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.bdb-empty-cta {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: white;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+}
+
+.bdb-empty-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+  background: linear-gradient(135deg, #4338ca, #4f46e5);
+}
+
+.bdb-empty-cta:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments for empty state */
+@media (max-width: 768px) {
+  .bdb-empty {
+    padding: 2rem 1rem;
+  }
+  
+  .bdb-empty-icon {
+    font-size: 3rem;
+  }
+  
+  .bdb-empty p {
+    font-size: 0.875rem;
+  }
+  
+  .bdb-empty-cta {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.8rem;
+  }
+}
