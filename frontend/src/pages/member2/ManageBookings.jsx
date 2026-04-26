@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Add this import
 import { useAuth } from '../../context/AuthContext';
 import bookingService from '../../services/member2/bookingService';
 import './ManageBookings.css';
 
 function ManageBookings() {
   const { user } = useAuth();
+  const navigate = useNavigate(); // Add navigate hook
   const [bookings, setBookings] = useState([]);
   const [activeTab, setActiveTab] = useState('PENDING');
   const [loading, setLoading] = useState(true);
@@ -38,18 +40,13 @@ function ManageBookings() {
     return booking.rejectReason || booking.rejectionReason || null;
   };
 
-  // Helper to get the best available date for processing
   const getBestAvailableDate = (booking) => {
     if (!booking) return null;
-    
-    // For APPROVED or REJECTED bookings, use updatedAt if available and different from createdAt
-    // This gives us the approval/rejection timestamp
     if (booking.status !== 'PENDING') {
       if (booking.updatedAt) {
         return booking.updatedAt;
       }
     }
-    // Fallback to createdAt
     return booking.createdAt || null;
   };
 
@@ -64,7 +61,6 @@ function ManageBookings() {
       const processedBookings = (response.data || []).map(booking => ({
         ...booking,
         rejectReason: booking.rejectReason || null,
-        // Store the best available date for sorting and display
         effectiveDate: getBestAvailableDate(booking)
       }));
       
@@ -90,15 +86,11 @@ function ManageBookings() {
 
   const filteredBookings = bookings.filter(b => b.status === activeTab);
   
-  // Sort bookings - most recently processed/created first
   const sorted = [...filteredBookings].sort((a, b) => {
     let dateA = a.effectiveDate ? new Date(a.effectiveDate) : new Date(0);
     let dateB = b.effectiveDate ? new Date(b.effectiveDate) : new Date(0);
-    
-    // Handle invalid dates
     if (isNaN(dateA.getTime())) dateA = new Date(0);
     if (isNaN(dateB.getTime())) dateB = new Date(0);
-    
     return dateB - dateA;
   });
 
@@ -228,8 +220,19 @@ function ManageBookings() {
       )}
 
       <div className="manage-header">
-        <h1>📋 Manage Bookings</h1>
-        <p>Review, approve, or reject booking requests</p>
+        <div className="manage-header-left">
+          <h1>📋 Manage Bookings</h1>
+          <p>Review, approve, or reject booking requests</p>
+        </div>
+        <div className="manage-header-right">
+          <button 
+            className="dashboard-btn" 
+            onClick={() => navigate('/admin/bookings-dashboard')}
+            title="Go to Booking Dashboard"
+          >
+            📊 Dashboard
+          </button>
+        </div>
       </div>
 
       {error && <div className="manage-error">⚠️ {error}</div>}

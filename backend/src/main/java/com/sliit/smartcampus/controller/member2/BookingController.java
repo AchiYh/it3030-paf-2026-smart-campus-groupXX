@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/bookings")
+@RequestMapping("/bookings") //base URL for all endpoints in this controller. 
 public class BookingController {
 
     private final BookingService bookingService;
@@ -24,6 +24,7 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
+    //This is the Create Booking endpoint( Only USER or ADMIN can create bookings )
     @PostMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<BookingResponseDTO> createBooking(@Valid @RequestBody BookingRequestDTO bookingRequest) {
@@ -31,6 +32,7 @@ public class BookingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    //This is Get My Bookings endpoint. 
     @GetMapping("/my/{email}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<List<BookingResponseDTO>> getMyBookings(@PathVariable String email) {
@@ -38,6 +40,7 @@ public class BookingController {
         return ResponseEntity.ok(bookings);
     }
 
+    //This is Get Single Booking endpoint.
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<BookingResponseDTO> getBookingById(@PathVariable String id) {
@@ -45,6 +48,7 @@ public class BookingController {
         return ResponseEntity.ok(booking);
     }
 
+    //This is Update Booking endpoint.
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BookingResponseDTO> updateBooking(
@@ -57,6 +61,7 @@ public class BookingController {
         return ResponseEntity.ok(updatedBooking);
     }
 
+    //This is Delete Booking endpoint.
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Void> deleteBooking(
@@ -107,7 +112,7 @@ public class BookingController {
         return ResponseEntity.ok(rejected);
     }
 
-    // NEW: Admin only – get all bookings for management
+
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<BookingResponseDTO>> getAllBookings() {
