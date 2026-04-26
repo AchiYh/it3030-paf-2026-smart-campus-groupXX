@@ -20,6 +20,26 @@ export default function Profile() {
     const [editValues, setEditValues] = useState({});
     const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
     const [saving, setSaving] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteConfirmEmail, setDeleteConfirmEmail] = useState('');
+
+    const { logout } = useAuth();
+
+    const handleSelfDelete = async () => {
+        if (deleteConfirmEmail !== profile?.email) return;
+        
+        setSaving(true);
+        try {
+            await api.delete('/user/me');
+            logout(); // Clear local session
+            navigate('/signup', { state: { message: 'Your account has been permanently deleted.' } });
+        } catch (err) {
+            alert('Failed to delete account. Please contact system administration.');
+        } finally {
+            setSaving(false);
+            setShowDeleteModal(false);
+        }
+    };
 
     useEffect(() => {
         const loadProfile = async () => {
@@ -193,6 +213,53 @@ export default function Profile() {
                     </form>
                 </div>
             </div>
+
+            {/* DANGER ZONE - SELF DELETION */}
+            <div className='details-section-card danger-zone-card' style={{ marginTop: '32px', border: '1px solid #fee2e2' }}>
+                <h3 style={{ color: '#ef4444' }}><span className="icon">⚠️</span> DANGER ZONE</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+                    <div>
+                        <p style={{ fontWeight: 700, margin: 0, color: '#1a2a44' }}>Permanently Close Institutional Account</p>
+                        <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0 0' }}>This action is irreversible. All your bookings, tickets, and identity data will be permanently purged.</p>
+                    </div>
+                    <button className='delete-account-btn' onClick={() => setShowDeleteModal(true)}>DELETE MY IDENTITY</button>
+                </div>
+            </div>
+
+            {/* DELETE CONFIRMATION MODAL */}
+            {showDeleteModal && (
+                <div className='modal-overlay-danger'>
+                    <div className='modal-card-danger'>
+                        <div className='modal-header-danger'>
+                            <span className='danger-icon'>🚫</span>
+                            <h2>Permanent Identity Deletion</h2>
+                        </div>
+                        <p>This will permanently purge your account <strong>{profile?.email}</strong> and all associated data from the FacultyFlow database.</p>
+                        
+                        <div className='confirm-input-area'>
+                            <label>Type your email address to confirm:</label>
+                            <input 
+                                type="text" 
+                                placeholder={profile?.email} 
+                                value={deleteConfirmEmail} 
+                                onChange={(e) => setDeleteConfirmEmail(e.target.value)}
+                                className="confirm-email-input"
+                            />
+                        </div>
+
+                        <div className='modal-actions-danger'>
+                            <button className='cancel-modal-btn' onClick={() => { setShowDeleteModal(false); setDeleteConfirmEmail(''); }}>KEEP MY ACCOUNT</button>
+                            <button 
+                                className='final-delete-btn' 
+                                disabled={deleteConfirmEmail !== profile?.email || saving}
+                                onClick={handleSelfDelete}
+                            >
+                                {saving ? 'PURGING...' : 'PERMANENTLY DELETE ACCOUNT'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

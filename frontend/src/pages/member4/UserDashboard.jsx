@@ -1,28 +1,71 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from '../../context/AuthContext';
+import ticketService from '../../services/member3/ticketService';
+import bookingService from '../../services/member2/bookingService';
 import "./Dashboard.css";
 
 export default function UserDashboard() {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
     const [time, setTime] = useState(new Date());
+    const [stats, setStats] = useState({
+        activeBookings: 0,
+        openTickets: 0
+    });
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
+    const fullName = user?.fullName || "User";
+    const initials = fullName[0]?.toUpperCase() || "U";
+    const roleLabel = (user?.role || "STUDENT").replace('ROLE_', '');
+    const clockLabel = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+    const toReporterId = (email) => {
+        const local = (email || '').split('@')[0] || 'usr';
+        return local.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 60);
+    };
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            if (!user?.email) return;
+            try {
+                const reporterId = toReporterId(user.email);
+                
+                // Fetch using unified services
+                const [ticketsRes, bookingsRes] = await Promise.all([
+                    ticketService.getTickets({ reportedBy: reporterId }),
+                    bookingService.getMyBookings(user.email)
+                ]);
+                
+                // Handle both direct array and { data: [] } response formats
+                const ticketsList = ticketsRes.data?.data || ticketsRes.data || [];
+                const bookingsList = bookingsRes.data?.data || bookingsRes.data || [];
+                
+                const openTickets = Array.isArray(ticketsList) 
+                    ? ticketsList.filter(t => !['CLOSED', 'REJECTED'].includes(String(t.status).toUpperCase())).length
+                    : 0;
+                    
+                const activeBookings = Array.isArray(bookingsList)
+                    ? bookingsList.filter(b => ['APPROVED', 'PENDING'].includes(String(b.status).toUpperCase())).length
+                    : 0;
+                
+                setStats({ openTickets, activeBookings });
+            } catch (err) {
+                console.error("Dashboard stats fetch failed:", err);
+            }
+        };
+        if (isAuthenticated) fetchStats();
+    }, [isAuthenticated, user]);
+
     useEffect(() => {
         if (!isAuthenticated) {
             navigate("/login", { replace: true });
         }
     }, [isAuthenticated, navigate]);
-
-    const fullName = user?.fullName || "User";
-    const initials = fullName[0]?.toUpperCase() || "U";
-    const roleLabel = (user?.role || "STUDENT").replace('ROLE_', '');
-    const clockLabel = time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
     return (
         <div className="dashboard-content-only">
@@ -77,17 +120,17 @@ export default function UserDashboard() {
                     <div className="telemetry-group">
                         <div className="tel-item">
                             <span className="tel-label">ACTIVE BOOKINGS</span>
-                            <span className="tel-value">02</span>
+                            <span className="tel-value">{String(stats.activeBookings).padStart(2, '0')}</span>
                         </div>
                         <div className="tel-divider"></div>
                         <div className="tel-item">
                             <span className="tel-label">OPEN TICKETS</span>
-                            <span className="tel-value">01</span>
+                            <span className="tel-value">{String(stats.openTickets).padStart(2, '0')}</span>
                         </div>
                     </div>
                     <div className="telemetry-footer">
                         <div className="health-bar">
-                            <div className="health-fill" style={{width: '75%'}}></div>
+                            <div className="health-fill" style={{width: `${Math.min(((stats.activeBookings + stats.openTickets) / 10) * 100, 100)}%`}}></div>
                         </div>
                         <button className="telemetry-btn" onClick={() => navigate('/profile')}>MONITOR ANALYTICS</button>
                     </div>

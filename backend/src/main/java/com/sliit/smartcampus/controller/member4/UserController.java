@@ -152,6 +152,15 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
     }
 
+    @DeleteMapping("/me")
+    public ResponseEntity<Map<String, String>> deleteMe(@AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        userRepository.deleteById(user.getId());
+        return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+    }
+
     @GetMapping("/admin/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -182,6 +191,13 @@ public class UserController {
         User.Role newRole = User.Role.valueOf(payload.get("role"));
         user.setRole(newRole);
         return ResponseEntity.ok(userRepository.save(user));
+    }
+
+    @DeleteMapping("/admin/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, String>> adminDeleteUser(@PathVariable String userId) {
+        userRepository.deleteById(userId);
+        return ResponseEntity.ok(Map.of("message", "User deleted successfully by Admin"));
     }
 
     @PostMapping("/admin/technicians")

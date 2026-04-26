@@ -30,6 +30,20 @@ export default function UserManagement() {
         }
     };
 
+    const handleDeleteUser = async (userId, userName) => {
+        if (!window.confirm(`Are you sure you want to permanently delete user "${userName}"? This action cannot be undone.`)) {
+            return;
+        }
+        try {
+            await API.delete(`/user/admin/${userId}`);
+            // Optimistically update UI
+            setUsers(users.filter(u => u.id !== userId));
+        } catch (error) {
+            console.error("Error deleting user", error);
+            alert("Failed to delete user. Please try again.");
+        }
+    };
+
     return (
         <div className="dashboard-content-only">
             <section className="command-banner">
@@ -53,6 +67,7 @@ export default function UserManagement() {
                                 <th style={{ padding: '16px', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Email</th>
                                 <th style={{ padding: '16px', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Role</th>
                                 <th style={{ padding: '16px', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Authorization</th>
+                                <th style={{ padding: '16px', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -88,6 +103,26 @@ export default function UserManagement() {
                                             <option value="TECHNICIAN">TECHNICIAN</option>
                                             <option value="ADMIN">ADMIN</option>
                                         </select>
+                                    </td>
+                                    <td style={{ padding: '16px' }}>
+                                        <button 
+                                            onClick={() => handleDeleteUser(u.id, u.fullName)}
+                                            style={{ 
+                                                background: 'transparent',
+                                                color: '#ef4444',
+                                                border: '1px solid #ef4444',
+                                                padding: '6px 12px',
+                                                borderRadius: '6px',
+                                                fontSize: '0.65rem',
+                                                fontWeight: 800,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onMouseOver={(e) => { e.target.style.background = '#ef4444'; e.target.style.color = '#fff'; }}
+                                            onMouseOut={(e) => { e.target.style.background = 'transparent'; e.target.style.color = '#ef4444'; }}
+                                        >
+                                            DELETE
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
