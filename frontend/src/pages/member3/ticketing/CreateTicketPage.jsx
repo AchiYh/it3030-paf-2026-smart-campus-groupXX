@@ -17,16 +17,6 @@ const CATEGORY_OPTIONS = [
   { value: 'OTHER', label: 'OTHER', icon: '📋' },
 ];
 
-const LOCATION_OPTIONS = [
-  'Main Building',
-  'Lab Complex',
-  'Library',
-  'Lecture Hall Block',
-  'Cafeteria',
-  'Hostel Area',
-  'Parking Area',
-  'Sports Complex',
-];
 
 const RESOURCE_OPTIONS_BY_CATEGORY = {
   NETWORK: ['WiFi Access Point', 'Network Switch', 'LAN Port', 'Internet Router'],
@@ -333,18 +323,14 @@ function CreateTicketPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.85rem' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label htmlFor="location">Location *</label>
-            <select
+            <input
               id="location"
               name="location"
               className="form-control"
               value={formData.location}
               onChange={handleChange}
-            >
-              <option value="">Select location</option>
-              {LOCATION_OPTIONS.map((location) => (
-                <option key={location} value={location}>{location}</option>
-              ))}
-            </select>
+              placeholder="E.g., Lab 3, 2nd Floor"
+            />
             {errors.location && <p style={{ color: '#fca5a5', marginTop: '0.35rem', fontSize: '0.8rem' }}>{errors.location}</p>}
           </div>
 
@@ -386,7 +372,7 @@ function CreateTicketPage() {
                   style={{
                     border: selected ? '1px solid rgba(96,165,250,0.9)' : '1px solid var(--border-color)',
                     background: selected ? 'rgba(59,130,246,0.18)' : 'rgba(148,163,184,0.08)',
-                    color: selected ? '#bfdbfe' : 'var(--text-secondary)',
+                    color: selected ? '#1e3a8a' : 'var(--text-secondary)',
                     borderRadius: '999px',
                     padding: '0.45rem 0.8rem',
                     fontSize: '0.82rem',
@@ -455,7 +441,7 @@ function CreateTicketPage() {
                         borderRadius: '6px',
                         background: 'rgba(59,130,246,0.2)',
                         border: '1px solid rgba(59,130,246,0.4)',
-                        color: '#93c5fd',
+                        color: '#1e3a8a',
                         fontSize: '0.75rem',
                         fontWeight: '500',
                         cursor: 'pointer',

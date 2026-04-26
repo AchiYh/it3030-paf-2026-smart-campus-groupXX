@@ -47,6 +47,7 @@ function MainLayout({ children }) {
       return [
         ...common,
         { label: 'User Management', path: '/users', icon: '👥', group: 'Administration' },
+        { label: 'Add Technician', path: '/users/technicians/new', icon: '🛠️', group: 'Administration' },
         { label: 'Manage Bookings', path: '/admin/bookings', icon: '📋', group: 'Operations' },
         { label: 'Resource Hub', path: '/infrastructure', icon: '🏢', group: 'Operations' },
         { label: 'All Tickets', path: '/tickets', icon: '🎫', group: 'Operations' },
