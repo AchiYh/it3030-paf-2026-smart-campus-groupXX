@@ -1,64 +1,25 @@
-import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 import './Profile.css';
 
-const YEAR_OPTIONS = [
-    { value: 'FIRST', label: 'First Year' },
-    { value: 'SECOND', label: 'Second Year' },
-    { value: 'THIRD', label: 'Third Year' },
-    { value: 'FOURTH', label: 'Fourth Year' },
-];
-
-const SEMESTER_OPTIONS = [
-    { value: 'SEM1', label: 'Semester 1' },
-    { value: 'SEM2', label: 'Semester 2' },
-];
-
 function normalizeRole(role) {
-    return String(role || '').replace('ROLE_', '').toUpperCase();
-}
-
-function getRoleHomePath(role) {
-    const normalized = normalizeRole(role);
-    if (normalized.includes('ADMIN')) return '/admin-dashboard';
-    if (normalized.includes('TECHNICIAN')) return '/tech-dashboard';
-    return '/dashboard';
-}
-
-function getRoleNavigationLinks(role) {
-    const normalized = normalizeRole(role);
-    if (normalized.includes('ADMIN')) {
-        return [
-            { label: 'User Management', description: 'Manage all accounts', to: '/admin/users', icon: 'users' },
-            { label: 'System Logs', description: 'Security audit logs', to: '/admin/logs', icon: 'logs' },
-        ];
-    }
-    return [
-        { label: 'My Bookings', description: 'View your history', to: '/bookings/my', icon: 'history' },
-        { label: 'Help Desk', description: 'Support tickets', to: '/ticketing/overview', icon: 'ticket' },
-    ];
-}
-
-function renderRoleNavIcon(icon) {
-    return (
-        <svg viewBox='0 0 24 24' width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 8v8M8 12h8" />
-        </svg>
-    );
+    const r = String(role || '').replace('ROLE_', '').toUpperCase();
+    if (r === 'USER') return 'STUDENT';
+    return r;
 }
 
 export default function Profile() {
     const navigate = useNavigate();
-    const location = useLocation();
-
+    const { updateUser } = useAuth();
+    const fileInputRef = useRef(null);
     const [profile, setProfile] = useState(null);
     const [error, setError] = useState('');
     const [editingField, setEditingField] = useState(null);
     const [editValues, setEditValues] = useState({});
+    const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
     const [saving, setSaving] = useState(false);
-    const [now, setNow] = useState(() => new Date());
 
     useEffect(() => {
         const loadProfile = async () => {
@@ -76,28 +37,47 @@ export default function Profile() {
         loadProfile();
     }, [navigate]);
 
-    useEffect(() => {
-        const timer = setInterval(() => setNow(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
+    const handlePhotoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-    const handleLogout = () => {
-        // Implement logout logic if needed, or just redirect
-        navigate('/login');
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await api.post('/user/upload-profile-image', formData);
+            setProfile(prev => ({ ...prev, profilePicture: res.data.imageUrl }));
+            updateUser({ profilePicture: res.data.imageUrl });
+        } catch (err) {
+            alert('Failed to upload image');
+        }
     };
 
-    const fullName = profile?.fullName || "User";
-    const roleLabel = normalizeRole(profile?.role);
-    const initials = (fullName[0] || 'U').toUpperCase();
-    
-    const calendarLabel = now.toLocaleString('default', { month: 'long', year: 'numeric' });
-    const clockLabel = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const getImageUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081/api";
+        const rootUrl = baseUrl.replace('/api', '');
+        return rootUrl + url;
+    };
 
-    const calculateCompletion = () => {
-        if (!profile) return 0;
-        const fields = [profile.fullName, profile.email, profile.phone, profile.year, profile.semester];
-        const filled = fields.filter(f => f && String(f).trim()).length;
-        return Math.round((filled / fields.length) * 100);
+    const handlePasswordUpdate = async (e) => {
+        e.preventDefault();
+        if (passwordData.new !== passwordData.confirm) {
+            alert('Passwords do not match');
+            return;
+        }
+        setSaving(true);
+        try {
+            const res = await api.put('/user/update-password', passwordData);
+            alert(res.data.message || 'Security credentials updated successfully');
+            setPasswordData({ current: '', new: '', confirm: '' });
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Update failed - check current password';
+            alert(msg);
+        } finally {
+            setSaving(false);
+        }
     };
 
     const startEdit = (field, value) => {
@@ -108,11 +88,10 @@ export default function Profile() {
     const saveField = async (field) => {
         setSaving(true);
         try {
-            await api.put('/user/update-profile-field', {
-                field,
-                value: editValues[field]
-            });
-            setProfile(prev => ({ ...prev, [field === 'phone' ? 'phone' : field]: editValues[field] }));
+            const val = editValues[field];
+            await api.put('/user/update-profile-field', { field, value: val });
+            setProfile(prev => ({ ...prev, [field]: val }));
+            if (field === 'fullName') updateUser({ fullName: val });
             setEditingField(null);
         } catch (err) {
             alert('Update failed');
@@ -121,133 +100,140 @@ export default function Profile() {
         }
     };
 
-    if (!profile && !error) return <div className="loading">Loading...</div>;
+    if (!profile && !error) return <div className="loading-state">Synchronizing Institutional Profile...</div>;
 
-    const completion = calculateCompletion();
-    const navLinks = getRoleNavigationLinks(profile?.role);
-
-    const detailsRows = [
-        { label: 'Full Name', value: fullName, field: 'fullName' },
-        { label: 'Email', value: profile?.email, field: 'email', locked: true },
-        { label: 'Phone', value: profile?.phone, field: 'phone' },
-        { label: 'Year', value: profile?.year, field: 'year' },
-        { label: 'Semester', value: profile?.semester, field: 'semester' },
-    ];
+    const fullName = profile?.fullName || "User";
+    const initials = (fullName[0] || 'U').toUpperCase();
+    const roleLabel = normalizeRole(profile?.role);
+    
+    const emailPrefix = profile?.email?.split('@')[0]?.toUpperCase();
+    const studentId = (profile?.studentId && profile.studentId !== "IT2XXXXXXX") 
+        ? profile.studentId 
+        : emailPrefix || "IT2XXXXXXX";
 
     return (
-        <div className='profile-page'>
-            <div className='profile-page__canvas' />
-            <div className='profile-workbench'>
-                <aside className='profile-sidebar'>
-                    <div className='sidebar-brand'>
-                        <span className='brand-avatar'>{initials}</span>
-                        <div className='brand-info'>
-                            <strong>{fullName}</strong>
-                            <small>{profile?.email}</small>
-                        </div>
-                    </div>
-
-                    <nav className='sidebar-nav'>
-                        <p className='sidebar-label'>Quick Navigation</p>
-                        <Link className='sidebar-link' to={getRoleHomePath(profile?.role)}>Home</Link>
-                        <Link className='sidebar-link active' to='/profile'>Profile</Link>
-                        <Link className='sidebar-link' to='/settings'>Settings</Link>
-                    </nav>
-
-                    <div className='sidebar-card'>
-                        <p className='sidebar-label'>Profile Status</p>
-                        <div className='sidebar-item'>
-                            <span>Completion</span>
-                            <strong>{completion}%</strong>
-                        </div>
-                        <div className='sidebar-item'>
-                            <span>Role</span>
-                            <strong>{roleLabel}</strong>
-                        </div>
-                    </div>
-
-                    <div className='sidebar-calendar-card'>
-                        <p className='sidebar-label'>Calendar</p>
-                        <div className='sidebar-calendar-header'>
-                            <strong>{calendarLabel}</strong>
-                        </div>
-                        <div className='sidebar-clock'>{clockLabel}</div>
-                    </div>
-                </aside>
-
-                <main className='profile-main'>
-                    <header className='profile-header'>
-                        <div className='profile-header__title'>
-                            <h1>Account Profile</h1>
-                            <p>Manage your academic and personal information.</p>
-                            
-                            <div className='profile-role-nav-inline'>
-                                {navLinks.map(link => (
-                                    <Link key={link.to} className='profile-role-nav-link' to={link.to}>
-                                        <span className='profile-role-nav-icon'>{renderRoleNavIcon(link.icon)}</span>
-                                        <span className='profile-role-nav-text'>
-                                            <strong>{link.label}</strong>
-                                            <small>{link.description}</small>
-                                        </span>
-                                    </Link>
-                                ))}
+        <div className='profile-content-only'>
+            <div className="profile-header-grid">
+                <section className='profile-identity-card'>
+                    <div className='avatar-container-square'>
+                        <div className='avatar-square' onClick={() => fileInputRef.current.click()}>
+                            {profile?.profilePicture ? <img src={getImageUrl(profile.profilePicture)} alt="Avatar" /> : initials}
+                            <div className='upload-overlay'>
+                                <span>CHANGE PHOTO</span>
                             </div>
                         </div>
-                        <div className='profile-header__actions'>
-                            <button className='btn btn-danger' onClick={handleLogout}>Logout</button>
-                        </div>
-                    </header>
-
-                    <div className='profile-grid'>
-                        <article className='card hero-card'>
-                            <div className='hero-cover' />
-                            <div className='hero-body'>
-                                <div className='hero-avatar'><span>{initials}</span></div>
-                                <div className='hero-text'>
-                                    <h2>{fullName}</h2>
-                                    <p>{profile?.email}</p>
-                                    <span className='role-chip'>{roleLabel}</span>
-                                </div>
-                            </div>
-                        </article>
-
-                        <article className='card completion-card'>
-                            <div className='completion-header'>
-                                <h3>Completion</h3>
-                                <strong>{completion}%</strong>
-                            </div>
-                            <div className='completion-bar'><span style={{ width: `${completion}%` }} /></div>
-                        </article>
-
-                        <article className='card details-card'>
-                            <h3>Personal Information</h3>
-                            <div className='details-list'>
-                                {detailsRows.map(row => (
-                                    <div key={row.field} className='details-row'>
-                                        <div className='row-head'><span>{row.label}</span></div>
-                                        {editingField === row.field ? (
-                                            <div className='edit-row'>
-                                                <input 
-                                                    value={editValues[row.field] || ''} 
-                                                    onChange={e => setEditValues({[row.field]: e.target.value})}
-                                                />
-                                                <button className='btn btn-primary' onClick={() => saveField(row.field)} disabled={saving}>Save</button>
-                                                <button className='btn btn-soft' onClick={() => setEditingField(null)}>Cancel</button>
-                                            </div>
-                                        ) : (
-                                            <div className='view-row'>
-                                                <strong>{row.value || 'Not set'}</strong>
-                                                {!row.locked && (
-                                                    <button className='edit-link' onClick={() => startEdit(row.field, row.value)}>Edit</button>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </article>
+                        <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handlePhotoUpload} accept="image/*" />
                     </div>
-                </main>
+                    <div className='identity-text-square'>
+                        <h1>{fullName}</h1>
+                        <p className="email-label">{profile?.email}</p>
+                        <div className='badge-row-square'>
+                            <span className='role-badge-square'>{roleLabel}</span>
+                            <span className='status-badge-square'>VALIDATED</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section className='access-level-card'>
+                    <h3><span className="icon">🔒</span> ACCESS LEVEL</h3>
+                    <p>Your account is protected by institution-grade encryption. Ensure your password remains private.</p>
+                    <div className='last-login'>
+                        <span>LAST LOGIN</span>
+                        <strong>{new Date().toLocaleDateString()} (Sri Lanka)</strong>
+                    </div>
+                    <div className='shield-bg'>🛡️</div>
+                </section>
+            </div>
+
+            <div className='profile-details-grid' style={{ marginTop: '32px' }}>
+                {/* IDENTITY DETAILS */}
+                <div className='details-section-card'>
+                    <h3><span className="icon">👤</span> IDENTITY DETAILS</h3>
+                    <div className='input-grid'>
+                        <ProfileInput label="FULL NAME" value={fullName} icon="👤" onEdit={() => startEdit('fullName', fullName)} isEditing={editingField === 'fullName'} editValue={editValues.fullName} onChange={(v) => setEditValues({fullName: v})} onSave={() => saveField('fullName')} onCancel={() => setEditingField(null)} saving={saving} />
+                        <ProfileInput label="INSTITUTIONAL EMAIL" value={profile?.email} icon="📧" locked={true} />
+                        <ProfileInput label="PHONE NUMBER" value={profile?.phone} icon="📞" onEdit={() => startEdit('phone', profile?.phone)} isEditing={editingField === 'phone'} editValue={editValues.phone} onChange={(v) => setEditValues({phone: v})} onSave={() => saveField('phone')} onCancel={() => setEditingField(null)} saving={saving} />
+                        <ProfileInput label="STUDENT ID" value={studentId} icon="🆔" locked={true} />
+                    </div>
+                    <div className="card-actions-row">
+                        <button className='save-all-btn'><span className="btn-icon">💾</span> SAVE IDENTITY CHANGES</button>
+                    </div>
+                </div>
+
+                {/* PASSWORD & SECURITY - UPDATED FOR CLEAR UI */}
+                <div className='details-section-card'>
+                    <h3><span className="icon">🔓</span> PASSWORD & SECURITY</h3>
+                    <form className='password-form-grid' onSubmit={handlePasswordUpdate}>
+                        <div className='password-grid-container'>
+                            <SecurityInput 
+                                label="CURRENT PASSWORD" 
+                                placeholder="Required for verification"
+                                value={passwordData.current}
+                                onChange={v => setPasswordData({...passwordData, current: v})}
+                            />
+                            <div className='divider-line'></div>
+                            <SecurityInput 
+                                label="NEW PASSWORD" 
+                                placeholder="Min. 8 characters"
+                                value={passwordData.new}
+                                onChange={v => setPasswordData({...passwordData, new: v})}
+                            />
+                            <SecurityInput 
+                                label="CONFIRM NEW PASSWORD" 
+                                placeholder="Verify password"
+                                value={passwordData.confirm}
+                                onChange={v => setPasswordData({...passwordData, confirm: v})}
+                            />
+                        </div>
+                        <div className="card-actions-row">
+                            <button type="submit" className='outline-security-btn' disabled={saving}>
+                                {saving ? 'VERIFYING...' : 'UPDATE SECURITY CREDENTIALS'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function ProfileInput({ label, value, icon, locked, onEdit, isEditing, editValue, onChange, onSave, onCancel, saving, placeholder }) {
+    return (
+        <div className='profile-input-wrapper'>
+            <label>{label}</label>
+            <div className={`input-container ${locked ? 'locked' : ''} ${isEditing ? 'editing' : ''}`}>
+                <span className='input-icon'>{icon}</span>
+                {isEditing ? (
+                    <input value={editValue} onChange={e => onChange(e.target.value)} autoFocus placeholder={placeholder} className="inline-edit-input" />
+                ) : (
+                    <span className='display-value'>{value || 'Not provided'}</span>
+                )}
+                {!locked && !isEditing && <button className='edit-badge-btn' onClick={onEdit}>EDIT</button>}
+                {isEditing && (
+                    <div className='edit-actions-mini'>
+                        <button className='confirm-btn-mini' onClick={onSave} disabled={saving}>✔</button>
+                        <button className='cancel-btn-mini' onClick={onCancel}>✖</button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function SecurityInput({ label, placeholder, value, onChange }) {
+    return (
+        <div className='profile-input-wrapper'>
+            <label>{label}</label>
+            <div className='input-container security'>
+                <span className='input-icon'>🔑</span>
+                <input 
+                    type="password" 
+                    value={value} 
+                    onChange={e => onChange(e.target.value)} 
+                    placeholder={placeholder} 
+                    className="inline-edit-input"
+                    required
+                />
             </div>
         </div>
     );

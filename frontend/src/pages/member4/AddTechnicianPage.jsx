@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import API from '../../services/api';
+import "./Dashboard.css";
 
 const SPECIALIZATION_OPTIONS = [
   'Electrical',
@@ -34,25 +35,13 @@ function AddTechnicianPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     if (!formData.fullName.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.specialization || !formData.password.trim()) {
-      setError('Name, email, phone, specialization, and password are required.');
+      setError('All fields are required.');
       return;
     }
-
     setLoading(true);
-    setError('');
-    setSuccess('');
-
     try {
-      await API.post('/user/admin/technicians', {
-        fullName: formData.fullName.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        specialization: formData.specialization,
-        password: formData.password,
-      });
-
+      await API.post('/user/admin/technicians', formData);
       setSuccess('Technician created successfully.');
       setFormData({ fullName: '', email: '', phone: '', specialization: '', password: '' });
     } catch (err) {
@@ -63,128 +52,62 @@ function AddTechnicianPage() {
   };
 
   return (
-    <div className="card fade-in">
-      <div style={{ marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div>
-          <h2 style={{ marginBottom: '0.4rem' }}>Add Technician</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Create a new technician account with the TECHNICIAN role for ticket assignment.
-          </p>
+    <div className="dashboard-content-only">
+        <section className="command-banner">
+            <div className="command-info">
+            <h2>New Technician Protocol</h2>
+            <div className="command-status">
+                <span>Institutional Security</span>
+                <span>IDENTITY PROVISIONING</span>
+            </div>
+            </div>
+        </section>
+
+        <div className="info-card" style={{ marginTop: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <h3>Provisioning Form</h3>
+            <Link to="/users" className="cancel-btn" style={{ textDecoration: 'none', padding: '8px 16px' }}>BACK TO DIRECTORY</Link>
+            </div>
+
+            {error && <div className="message error" style={{ marginBottom: '1rem' }}>{error}</div>}
+            {success && <div className="message success" style={{ marginBottom: '1rem', background: '#f0fdf4', color: '#10b981', padding: '12px', borderRadius: '8px' }}>{success}</div>}
+
+            <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="edit-input-group" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>FULL NAME</label>
+                <input name="fullName" value={formData.fullName} onChange={handleChange} placeholder="e.g. Kasun Kalhara" style={{ width: '100%', marginTop: '4px' }} />
+                </div>
+                <div className="edit-input-group" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>EMAIL ADDRESS</label>
+                <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="e.g. kasun@sliit.lk" style={{ width: '100%', marginTop: '4px' }} />
+                </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="edit-input-group" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>PHONE NUMBER</label>
+                <input name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="e.g. 0771234567" style={{ width: '100%', marginTop: '4px' }} />
+                </div>
+                <div className="edit-input-group" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>SPECIALIZATION</label>
+                <select name="specialization" value={formData.specialization} onChange={handleChange} style={{ width: '100%', marginTop: '4px', background: '#eff3f9', border: '0', padding: '8px', borderRadius: '4px' }}>
+                    <option value="">Select Protocol...</option>
+                    {SPECIALIZATION_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+                </div>
+            </div>
+
+            <div className="edit-input-group" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>TEMPORARY PASSWORD</label>
+                <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Min 6 characters" style={{ width: '100%', marginTop: '4px' }} />
+            </div>
+
+            <button type="submit" className="save-btn" style={{ padding: '12px', marginTop: '12px' }} disabled={loading}>
+                {loading ? 'PROVISIONING...' : 'INITIATE PROVISIONING'}
+            </button>
+            </form>
         </div>
-
-        <button className="btn btn-secondary" type="button" onClick={() => navigate('/users')}>
-          Back to Users
-        </button>
-      </div>
-
-      {error && (
-        <div style={{
-          padding: '0.75rem 0.9rem',
-          marginBottom: '1rem',
-          borderRadius: '8px',
-          border: '1px solid rgba(239,68,68,0.3)',
-          background: 'rgba(239,68,68,0.12)',
-          color: '#fca5a5',
-          fontSize: '0.875rem',
-        }}>
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div style={{
-          padding: '0.75rem 0.9rem',
-          marginBottom: '1rem',
-          borderRadius: '8px',
-          border: '1px solid rgba(16,185,129,0.35)',
-          background: 'rgba(16,185,129,0.12)',
-          color: '#6ee7b7',
-          fontSize: '0.875rem',
-        }}>
-          {success}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} noValidate style={{ maxWidth: '720px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.85rem' }}>
-          <div className="form-group">
-            <label htmlFor="fullName">Name</label>
-            <input
-              id="fullName"
-              name="fullName"
-              className="form-control"
-              value={formData.fullName}
-              onChange={handleChange}
-              placeholder="e.g., Chamika Perera"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              className="form-control"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="e.g., tech1@smartcampus.lk"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="phone">Phone</label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              className="form-control"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="e.g., 0771234567"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="specialization">Specialization</label>
-            <select
-              id="specialization"
-              name="specialization"
-              className="form-control"
-              value={formData.specialization}
-              onChange={handleChange}
-            >
-              <option value="">Select specialization</option>
-              {SPECIALIZATION_OPTIONS.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            className="form-control"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Create a secure password"
-            minLength={6}
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-          <button className="btn btn-secondary" type="button" onClick={() => navigate('/users')} disabled={loading}>
-            Cancel
-          </button>
-          <button className="btn btn-primary" type="submit" disabled={loading}>
-            {loading ? 'Creating...' : 'Create Technician'}
-          </button>
-        </div>
-      </form>
     </div>
   );
 }

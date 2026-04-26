@@ -164,8 +164,8 @@ function TicketOverview() {
 
     if (isAdmin) {
       return [
-        { label: 'Total Tickets', value: total, accent: '#5e86ba', spot: 'rgba(94, 134, 186, 0.14)', subLabel: 'Created in this period' },
-        { label: 'Open Tickets', value: open, accent: '#d5ad58', spot: 'rgba(213, 173, 88, 0.14)', subLabel: 'Waiting to be picked up' },
+        { label: 'Total Tickets', value: total, accent: '#1a2a44', spot: 'rgba(26, 42, 68, 0.14)', subLabel: 'Created in this period' },
+        { label: 'Open Tickets', value: open, accent: '#f9b824', spot: 'rgba(249, 184, 36, 0.14)', subLabel: 'Waiting to be picked up' },
         { label: 'In Progress', value: inProgress, accent: '#a678af', spot: 'rgba(166, 120, 175, 0.14)', subLabel: 'Currently being worked on' },
         { label: 'Overdue', value: overdue, accent: '#ef4444', spot: 'rgba(239, 68, 68, 0.16)', subLabel: 'Past the due date' },
         { label: 'Resolved', value: resolved, accent: '#8fb478', spot: 'rgba(143, 180, 120, 0.14)', subLabel: 'Fixed and marked resolved' },
@@ -176,8 +176,8 @@ function TicketOverview() {
     }
 
     return [
-      { label: 'TOTAL', value: total, accent: '#5e86ba', spot: 'rgba(94, 134, 186, 0.14)' },
-      { label: 'OPEN', value: open, accent: '#d5ad58', spot: 'rgba(213, 173, 88, 0.14)' },
+      { label: 'TOTAL', value: total, accent: '#1a2a44', spot: 'rgba(26, 42, 68, 0.14)' },
+      { label: 'OPEN', value: open, accent: '#f9b824', spot: 'rgba(249, 184, 36, 0.14)' },
       { label: 'IN PROGRESS', value: inProgress, accent: '#a678af', spot: 'rgba(166, 120, 175, 0.14)' },
       { label: 'OVERDUE', value: overdue, accent: '#ef4444', spot: 'rgba(239, 68, 68, 0.16)' },
       { label: 'RESOLVED', value: resolved, accent: '#8fb478', spot: 'rgba(143, 180, 120, 0.14)' },

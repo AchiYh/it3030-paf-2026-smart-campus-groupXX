@@ -14,6 +14,12 @@ import java.util.Map;
 
 import com.sliit.smartcampus.dto.member4.UserUpdateDto;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/user")
@@ -77,6 +83,73 @@ public class UserController {
         userRepository.save(existingUser);
 
         return ResponseEntity.ok(Map.of("success", true, "message", "Profile updated successfully"));
+    }
+
+    @PostMapping("/upload-profile-image")
+    public ResponseEntity<Map<String, String>> uploadProfileImage(
+            @AuthenticationPrincipal User user,
+            @RequestParam("file") MultipartFile file
+    ) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        try {
+            String uploadDir = "uploads/profile/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath);
+            String imageUrl = "/api/user/image/" + fileName; 
+            User existingUser = userRepository.findById(user.getId()).orElse(null);
+            if (existingUser != null) {
+                existingUser.setProfilePicture(imageUrl);
+                userRepository.save(existingUser);
+            }
+            return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/image/{fileName:.+}")
+    public ResponseEntity<byte[]> getImage(@PathVariable String fileName) {
+        try {
+            Path filePath = Paths.get("uploads/profile/").resolve(fileName);
+            byte[] image = Files.readAllBytes(filePath);
+            return ResponseEntity.ok().body(image);
+        } catch (IOException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/update-password")
+    public ResponseEntity<Map<String, String>> updatePassword(
+            @AuthenticationPrincipal User user,
+            @RequestBody Map<String, String> payload
+    ) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        User existingUser = userRepository.findById(user.getId()).orElse(null);
+        if (existingUser == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "User not found"));
+        }
+
+        String currentPassword = payload.get("current");
+        String newPassword = payload.get("new");
+
+        if (!passwordEncoder.matches(currentPassword, existingUser.getPassword())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Current password does not match"));
+        }
+
+        existingUser.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(existingUser);
+
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
     }
 
     @GetMapping("/admin/all")

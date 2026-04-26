@@ -1,1 +1,0 @@
-Server app root folder.

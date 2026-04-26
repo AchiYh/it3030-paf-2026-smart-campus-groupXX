@@ -87,25 +87,25 @@ export default function Login() {
                 <section className='login-showcase' aria-hidden='true'>
                     <div className='login-showcase__photo'>
                         <div className='login-showcase__top'>
-                            <strong>UniSphere Spaces</strong>
+                            <strong>Smart Campus Portal</strong>
                             <div className='login-showcase__actions'>
-                                <span>Sign Up</span>
-                                <span className='join-pill'>Join Us</span>
+                                <span>Multi-Factor Authenticated</span>
+                                <span className='join-pill'>Secure</span>
                             </div>
+                        </div>
+
+                        <div className='login-showcase__center'>
+                            <h1>Welcome to the Institutional Portal</h1>
+                            <p>Access the Smart Campus Operations ecosystem. Manage resources, track incidents, and optimize campus life.</p>
                         </div>
 
                         <div className='login-showcase__bottom'>
                             <div className='login-showcase__profile'>
-                                <span className='login-showcase__avatar'>U</span>
+                                <span className='login-showcase__avatar'>SC</span>
                                 <div>
-                                    <p>UniSphere</p>
-                                    <small>Resources & Requests</small>
+                                    <p>Smart Campus Hub</p>
+                                    <small>Secure Data Transmission</small>
                                 </div>
-                            </div>
-
-                            <div className='login-showcase__arrows'>
-                                <span>&larr;</span>
-                                <span>&rarr;</span>
                             </div>
                         </div>
                     </div>
@@ -114,13 +114,11 @@ export default function Login() {
                 <section className='login-card-wrap'>
                     <div className='login-card'>
                         <div className='login-card__topbar'>
-                            <strong className='login-brand'>UniSphere</strong>
-                            <span className='lang-pill'>EN</span>
+                            <strong className='login-brand'>Sign In</strong>
                         </div>
 
                         <div className='login-card__header'>
-                            <h2>Hi UniSphere Community</h2>
-                            <p>Welcome to UniSphere Resource Exchange</p>
+                            <p>Enter your institutional credentials to access the system.</p>
                         </div>
 
                         <form onSubmit={handleSubmit} noValidate>
@@ -203,7 +201,7 @@ export default function Login() {
             </div>
 
             <footer className='login-page__footer'>
-                {new Date().getFullYear()} UniSphere. All rights reserved.
+                © {new Date().getFullYear()} SLIIT GLOBAL. All rights reserved.
             </footer>
         </div>
     );

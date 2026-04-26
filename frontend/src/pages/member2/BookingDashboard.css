@@ -1,11 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
 
 :root {
-  --bdb-bg: #f8fafc;
-  --bdb-card-bg: #ffffff;
-  --bdb-text: #0f172a;
-  --bdb-text-muted: #475569;
-  --bdb-primary: #4f46e5;
+  --bdb-bg: var(--bg-primary);
+  --bdb-card-bg: var(--bg-secondary);
+  --bdb-text: var(--text-primary);
+  --bdb-text-muted: var(--text-secondary);
+  --bdb-primary: var(--primary);
+  --bdb-accent: var(--accent);
 }
 
 .bdb-container {
@@ -20,7 +21,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   border-radius: 1.5rem;
   padding: 2rem 2rem;
   margin-bottom: 2rem;
@@ -179,8 +180,8 @@
   border-color: #cbd5e1;
 }
 
-.bdb-cta-primary { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; border: none; }
-.bdb-cta-secondary { background: linear-gradient(135deg, #0891b2, #0e7490); color: white; border: none; }
+.bdb-cta-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; }
+.bdb-cta-secondary { background: linear-gradient(135deg, var(--accent), #d97706); color: white; border: none; }
 
 .bdb-cta-icon { font-size: 1.5rem; }
 .bdb-cta-title { font-weight: 700; margin-bottom: 0.2rem; }

@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api';
 import './Signup.css';
 
-const roleOptions = ['USER', 'ADMIN', 'TECHNICIAN'];
 const yearOptions = ['FIRST', 'SECOND', 'THIRD', 'FOURTH'];
 const semesterOptions = ['SEM1', 'SEM2'];
 
@@ -17,7 +16,6 @@ export default function Signup() {
         email: '',
         tempEmail: '',
         phoneNumber: '',
-        role: 'USER',
         year: '',
         semester: '',
         password: '',
@@ -57,11 +55,6 @@ export default function Signup() {
 
         if (!form.tempEmail.trim()) {
             setError('Recovery email is required.');
-            return false;
-        }
-
-        if (!form.role) {
-            setError('Role is required.');
             return false;
         }
 
@@ -180,7 +173,6 @@ export default function Signup() {
                 email: form.email.trim(),
                 tempEmail: form.tempEmail.trim(),
                 phoneNumber: trimmedPhone || null,
-                role: form.role,
                 year: trimmedYear || null,
                 semester: trimmedSemester || null,
                 password: form.password,
@@ -209,25 +201,25 @@ export default function Signup() {
                 <section className='signup-showcase' aria-hidden='true'>
                     <div className='signup-showcase__photo'>
                         <div className='signup-showcase__top'>
-                            <strong>UniSphere Spaces</strong>
+                            <strong>Smart Campus Portal</strong>
                             <div className='signup-showcase__actions'>
-                                <span>Create Access</span>
-                                <span className='join-pill'>Get Started</span>
+                                <span>Multi-Factor Authenticated</span>
+                                <span className='join-pill'>Secure</span>
                             </div>
+                        </div>
+
+                        <div className='signup-showcase__center'>
+                            <h1>Welcome to the Institutional Portal</h1>
+                            <p>Access the Smart Campus Operations ecosystem. Manage resources, track incidents, and optimize campus life.</p>
                         </div>
 
                         <div className='signup-showcase__bottom'>
                             <div className='signup-showcase__profile'>
-                                <span className='signup-showcase__avatar'>U</span>
+                                <span className='signup-showcase__avatar'>SC</span>
                                 <div>
-                                    <p>UniSphere</p>
-                                    <small>Secure Student Registration</small>
+                                    <p>Smart Campus Hub</p>
+                                    <small>Secure Data Transmission</small>
                                 </div>
-                            </div>
-
-                            <div className='signup-showcase__arrows'>
-                                <span>&larr;</span>
-                                <span>&rarr;</span>
                             </div>
                         </div>
                     </div>
@@ -236,13 +228,11 @@ export default function Signup() {
                 <section className='signup-card-wrap'>
                     <div className='signup-card'>
                         <div className='signup-card__topbar'>
-                            <strong className='signup-brand'>UniSphere</strong>
-                            <span className='lang-pill'>EN</span>
+                            <strong className='signup-brand'>Create Account</strong>
                         </div>
 
                         <div className='signup-card__header'>
-                            <h2>Create your account</h2>
-                            <p>Register to access UniSphere resources and services</p>
+                            <p>Register as a student to access campus resources and support.</p>
                         </div>
 
                         <div className='signup-steps' aria-label='Signup steps'>
@@ -319,17 +309,6 @@ export default function Signup() {
                                                 onChange={handleChange}
                                                 required
                                             />
-                                        </label>
-
-                                        <label className='form-group'>
-                                            <span>Role (Required)</span>
-                                            <select name='role' value={form.role} onChange={handleChange}>
-                                                {roleOptions.map((role) => (
-                                                    <option key={role} value={role}>
-                                                        {role}
-                                                    </option>
-                                                ))}
-                                            </select>
                                         </label>
                                     </div>
                                 </div>
@@ -432,7 +411,7 @@ export default function Signup() {
                                     </button>
                                 ) : (
                                     <button className='signup-btn' type='button' onClick={handleSubmit} disabled={loading}>
-                                        {loading ? 'Creating account...' : 'Create Account'}
+                                        {loading ? 'Creating account...' : 'Create Student Account'}
                                     </button>
                                 )}
                             </div>
@@ -448,7 +427,7 @@ export default function Signup() {
             </div>
 
             <footer className='signup-page__footer'>
-                {new Date().getFullYear()} UniSphere. All rights reserved.
+                © {new Date().getFullYear()} SLIIT GLOBAL. All rights reserved.
             </footer>
         </div>
     );

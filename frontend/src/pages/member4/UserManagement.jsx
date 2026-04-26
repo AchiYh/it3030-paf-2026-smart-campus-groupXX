@@ -1,85 +1,100 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
+import "./Dashboard.css";
 
-function UserManagement() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function UserManagement() {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await API.get('/user/admin/all');
-      setUsers(response.data);
-    } catch (error) {
-      console.error("Error fetching users", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchUsers = async () => {
+        try {
+            const response = await API.get('/user/admin/all');
+            setUsers(response.data);
+        } catch (error) {
+            console.error("Error fetching users", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const handleRoleChange = async (userId, newRole) => {
-    try {
-      await API.patch(`/user/admin/${userId}/role`, { role: newRole });
-      fetchUsers(); // Refresh the list
-    } catch (error) {
-      console.error("Error updating role", error);
-    }
-  };
+    const handleRoleChange = async (userId, newRole) => {
+        try {
+            await API.patch(`/user/admin/${userId}/role`, { role: newRole });
+            fetchUsers();
+        } catch (error) {
+            console.error("Error updating role", error);
+        }
+    };
 
-  return (
-    <div>
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem' }}>User Management</h2>
-      <div style={{
-          background: 'var(--bg-secondary)',
-          borderRadius: '12px',
-          border: '1px solid var(--border-color)',
-          overflow: 'hidden'
-      }}>
-        {loading ? (
-          <p style={{ padding: '2rem' }}>Loading users...</p>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead style={{ background: 'rgba(0,0,0,0.2)' }}>
-              <tr>
-                <th style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>Name</th>
-                <th style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>Email</th>
-                <th style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>Role</th>
-                <th style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user.id}>
-                  <td style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>{user.fullName}</td>
-                  <td style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>{user.email}</td>
-                  <td style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>
-                    <span className={`badge ${user.role === 'ADMIN' ? 'badge-primary' : user.role === 'TECHNICIAN' ? 'badge-info' : 'badge-secondary'}`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)' }}>
-                    <select 
-                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                      value={user.role}
-                      className="form-control"
-                      style={{ padding: '0.25rem', width: 'auto', display: 'inline-block' }}
-                    >
-                      <option value="USER">USER</option>
-                      <option value="TECHNICIAN">TECHNICIAN</option>
-                      <option value="ADMIN">ADMIN</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </div>
-  );
+    return (
+        <div className="dashboard-content-only">
+            <section className="command-banner">
+                <div className="command-info">
+                    <h2>User Management</h2>
+                    <div className="command-status">
+                        <span>Institutional Security</span>
+                        <span>IDENTITY PROTOCOL ACCESS</span>
+                    </div>
+                </div>
+            </section>
+
+            <div className="info-card" style={{ padding: '0', overflow: 'hidden', marginTop: '32px' }}>
+                {loading ? (
+                    <p style={{ padding: '2rem' }}>Synchronizing directory...</p>
+                ) : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                        <thead>
+                            <tr style={{ background: '#f8fafc' }}>
+                                <th style={{ padding: '16px', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Identity</th>
+                                <th style={{ padding: '16px', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Email</th>
+                                <th style={{ padding: '16px', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Role</th>
+                                <th style={{ padding: '16px', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Authorization</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {users.map(u => (
+                                <tr key={u.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                    <td style={{ padding: '16px', fontWeight: 700, fontSize: '0.9rem' }}>{u.fullName}</td>
+                                    <td style={{ padding: '16px', color: '#64748b', fontSize: '0.85rem' }}>{u.email}</td>
+                                    <td style={{ padding: '16px' }}>
+                                        <span style={{ 
+                                            fontSize: '0.7rem', 
+                                            fontWeight: 800, 
+                                            background: u.role === 'ADMIN' ? '#fef3c7' : '#f1f5f9', 
+                                            color: u.role === 'ADMIN' ? '#92400e' : '#1e293b',
+                                            padding: '4px 8px',
+                                            borderRadius: '4px'
+                                        }}>
+                                            {u.role.replace('ROLE_', '')}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '16px' }}>
+                                        <select 
+                                            onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                                            value={u.role}
+                                            style={{ 
+                                                padding: '6px 12px', 
+                                                borderRadius: '6px', 
+                                                border: '1px solid #e2e8f0',
+                                                fontSize: '0.8rem',
+                                                fontWeight: 600
+                                            }}
+                                        >
+                                            <option value="USER">STUDENT</option>
+                                            <option value="TECHNICIAN">TECHNICIAN</option>
+                                            <option value="ADMIN">ADMIN</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
+        </div>
+    );
 }
-
-export default UserManagement;

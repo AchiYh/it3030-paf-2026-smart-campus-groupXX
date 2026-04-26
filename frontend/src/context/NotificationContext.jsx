@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import API from '../services/api';
 
 const NotificationContext = createContext(null);
@@ -7,14 +7,16 @@ export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // We expose a function to reload notifications so the Bell can call it, or we can poll
   const loadNotifications = async () => {
     try {
-      const response = await API.get('/notifications/my'); // We need to create this generic endpoint or map it
-      setNotifications(response.data);
-      setUnreadCount(response.data.filter(n => !n.read).length);
+      // Ensuring the URL is strictly ASCII
+      const response = await API.get('/notifications/my'); 
+      if (response.data && Array.isArray(response.data)) {
+        setNotifications(response.data);
+        setUnreadCount(response.data.filter(n => !n.read).length);
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Failed to load notifications", e);
     }
   };
 
@@ -30,7 +32,7 @@ export function NotificationProvider({ children }) {
 
   const markAllAsRead = async () => {
     try {
-      await API.patch(`/notifications/my/read-all`); // We will implement this backend endpoint
+      await API.patch('/notifications/my/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (e) {
@@ -43,11 +45,17 @@ export function NotificationProvider({ children }) {
     setUnreadCount(0);
   }, []);
 
+  const value = {
+    notifications, 
+    unreadCount, 
+    loadNotifications,
+    markAsRead, 
+    markAllAsRead, 
+    clearNotifications
+  };
+
   return (
-    <NotificationContext.Provider value={{
-      notifications, unreadCount, loadNotifications,
-      markAsRead, markAllAsRead, clearNotifications
-    }}>
+    <NotificationContext.Provider value={value}>
       {children}
     </NotificationContext.Provider>
   );

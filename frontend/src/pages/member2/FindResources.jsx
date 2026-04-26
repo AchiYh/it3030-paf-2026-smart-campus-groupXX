@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import bookingService from '../../services/member2/bookingService';
 import BookingModal from '../../components/member2/BookingModal';
+import api from '../../api';
 import './FindResources.css';
 
 // ==================== RESOURCE DATA ====================
@@ -89,11 +90,13 @@ const TYPE_ICONS = {
 function FindResources() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [resources, setResources] = useState(ALL_RESOURCES);
+  const [allResources, setAllResources] = useState([]);
+  const [resources, setResources] = useState([]);
   const [selectedResource, setSelectedResource] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [successBooking, setSuccessBooking] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     search: '',
     category: 'All',
@@ -102,11 +105,47 @@ function FindResources() {
   });
 
   useEffect(() => {
+    const fetchRealResources = async () => {
+      try {
+        const res = await api.get('/infrastructure');
+        // Transform backend Infrastructure objects to match Member 2's UI format
+        const transformed = res.data.map(item => ({
+          id: item.id,
+          name: item.name,
+          type: mapTypeToCategory(item.type),
+          location: item.location,
+          capacity: item.capacity,
+          status: item.status === 'AVAILABLE' ? 'ACTIVE' : 'OUT_OF_SERVICE',
+          availableCount: item.type === 'Equipment' ? item.capacity : null, // Assuming capacity is count for equipment
+          totalCount: item.type === 'Equipment' ? item.capacity : null,
+          imageUrl: item.imageUrl
+        }));
+        setAllResources(transformed);
+        setResources(transformed);
+      } catch (err) {
+        console.error("Failed to fetch infrastructure", err);
+        setError("Unable to load institutional assets.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRealResources();
+  }, []);
+
+  const mapTypeToCategory = (type) => {
+    if (type === 'Room' || type === 'Hall') return 'Lecture Halls';
+    if (type === 'Laboratory' || type === 'Lab') return 'Labs';
+    if (type === 'Meeting Rooms' || type === 'Meeting') return 'Meeting Rooms';
+    if (type === 'Equipment') return 'Equipment';
+    return 'Lecture Halls'; // Default
+  };
+
+  useEffect(() => {
     filterResources();
-  }, [filters]);
+  }, [filters, allResources]);
 
   const filterResources = () => {
-    let filtered = [...ALL_RESOURCES];
+    let filtered = [...allResources];
     if (filters.category !== 'All') {
       filtered = filtered.filter(r => r.type === filters.category);
     }
@@ -127,7 +166,15 @@ function FindResources() {
     setResources(filtered);
   };
 
-  const allLocations = ['All Locations', ...new Set(ALL_RESOURCES.map(r => r.location).filter(Boolean))];
+  const allLocations = ['All Locations', ...new Set(allResources.map(r => r.location).filter(Boolean))];
+
+  const getImageUrlHelper = (url) => {
+    if (!url) return 'https://via.placeholder.com/400x200?text=No+Image';
+    if (url.startsWith('http') || url.startsWith('blob')) return url;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081/api";
+    const rootUrl = baseUrl.replace('/api', '');
+    return rootUrl + url;
+  };
 
   const handleBookNow = (resource) => {
     setSelectedResource(resource);
@@ -282,11 +329,13 @@ function FindResources() {
             const bookable = isBookable(resource);
             return (
               <div key={resource.id} className={`fr-card ${!bookable ? 'fr-card-unavailable' : ''}`}>
-                <div className="fr-card-top">
-                  <div className="fr-card-icon-wrap" style={{ background: `${CATEGORY_CONFIG[resource.type]?.color}18` }}>
-                    <span className="fr-card-icon">{TYPE_ICONS[resource.type]}</span>
+                <div className="fr-card-top" style={{ backgroundImage: `url(${getImageUrlHelper(resource.imageUrl)})`, backgroundSize: 'cover', backgroundPosition: 'center', height: '160px', borderRadius: '18px 18px 0 0', position: 'relative' }}>
+                  <div className="fr-card-overlay" style={{ position: 'absolute', bottom: '0', left: '0', width: '100%', padding: '12px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', borderRadius: '0 0 0 0' }}>
+                     <div className="fr-card-icon-wrap" style={{ background: `${CATEGORY_CONFIG[resource.type]?.color}`, padding: '6px', borderRadius: '8px' }}>
+                        <span className="fr-card-icon" style={{ fontSize: '1rem' }}>{TYPE_ICONS[resource.type]}</span>
+                     </div>
                   </div>
-                  <span className={`fr-card-status ${bookable ? 'fr-status-active' : 'fr-status-inactive'}`}>
+                  <span className={`fr-card-status ${bookable ? 'fr-status-active' : 'fr-status-inactive'}`} style={{ top: '12px', right: '12px', position: 'absolute' }}>
                     {bookable ? '● Active' : '● Unavailable'}
                   </span>
                 </div>

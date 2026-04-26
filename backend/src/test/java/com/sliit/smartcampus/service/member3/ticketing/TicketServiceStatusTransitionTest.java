@@ -82,7 +82,14 @@ class TicketServiceStatusTransitionTest {
     @Test
     void resolveTicket_succeedsFromInProgress() {
         Ticket ticket = Ticket.builder().id("t1").status(Ticket.TicketStatus.IN_PROGRESS).build();
+        User technician = User.builder().id("tech_001").email("tech@mail.com").role(User.Role.TECHNICIAN).enabled(true).build();
+
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken("tech@mail.com", null, List.of())
+        );
+
         when(ticketRepository.findById("t1")).thenReturn(Optional.of(ticket));
+        when(userRepository.findByEmail("tech@mail.com")).thenReturn(Optional.of(technician));
         when(ticketRepository.save(any(Ticket.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Ticket resolved = ticketService.resolveTicket("t1", new TicketResolveRequest("Issue fixed", "tech_001"));
@@ -96,7 +103,14 @@ class TicketServiceStatusTransitionTest {
     @Test
     void resolveTicket_failsFromOpenState() {
         Ticket ticket = Ticket.builder().id("t1").status(Ticket.TicketStatus.OPEN).build();
+        User technician = User.builder().id("tech_001").email("tech@mail.com").role(User.Role.TECHNICIAN).enabled(true).build();
+
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken("tech@mail.com", null, List.of())
+        );
+
         when(ticketRepository.findById("t1")).thenReturn(Optional.of(ticket));
+        when(userRepository.findByEmail("tech@mail.com")).thenReturn(Optional.of(technician));
 
         BadRequestException ex = assertThrows(
                 BadRequestException.class,

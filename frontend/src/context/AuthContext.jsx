@@ -48,6 +48,13 @@ export function AuthProvider({ children }) {
      return true;
   }, [fetchUser]);
 
+  const updateUser = useCallback((newData) => {
+    setUser(prev => {
+      if (!prev) return newData;
+      return { ...prev, ...newData };
+    });
+  }, []);
+
   const isAuthenticated = !!user;
   const isAdmin = user?.role === 'ADMIN';
   const isTechnician = user?.role === 'TECHNICIAN';
@@ -60,7 +67,8 @@ export function AuthProvider({ children }) {
     isTechnician,
     logout, 
     authenticateWithToken, 
-    fetchUser
+    fetchUser,
+    updateUser
   };
 
   return (

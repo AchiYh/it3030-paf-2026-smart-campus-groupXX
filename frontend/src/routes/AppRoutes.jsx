@@ -22,6 +22,7 @@ import UserDashboard from '../pages/member4/UserDashboard';
 import TechnicianDashboard from '../pages/member4/TechnicianDashboard';
 import UserManagement from '../pages/member4/UserManagement';
 import AddTechnicianPage from '../pages/member4/AddTechnicianPage';
+import InfrastructurePage from '../pages/member1/InfrastructurePage';
 import { useAuth } from '../context/AuthContext';
 
 // DashboardRouter - Shows role-specific dashboard
@@ -71,6 +72,9 @@ function AppRoutes() {
       {/* Member 4 User Pages */}
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+
+      {/* Member 1 Infrastructure Pages */}
+      <Route path="/infrastructure" element={<ProtectedRoute><InfrastructurePage /></ProtectedRoute>} />
 
       {/* User Booking Routes */}
       <Route

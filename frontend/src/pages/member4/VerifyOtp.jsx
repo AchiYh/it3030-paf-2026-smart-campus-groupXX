@@ -75,27 +75,27 @@ export default function VerifyOtp() {
 
             <div className='verify-layout'>
                 <section className='verify-showcase' aria-hidden='true'>
-                    <div className='verify-showcase__photo'>
-                        <div className='verify-showcase__top'>
-                            <strong>Email Verification</strong>
-                            <div className='verify-showcase__actions'>
-                                <span>Secure</span>
-                                <span className='join-pill'>OTP Check</span>
+                    <div className='forgot-showcase__photo'>
+                        <div className='forgot-showcase__top'>
+                            <strong>Smart Campus Portal</strong>
+                            <div className='forgot-showcase__actions'>
+                                <span>Multi-Factor Authenticated</span>
+                                <span className='join-pill'>Secure</span>
                             </div>
                         </div>
 
-                        <div className='verify-showcase__bottom'>
-                            <div className='verify-showcase__profile'>
-                                <span className='verify-showcase__avatar'>U</span>
+                        <div className='forgot-showcase__center'>
+                            <h1>Identity Verification Hub</h1>
+                            <p>Verify your institutional account using the security code sent to your email.</p>
+                        </div>
+
+                        <div className='forgot-showcase__bottom'>
+                            <div className='forgot-showcase__profile'>
+                                <span className='forgot-showcase__avatar'>SC</span>
                                 <div>
-                                    <p>UniSphere</p>
+                                    <p>Smart Campus Hub</p>
                                     <small>Account Security Portal</small>
                                 </div>
-                            </div>
-
-                            <div className='verify-showcase__arrows'>
-                                <span>&larr;</span>
-                                <span>&rarr;</span>
                             </div>
                         </div>
                     </div>
@@ -104,13 +104,11 @@ export default function VerifyOtp() {
                 <section className='verify-card-wrap'>
                     <div className='verify-card'>
                         <div className='verify-card__topbar'>
-                            <strong className='verify-brand'>UniSphere</strong>
-                            <span className='lang-pill'>EN</span>
+                            <strong className='verify-brand'>Verify Account</strong>
                         </div>
 
                         <div className='verify-card__header'>
-                            <h2>Verify Your Account</h2>
-                            <p>Enter the OTP sent to {emailHint || 'your email'}.</p>
+                            <p>Enter the OTP sent to {emailHint || 'your institutional email'}.</p>
                         </div>
 
                         <div className='verify-steps' aria-label='Verification status'>
@@ -156,7 +154,7 @@ export default function VerifyOtp() {
             </div>
 
             <footer className='verify-page__footer'>
-                {new Date().getFullYear()} UniSphere. All rights reserved.
+                © {new Date().getFullYear()} SLIIT GLOBAL. All rights reserved.
             </footer>
         </div>
     );

@@ -139,25 +139,25 @@ export default function ForgotPassword() {
                 <section className='forgot-showcase' aria-hidden='true'>
                     <div className='forgot-showcase__photo'>
                         <div className='forgot-showcase__top'>
-                            <strong>Account Recovery</strong>
+                            <strong>Smart Campus Portal</strong>
                             <div className='forgot-showcase__actions'>
-                                <span>Secure</span>
-                                <span className='join-pill'>3 Steps</span>
+                                <span>Multi-Factor Authenticated</span>
+                                <span className='join-pill'>Secure</span>
                             </div>
+                        </div>
+
+                        <div className='forgot-showcase__center'>
+                            <h1>Account Recovery Hub</h1>
+                            <p>Follow the secure 3-step process to regain access to your institutional account.</p>
                         </div>
 
                         <div className='forgot-showcase__bottom'>
                             <div className='forgot-showcase__profile'>
-                                <span className='forgot-showcase__avatar'>U</span>
+                                <span className='forgot-showcase__avatar'>SC</span>
                                 <div>
-                                    <p>UniSphere</p>
-                                    <small>Password Reset Portal</small>
+                                    <p>Smart Campus Hub</p>
+                                    <small>Secure Identity Management</small>
                                 </div>
-                            </div>
-
-                            <div className='forgot-showcase__arrows'>
-                                <span>&larr;</span>
-                                <span>&rarr;</span>
                             </div>
                         </div>
                     </div>
@@ -166,13 +166,11 @@ export default function ForgotPassword() {
                 <section className='forgot-card-wrap'>
                     <div className='forgot-card'>
                         <div className='forgot-card__topbar'>
-                            <strong className='forgot-brand'>UniSphere</strong>
-                            <span className='lang-pill'>EN</span>
+                            <strong className='forgot-brand'>Recover Access</strong>
                         </div>
 
                         <div className='forgot-card__header'>
-                            <h2>Forgot Password</h2>
-                            <p>Recover your account in three quick steps</p>
+                            <p>Verify your identity and set a new secure password.</p>
                         </div>
 
                         <div className='forgot-steps' aria-label='Recovery progress'>
@@ -270,7 +268,7 @@ export default function ForgotPassword() {
             </div>
 
             <footer className='forgot-page__footer'>
-                {new Date().getFullYear()} UniSphere. All rights reserved.
+                © {new Date().getFullYear()} SLIIT GLOBAL. All rights reserved.
             </footer>
         </div>
     );

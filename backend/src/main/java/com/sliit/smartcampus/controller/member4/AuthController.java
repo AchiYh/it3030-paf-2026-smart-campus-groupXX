@@ -106,7 +106,6 @@ public class AuthController {
             @Email @NotBlank String email,
             @Email @NotBlank String tempEmail,
             String phoneNumber,
-            @NotNull User.Role role,
             String year,
             String semester,
             @NotBlank String password

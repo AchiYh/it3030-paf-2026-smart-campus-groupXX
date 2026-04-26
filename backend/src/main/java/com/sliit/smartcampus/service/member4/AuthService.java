@@ -64,13 +64,19 @@ public class AuthService implements UserDetailsService {
 
         String otp = generateOtp();
 
+        // Default role is USER. Only specific admin email gets ADMIN role.
+        Role assignedRole = Role.USER;
+        if ("admin@sliit.lk".equalsIgnoreCase(request.email())) {
+            assignedRole = Role.ADMIN;
+        }
+
         User user = User.builder()
                 .fullName(request.firstname() + " " + request.lastName())
                 .email(request.email())
                 .tempEmail(request.tempEmail())
                 .phone(request.phoneNumber())
                 .password(passwordEncoder.encode(request.password()))
-                .role(request.role() != null ? request.role() : Role.USER)
+                .role(assignedRole)
                 .year(request.year())
                 .semester(request.semester())
                 .isVerified(false)
