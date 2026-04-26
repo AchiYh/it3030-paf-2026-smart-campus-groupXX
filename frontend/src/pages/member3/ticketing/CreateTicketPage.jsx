@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import ticketService from '../../../services/member3/ticketService';
 import { suggestPriority } from '../../../utils/ticketUtils';
+import api from '../../../api';
 
 const MAX_IMAGES = 3;
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
@@ -85,12 +86,27 @@ function CreateTicketPage() {
     };
   }, [images]);
 
+  const [liveResources, setLiveResources] = useState([]);
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const res = await api.get('/infrastructure');
+        setLiveResources(res.data);
+      } catch (err) {
+        console.error("Failed to load resources for ticketing", err);
+      }
+    };
+    fetchResources();
+  }, []);
+
   const imageCountLabel = useMemo(() => `${images.length}/${MAX_IMAGES} images selected`, [images.length]);
   const dueDatePreview = useMemo(() => calculateDueDatePreview(formData.priority), [formData.priority]);
-  const relatedResourceOptions = useMemo(
-    () => RESOURCE_OPTIONS_BY_CATEGORY[formData.category] || RESOURCE_OPTIONS_BY_CATEGORY.OTHER,
-    [formData.category]
-  );
+  const relatedResourceOptions = useMemo(() => {
+    if (liveResources.length === 0) return [];
+    return liveResources.map(r => r.name);
+  }, [liveResources]);
+
   const prioritySuggestion = useMemo(
     () => suggestPriority(formData.description, formData.category),
     [formData.description, formData.category]
@@ -98,10 +114,10 @@ function CreateTicketPage() {
 
   useEffect(() => {
     if (!formData.relatedResource) return;
-    if (!relatedResourceOptions.includes(formData.relatedResource)) {
+    if (liveResources.length > 0 && !relatedResourceOptions.includes(formData.relatedResource)) {
       setFormData((prev) => ({ ...prev, relatedResource: '' }));
     }
-  }, [formData.relatedResource, relatedResourceOptions]);
+  }, [formData.relatedResource, relatedResourceOptions, liveResources]);
 
   const validateForm = () => {
     const nextErrors = {};
@@ -148,6 +164,13 @@ function CreateTicketPage() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (name === 'relatedResource' && value) {
+       const resource = liveResources.find(r => r.name === value);
+       if (resource) {
+          setFormData(prev => ({ ...prev, relatedResource: value, location: resource.location }));
+          return;
+       }
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
     setApiError('');

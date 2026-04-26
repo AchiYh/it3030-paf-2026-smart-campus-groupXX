@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import ticketService from '../../../services/member3/ticketService';
-import API from '../../../services/api';
+import api from '../../../api';
 import { useAuth } from '../../../context/AuthContext';
 
 function toActorId(email) {
@@ -159,7 +159,7 @@ function TicketDetailsPage() {
     setLoadingTechnicians(true);
     try {
       const [techniciansRes, ticketsRes] = await Promise.all([
-        API.get('/user/technicians').catch(() => ({ data: [] })),
+        api.get('/user/technicians').catch(() => ({ data: [] })),
         ticketService.getTickets(),
       ]);
 
@@ -171,7 +171,7 @@ function TicketDetailsPage() {
 
       let fromAdminAll = [];
       if (isAdmin && fromTechnicianEndpoint.length === 0) {
-        const allUsersRes = await API.get('/user/admin/all').catch(() => ({ data: [] }));
+        const allUsersRes = await api.get('/user/admin/all').catch(() => ({ data: [] }));
         const allUsers = Array.isArray(allUsersRes.data) ? allUsersRes.data : [];
         fromAdminAll = allUsers.filter((u) => {
           const role = String(u?.role || '').replace('ROLE_', '').toUpperCase();
@@ -212,8 +212,12 @@ function TicketDetailsPage() {
       setBusyTechnicianIds(busy);
 
       if (technicianList.length === 0) {
-        setActionError('No technicians found. Add technicians from the Add Technician page, then try again.');
+        setActionError('No technicians found in the database. Please use the "Add Technician" page to register one.');
       }
+    } catch (err) {
+        const msg = err.response?.data?.message || err.message || 'Failed to load technicians.';
+        setActionError(`Error loading technicians: ${msg}`);
+        console.error("Technician fetch error:", err);
     } finally {
       setLoadingTechnicians(false);
     }
@@ -614,15 +618,13 @@ function TicketDetailsPage() {
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <select
                       className="form-control"
-                      style={{ minWidth: '220px', flex: 1 }}
+                      style={{ minWidth: '220px', flex: 1, cursor: actionLoading ? 'not-allowed' : 'pointer' }}
                       value={assignTo}
                       onChange={(e) => setAssignTo(e.target.value)}
                       onFocus={() => {
-                        loadTechnicianOptions().catch(() => {
-                          // Keep dropdown usable even if refresh fails.
-                        });
+                        loadTechnicianOptions().catch(() => {});
                       }}
-                      disabled={loadingTechnicians || actionLoading}
+                      disabled={actionLoading}
                       required
                     >
                       <option value="">Select technician</option>
