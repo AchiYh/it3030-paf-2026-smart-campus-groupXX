@@ -6,72 +6,6 @@ import BookingModal from '../../components/member2/BookingModal';
 import api from '../../api';
 import './FindResources.css';
 
-// ==================== RESOURCE DATA ====================
-const RESOURCES_DATA = {
-  lectureHalls: [
-    { id: 'lh1', name: 'Lecture Hall A', roomNumber: 'A101', type: 'Lecture Halls', location: 'Main Building', capacity: 2500, status: 'ACTIVE' },
-    { id: 'lh2', name: 'Lecture Hall B', roomNumber: 'A102', type: 'Lecture Halls', location: 'Main Building', capacity: 2000, status: 'ACTIVE' },
-    { id: 'lh3', name: 'Lecture Hall C', roomNumber: 'A103', type: 'Lecture Halls', location: 'Main Building', capacity: 1800, status: 'OUT_OF_SERVICE' },
-    { id: 'lh4', name: 'Lecture Hall D', roomNumber: 'A104', type: 'Lecture Halls', location: 'Main Building', capacity: 1600, status: 'ACTIVE' },
-    { id: 'lh5', name: 'Lecture Hall E', roomNumber: 'S201', type: 'Lecture Halls', location: 'Science Block', capacity: 1500, status: 'ACTIVE' },
-    { id: 'lh6', name: 'Lecture Hall F', roomNumber: 'S202', type: 'Lecture Halls', location: 'Science Block', capacity: 1400, status: 'ACTIVE' },
-    { id: 'lh7', name: 'Lecture Hall G', roomNumber: 'S203', type: 'Lecture Halls', location: 'Science Block', capacity: 1300, status: 'OUT_OF_SERVICE' },
-    { id: 'lh8', name: 'Engineering Hall 1', roomNumber: 'E101', type: 'Lecture Halls', location: 'Engineering Block', capacity: 1200, status: 'ACTIVE' },
-    { id: 'lh9', name: 'Engineering Hall 2', roomNumber: 'E102', type: 'Lecture Halls', location: 'Engineering Block', capacity: 1100, status: 'ACTIVE' },
-    { id: 'lh10', name: 'Engineering Hall 3', roomNumber: 'E103', type: 'Lecture Halls', location: 'Engineering Block', capacity: 1000, status: 'ACTIVE' },
-    { id: 'lh15', name: 'New Lecture Hall 1', roomNumber: 'N101', type: 'Lecture Halls', location: 'New Building', capacity: 2200, status: 'ACTIVE' },
-    { id: 'lh16', name: 'New Lecture Hall 2', roomNumber: 'N102', type: 'Lecture Halls', location: 'New Building', capacity: 2100, status: 'ACTIVE' },
-    { id: 'lh17', name: 'New Lecture Hall 3', roomNumber: 'N103', type: 'Lecture Halls', location: 'New Building', capacity: 1900, status: 'ACTIVE' },
-  ],
-  labs: [
-    { id: 'lab1', name: 'Computer Lab A', roomNumber: 'LAB01', type: 'Labs', location: 'Tech Wing', capacity: 150, status: 'ACTIVE' },
-    { id: 'lab2', name: 'Computer Lab B', roomNumber: 'LAB02', type: 'Labs', location: 'Tech Wing', capacity: 180, status: 'ACTIVE' },
-    { id: 'lab3', name: 'Computer Lab C', roomNumber: 'LAB03', type: 'Labs', location: 'Tech Wing', capacity: 200, status: 'ACTIVE' },
-    { id: 'lab4', name: 'Networking Lab', roomNumber: 'LAB06', type: 'Labs', location: 'Tech Wing', capacity: 145, status: 'ACTIVE' },
-    { id: 'lab5', name: 'Security Lab', roomNumber: 'LAB07', type: 'Labs', location: 'Tech Wing', capacity: 250, status: 'OUT_OF_SERVICE' },
-    { id: 'lab6', name: 'Electronics Lab', roomNumber: 'LAB04', type: 'Labs', location: 'Science Block', capacity: 200, status: 'ACTIVE' },
-    { id: 'lab7', name: 'Physics Lab', roomNumber: 'LAB08', type: 'Labs', location: 'Science Block', capacity: 135, status: 'ACTIVE' },
-    { id: 'lab8', name: 'Chemistry Lab', roomNumber: 'LAB09', type: 'Labs', location: 'Science Block', capacity: 130, status: 'ACTIVE' },
-    { id: 'lab10', name: 'Robotics Lab', roomNumber: 'LAB05', type: 'Labs', location: 'Engineering Block', capacity: 230, status: 'ACTIVE' },
-    { id: 'lab13', name: 'AI Lab', roomNumber: 'LAB13', type: 'Labs', location: 'New Building', capacity: 350, status: 'ACTIVE' },
-    { id: 'lab14', name: 'Data Science Lab', roomNumber: 'LAB14', type: 'Labs', location: 'New Building', capacity: 600, status: 'ACTIVE' },
-    { id: 'lab15', name: 'VR Lab', roomNumber: 'LAB15', type: 'Labs', location: 'New Building', capacity: 250, status: 'ACTIVE' },
-  ],
-  meetingRooms: [
-    { id: 'mr1', name: 'Conference Room', roomNumber: 'CR201', type: 'Meeting Rooms', location: 'Main Building', capacity: 200, status: 'ACTIVE' },
-    { id: 'mr2', name: 'Meeting Room 3', roomNumber: 'MR301', type: 'Meeting Rooms', location: 'Main Building', capacity: 120, status: 'ACTIVE' },
-    { id: 'mr4', name: 'Seminar Room', roomNumber: 'NR101', type: 'Meeting Rooms', location: 'New Building', capacity: 250, status: 'ACTIVE' },
-    { id: 'mr5', name: 'Huddle Room', roomNumber: 'NR102', type: 'Meeting Rooms', location: 'New Building', capacity: 80, status: 'ACTIVE' },
-    { id: 'mr8', name: 'Main Auditorium', roomNumber: 'AUD101', type: 'Meeting Rooms', location: 'Auditorium', capacity: 500, status: 'ACTIVE' },
-    { id: 'mr9', name: 'Small Auditorium', roomNumber: 'AUD102', type: 'Meeting Rooms', location: 'Auditorium', capacity: 1200, status: 'ACTIVE' },
-    { id: 'mr11', name: 'Discussion Pod', roomNumber: 'DP301', type: 'Meeting Rooms', location: 'Library', capacity: 50, status: 'ACTIVE' },
-    { id: 'mr12', name: 'Study Group Room', roomNumber: 'SG401', type: 'Meeting Rooms', location: 'Library', capacity: 60, status: 'ACTIVE' },
-    { id: 'mr18', name: 'Board Room', roomNumber: 'BR401', type: 'Meeting Rooms', location: 'Admin Block', capacity: 15, status: 'ACTIVE' },
-    { id: 'mr19', name: 'Meeting Room 1', roomNumber: 'MR101', type: 'Meeting Rooms', location: 'Admin Block', capacity: 30, status: 'ACTIVE' },
-  ],
-  equipment: [
-    { id: 'eq1', name: 'Projector', type: 'Equipment', location: 'Media Center', totalCount: 20, availableCount: 12, status: 'ACTIVE' },
-    { id: 'eq2', name: 'Camera Kit', type: 'Equipment', location: 'Media Center', totalCount: 25, availableCount: 13, status: 'ACTIVE' },
-    { id: 'eq3', name: 'Laptop Set', type: 'Equipment', location: 'Tech Wing', totalCount: 100, availableCount: 60, status: 'ACTIVE' },
-    { id: 'eq4', name: 'Sound System', type: 'Equipment', location: 'Auditorium', totalCount: 50, availableCount: 22, status: 'ACTIVE' },
-    { id: 'eq5', name: 'Wireless Mic', type: 'Equipment', location: 'Media Center', totalCount: 25, availableCount: 12, status: 'ACTIVE' },
-    { id: 'eq7', name: 'Whiteboard', type: 'Equipment', location: 'Main Building', totalCount: 20, availableCount: 15, status: 'ACTIVE' },
-    { id: 'eq8', name: 'Clicker/Presenter', type: 'Equipment', location: 'Tech Wing', totalCount: 30, availableCount: 20, status: 'ACTIVE' },
-    { id: 'eq9', name: 'Document Camera', type: 'Equipment', location: 'Science Block', totalCount: 25, availableCount: 5, status: 'ACTIVE' },
-    { id: 'eq12', name: 'Webcam Kit', type: 'Equipment', location: 'Library', totalCount: 15, availableCount: 10, status: 'ACTIVE' },
-    { id: 'eq14', name: 'Portable PA System', type: 'Equipment', location: 'Auditorium', totalCount: 3, availableCount: 0, status: 'ACTIVE' },
-  ]
-};
-
-const ALL_RESOURCES = [
-  ...RESOURCES_DATA.lectureHalls,
-  ...RESOURCES_DATA.labs,
-  ...RESOURCES_DATA.meetingRooms,
-  ...RESOURCES_DATA.equipment
-];
-
-const CATEGORIES = ['All', 'Lecture Halls', 'Labs', 'Meeting Rooms', 'Equipment'];
-
 const CATEGORY_CONFIG = {
   'All':          { icon: '🏫', color: '#6366f1' },
   'Lecture Halls':{ icon: '🏛️', color: '#7c3aed' },
@@ -108,7 +42,6 @@ function FindResources() {
     const fetchRealResources = async () => {
       try {
         const res = await api.get('/infrastructure');
-        // Transform backend Infrastructure objects to match Member 2's UI format
         const transformed = res.data.map(item => ({
           id: item.id,
           name: item.name,
@@ -116,9 +49,8 @@ function FindResources() {
           location: item.location,
           capacity: item.capacity,
           status: item.status === 'AVAILABLE' ? 'ACTIVE' : 'OUT_OF_SERVICE',
-          availableCount: item.type === 'Equipment' ? item.capacity : null, // Assuming capacity is count for equipment
-          totalCount: item.type === 'Equipment' ? item.capacity : null,
-          imageUrl: item.imageUrl
+          imageUrl: item.imageUrl,
+          roomNumber: item.roomNumber || ''
         }));
         setAllResources(transformed);
         setResources(transformed);
@@ -133,47 +65,34 @@ function FindResources() {
   }, []);
 
   const mapTypeToCategory = (type) => {
-    if (type === 'Room' || type === 'Hall') return 'Lecture Halls';
-    if (type === 'Laboratory' || type === 'Lab') return 'Labs';
-    if (type === 'Meeting Rooms' || type === 'Meeting') return 'Meeting Rooms';
-    if (type === 'Equipment') return 'Equipment';
-    return 'Lecture Halls'; // Default
+    const t = String(type || '').toLowerCase();
+    if (t.includes('room') || t.includes('hall')) return 'Lecture Halls';
+    if (t.includes('lab')) return 'Labs';
+    if (t.includes('meeting')) return 'Meeting Rooms';
+    if (t.includes('equip')) return 'Equipment';
+    return 'Lecture Halls';
   };
 
   useEffect(() => {
-    filterResources();
-  }, [filters, allResources]);
-
-  const filterResources = () => {
     let filtered = [...allResources];
-    if (filters.category !== 'All') {
-      filtered = filtered.filter(r => r.type === filters.category);
-    }
-    if (filters.location !== 'All Locations') {
-      filtered = filtered.filter(r => r.location === filters.location);
-    }
-    if (filters.status === 'Available') {
-      filtered = filtered.filter(r => r.status === 'ACTIVE' && (r.type !== 'Equipment' || r.availableCount > 0));
-    } else if (filters.status === 'Unavailable') {
-      filtered = filtered.filter(r => r.status !== 'ACTIVE' || (r.type === 'Equipment' && r.availableCount === 0));
-    }
+    if (filters.category !== 'All') filtered = filtered.filter(r => r.type === filters.category);
+    if (filters.location !== 'All Locations') filtered = filtered.filter(r => r.location === filters.location);
+    if (filters.status === 'Available') filtered = filtered.filter(r => r.status === 'ACTIVE');
+    else if (filters.status === 'Unavailable') filtered = filtered.filter(r => r.status !== 'ACTIVE');
     if (filters.search) {
-      filtered = filtered.filter(r =>
-        r.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        r.location?.toLowerCase().includes(filters.search.toLowerCase())
-      );
+      const s = filters.search.toLowerCase();
+      filtered = filtered.filter(r => r.name.toLowerCase().includes(s) || r.location?.toLowerCase().includes(s));
     }
     setResources(filtered);
-  };
+  }, [filters, allResources]);
 
   const allLocations = ['All Locations', ...new Set(allResources.map(r => r.location).filter(Boolean))];
 
   const getImageUrlHelper = (url) => {
-    if (!url) return 'https://via.placeholder.com/400x200?text=No+Image';
+    if (!url) return 'https://via.placeholder.com/100?text=Asset';
     if (url.startsWith('http') || url.startsWith('blob')) return url;
     const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081/api";
-    const rootUrl = baseUrl.replace('/api', '');
-    return rootUrl + url;
+    return baseUrl.replace('/api', '') + url;
   };
 
   const handleBookNow = (resource) => {
@@ -188,206 +107,185 @@ function FindResources() {
       setSuccessBooking(response.data);
       setShowBookingModal(false);
     } catch (err) {
-      const message = err.response?.data?.message || 'Failed to create booking.';
-      throw new Error(message);
+      throw new Error(err.response?.data?.message || 'Failed to create booking.');
     }
   };
 
-  const updateFilter = (key, value) => {
-    if (key === 'category') {
-      setFilters(prev => ({ ...prev, category: value, location: 'All Locations' }));
-    } else {
-      setFilters(prev => ({ ...prev, [key]: value }));
-    }
-  };
-
-  const getAvailabilityInfo = (resource) => {
-    if (resource.type === 'Equipment') {
-      const pct = resource.totalCount > 0 ? (resource.availableCount / resource.totalCount) * 100 : 0;
-      return { pct, label: `${resource.availableCount}/${resource.totalCount} available` };
-    }
-    return null;
-  };
-
-  const isBookable = (resource) => {
-    if (resource.status !== 'ACTIVE') return false;
-    if (resource.type === 'Equipment' && resource.availableCount === 0) return false;
-    return true;
-  };
+  const isBookable = (resource) => resource.status === 'ACTIVE';
 
   return (
     <div className="fr-container">
-      {/* Page Header */}
       <div className="fr-header">
         <div>
-          <h1 className="fr-title">🔍 Find Resources</h1>
-          <p className="fr-subtitle">Browse and reserve campus halls, labs, rooms & equipment</p>
+          <h1 className="fr-title">🔍 Campus Infrastructure Registry</h1>
+          <p className="fr-subtitle">Scan and reserve institutional rooms, labs, and equipment</p>
         </div>
-        <button className="fr-back-btn" onClick={() => navigate('/bookings')}>
-          ← Back to Dashboard
-        </button>
+        <button className="fr-back-btn" onClick={() => navigate('/bookings')}>← Back</button>
       </div>
 
-      {/* Success Banner */}
       {successBooking && (
-        <div className="fr-success-banner">
-          <div className="fr-success-content">
-            <span className="fr-success-icon">🎉</span>
+        <div className="fr-success-banner" style={{ background: '#f0fdf4', border: '1px solid #dcfce7', borderRadius: '16px', padding: '20px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <span style={{ fontSize: '1.5rem' }}>✅</span>
             <div>
-              <div className="fr-success-title">Booking Created Successfully!</div>
-              <div className="fr-success-meta">
-                {successBooking.resourceName} · {successBooking.date} · {successBooking.startTime} – {successBooking.endTime}
-              </div>
+              <div style={{ fontWeight: 800, color: '#166534' }}>Booking Created Successfully!</div>
+              <div style={{ fontSize: '0.85rem', color: '#15803d' }}>{successBooking.resourceName} protocol initiated.</div>
             </div>
           </div>
-          <div className="fr-success-actions">
-            <button className="fr-success-btn-primary" onClick={() => navigate('/bookings/my')}>
-              View My Bookings
-            </button>
-            <button className="fr-success-btn-secondary" onClick={() => setSuccessBooking(null)}>
-              Book Another
-            </button>
-          </div>
+          <button className="fr-success-btn-primary" onClick={() => navigate('/bookings/my')} style={{ padding: '10px 20px', borderRadius: '10px', background: '#166534', color: '#fff', border: 0, fontWeight: 800, cursor: 'pointer' }}>View My Bookings</button>
         </div>
       )}
 
-      {error && <div className="fr-error">{error}</div>}
+      {error && <div className="fr-error" style={{ background: '#fef2f2', color: '#991b1b', padding: '16px', borderRadius: '12px', marginBottom: '24px', fontWeight: 600 }}>{error}</div>}
 
-      {/* Filters */}
-      <div className="fr-filters">
-        <input
-          className="fr-search"
-          type="text"
-          placeholder="🔍  Search by name or location..."
-          value={filters.search}
-          onChange={e => updateFilter('search', e.target.value)}
-        />
-
-        <div className="fr-category-tabs">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              className={`fr-cat-tab ${filters.category === cat ? 'active' : ''}`}
-              style={filters.category === cat ? { background: CATEGORY_CONFIG[cat].color } : {}}
-              onClick={() => updateFilter('category', cat)}
-            >
-              <span>{CATEGORY_CONFIG[cat].icon}</span>
-              <span>{cat}</span>
-            </button>
-          ))}
+      {/* Filters Section */}
+      <div className="fr-filters" style={{ background: '#fff', padding: '24px', borderRadius: '24px', border: '1px solid #e2e8f0', marginBottom: '32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px', marginBottom: '20px' }}>
+           <input
+             className="fr-search"
+             type="text"
+             placeholder="Search by name or location..."
+             value={filters.search}
+             onChange={e => setFilters({...filters, search: e.target.value})}
+             style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1.5px solid #e2e8f0' }}
+           />
+           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+             {['All', 'Lecture Halls', 'Labs', 'Meeting Rooms', 'Equipment'].map(cat => (
+               <button
+                 key={cat}
+                 onClick={() => setFilters({...filters, category: cat})}
+                 style={{
+                   padding: '10px 18px',
+                   borderRadius: '10px',
+                   border: '0',
+                   background: filters.category === cat ? CATEGORY_CONFIG[cat].color : '#f8fafc',
+                   color: filters.category === cat ? '#fff' : '#64748b',
+                   fontWeight: 800,
+                   fontSize: '0.75rem',
+                   cursor: 'pointer'
+                 }}
+               >
+                 {CATEGORY_CONFIG[cat].icon} {cat}
+               </button>
+             ))}
+           </div>
         </div>
-
-        <div className="fr-filter-row">
-          <div className="fr-filter-group">
-            <label>📍 Location</label>
-            <select
-              value={filters.location}
-              onChange={e => updateFilter('location', e.target.value)}
-              className="fr-select"
-            >
-              {allLocations.map(loc => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
-            </select>
-          </div>
-          <div className="fr-filter-group">
-            <label>⚡ Status</label>
-            <select
-              value={filters.status}
-              onChange={e => updateFilter('status', e.target.value)}
-              className="fr-select"
-            >
-              <option value="All">All Status</option>
-              <option value="Available">Available</option>
-              <option value="Unavailable">Unavailable</option>
-            </select>
-          </div>
-          <button className="fr-clear-btn" onClick={() => setFilters({ search: '', category: 'All', location: 'All Locations', status: 'All' })}>
-            Clear All
-          </button>
-        </div>
-
-        <div className="fr-results-count">
-          Showing <strong>{resources.length}</strong> resource{resources.length !== 1 ? 's' : ''}
-          {filters.category !== 'All' && ` in ${filters.category}`}
+        
+        <div style={{ display: 'flex', gap: '24px' }}>
+           <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>LOCATION REGISTRY</label>
+              <select 
+                value={filters.location} 
+                onChange={e => setFilters({...filters, location: e.target.value})}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e2e8f0', fontWeight: 600 }}
+              >
+                {allLocations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+              </select>
+           </div>
+           <div style={{ flex: 1 }}>
+              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>AVAILABILITY STATUS</label>
+              <select 
+                value={filters.status} 
+                onChange={e => setFilters({...filters, status: e.target.value})}
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1.5px solid #e2e8f0', fontWeight: 600 }}
+              >
+                <option value="All">All Status</option>
+                <option value="Available">Available Only</option>
+                <option value="Unavailable">Unavailable Only</option>
+              </select>
+           </div>
+           <button 
+             onClick={() => setFilters({search: '', category: 'All', location: 'All Locations', status: 'All'})}
+             style={{ alignSelf: 'flex-end', padding: '12px 20px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer' }}
+           >
+             RESET FILTERS
+           </button>
         </div>
       </div>
 
-      {/* Resource Grid */}
-      {resources.length === 0 ? (
-        <div className="fr-empty">
-          <div className="fr-empty-icon">🏫</div>
-          <p>No resources match your filters.</p>
-          <button onClick={() => setFilters({ search: '', category: 'All', location: 'All Locations', status: 'All' })}>
-            Clear filters
-          </button>
+      {/* THE TABLE - ELITE SCANNABLE VERSION */}
+      {loading ? (
+        <div className="loading-state">Synchronizing registry...</div>
+      ) : resources.length === 0 ? (
+        <div className="empty-state" style={{ textAlign: 'center', padding: '64px', background: '#fff', borderRadius: '24px' }}>
+          <div style={{ fontSize: '3rem' }}>🏫</div>
+          <p style={{ fontWeight: 800, color: '#1a2a44' }}>No resources found in the registry.</p>
         </div>
       ) : (
-        <div className="fr-grid">
-          {resources.map(resource => {
-            const avail = getAvailabilityInfo(resource);
-            const bookable = isBookable(resource);
-            return (
-              <div key={resource.id} className={`fr-card ${!bookable ? 'fr-card-unavailable' : ''}`}>
-                <div className="fr-card-top" style={{ backgroundImage: `url(${getImageUrlHelper(resource.imageUrl)})`, backgroundSize: 'cover', backgroundPosition: 'center', height: '160px', borderRadius: '18px 18px 0 0', position: 'relative' }}>
-                  <div className="fr-card-overlay" style={{ position: 'absolute', bottom: '0', left: '0', width: '100%', padding: '12px', background: 'linear-gradient(transparent, rgba(0,0,0,0.7))', borderRadius: '0 0 0 0' }}>
-                     <div className="fr-card-icon-wrap" style={{ background: `${CATEGORY_CONFIG[resource.type]?.color}`, padding: '6px', borderRadius: '8px' }}>
-                        <span className="fr-card-icon" style={{ fontSize: '1rem' }}>{TYPE_ICONS[resource.type]}</span>
-                     </div>
-                  </div>
-                  <span className={`fr-card-status ${bookable ? 'fr-status-active' : 'fr-status-inactive'}`} style={{ top: '12px', right: '12px', position: 'absolute' }}>
-                    {bookable ? '● Active' : '● Unavailable'}
-                  </span>
-                </div>
-
-                <div className="fr-card-body">
-                  <h3 className="fr-card-name">{resource.name}</h3>
-                  {resource.roomNumber && (
-                    <div className="fr-card-room">🏠 Room {resource.roomNumber}</div>
-                  )}
-                  <div className="fr-card-location">📍 {resource.location}</div>
-
-                  {resource.type === 'Equipment' ? (
-                    <div className="fr-equip-info">
-                      <div className="fr-equip-label">
-                        <span>Availability</span>
-                        <span style={{ color: avail.pct > 50 ? '#059669' : avail.pct > 20 ? '#f59e0b' : '#ef4444', fontWeight: 700 }}>
-                          {avail.label}
-                        </span>
+        <div className="info-card" style={{ padding: '0', overflow: 'hidden', background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #f1f5f9' }}>
+                <th style={thStyle}>IDENTITY</th>
+                <th style={thStyle}>SPECIFICATIONS</th>
+                <th style={thStyle}>REGISTRY LOCATION</th>
+                <th style={thStyle}>STATUS</th>
+                <th style={thStyle}>PROTOCOL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resources.map((resource) => {
+                const bookable = isBookable(resource);
+                return (
+                  <tr key={resource.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={tdStyle}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ width: '50px', height: '50px', borderRadius: '12px', overflow: 'hidden', background: '#f1f5f9', border: '1px solid #e2e8f0' }}>
+                          <img 
+                            src={getImageUrlHelper(resource.imageUrl)} 
+                            alt={resource.name} 
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => { e.target.src = 'https://via.placeholder.com/60?text=Asset'; }}
+                          />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 800, color: '#1a2a44', fontSize: '0.9rem' }}>{resource.name}</div>
+                          <div style={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>{TYPE_ICONS[resource.type]} {resource.type}</div>
+                        </div>
                       </div>
-                      <div className="fr-progress-bar">
-                        <div
-                          className="fr-progress-fill"
-                          style={{
-                            width: `${avail.pct}%`,
-                            background: avail.pct > 50 ? '#10b981' : avail.pct > 20 ? '#f59e0b' : '#ef4444'
-                          }}
-                        />
-                      </div>
-                      {resource.availableCount === 0 && (
-                        <div className="fr-out-of-stock">❌ Out of Stock</div>
-                      )}
-                      {resource.availableCount > 0 && resource.availableCount <= 3 && (
-                        <div className="fr-low-stock">⚠️ Only {resource.availableCount} left!</div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="fr-capacity">
-                      👥 Capacity: <strong>{resource.capacity?.toLocaleString()}</strong> people
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  className={`fr-book-btn ${!bookable ? 'fr-book-btn-disabled' : ''}`}
-                  onClick={() => bookable && handleBookNow(resource)}
-                  disabled={!bookable}
-                >
-                  {!bookable ? '❌ Unavailable' : '📅 Book Now'}
-                </button>
-              </div>
-            );
-          })}
+                    </td>
+                    <td style={tdStyle}>
+                      <div style={{ fontSize: '0.85rem', color: '#1a2a44', fontWeight: 700 }}>{resource.capacity?.toLocaleString()} PAX Capacity</div>
+                      <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Operational: 08:00 - 18:00</div>
+                    </td>
+                    <td style={tdStyle}>
+                      <div style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>📍 {resource.location}</div>
+                    </td>
+                    <td style={tdStyle}>
+                      <span style={{ 
+                        padding: '6px 12px', 
+                        borderRadius: '6px', 
+                        fontSize: '0.65rem', 
+                        fontWeight: 800,
+                        background: bookable ? '#dcfce7' : '#fee2e2',
+                        color: bookable ? '#166534' : '#991b1b'
+                      }}>
+                        {bookable ? 'AVAILABLE' : 'UNAVAILABLE'}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>
+                      <button 
+                        onClick={() => bookable && handleBookNow(resource)}
+                        disabled={!bookable}
+                        style={{ 
+                          padding: '10px 20px', 
+                          borderRadius: '10px', 
+                          background: bookable ? '#1a2a44' : '#f1f5f9', 
+                          color: bookable ? '#fff' : '#94a3b8', 
+                          border: '0', 
+                          fontSize: '0.7rem', 
+                          fontWeight: 800, 
+                          cursor: bookable ? 'pointer' : 'not-allowed'
+                        }}
+                      >
+                        {bookable ? 'BOOK NOW' : 'LOCKED'}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -402,5 +300,8 @@ function FindResources() {
     </div>
   );
 }
+
+const thStyle = { padding: '20px 24px', fontSize: '0.7rem', fontWeight: 800, color: '#64748b', letterSpacing: '0.05em' };
+const tdStyle = { padding: '20px 24px' };
 
 export default FindResources;

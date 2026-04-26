@@ -95,17 +95,65 @@ export default function InfrastructurePage() {
             {loading ? (
                 <div className="loading-state">Synchronizing Infrastructure Assets...</div>
             ) : (
-                <div className="infra-grid">
-                    {filteredResources.map(resource => (
-                        <ResourceCard 
-                            key={resource.id} 
-                            resource={resource} 
-                            isAdmin={isAdmin}
-                            onEdit={() => handleEdit(resource)}
-                            onDelete={() => handleDelete(resource.id)}
-                            onToggle={() => toggleStatus(resource)}
-                        />
-                    ))}
+                <div className="info-card" style={{ marginTop: '24px', padding: '0', overflow: 'hidden', background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                        <thead>
+                            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #f1f5f9' }}>
+                                <th style={thStyle}>IDENTITY</th>
+                                <th style={thStyle}>SPECIFICATIONS</th>
+                                <th style={thStyle}>INSTITUTIONAL LOCATION</th>
+                                <th style={thStyle}>OPERATIONAL STATUS</th>
+                                {isAdmin && <th style={thStyle}>OPERATIONS</th>}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredResources.map(resource => {
+                                const isAvailable = resource.status === 'AVAILABLE';
+                                return (
+                                    <tr key={resource.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s' }}>
+                                        <td style={tdStyle}>
+                                            <div style={{ fontWeight: 800, color: '#1a2a44', fontSize: '0.9rem' }}>{resource.name}</div>
+                                            <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                {resource.type === 'Room' ? '🏢' : resource.type === 'Laboratory' ? '🔬' : '⚙️'} {resource.type}
+                                            </div>
+                                        </td>
+                                        <td style={tdStyle}>
+                                            <div style={{ fontSize: '0.85rem', color: '#1a2a44', fontWeight: 700 }}>{resource.capacity || 'N/A'} PAX</div>
+                                            <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Hours: {resource.availableFrom || '08:00'} - {resource.availableUntil || '18:00'}</div>
+                                        </td>
+                                        <td style={tdStyle}>
+                                            <div style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>📍 {resource.location}</div>
+                                        </td>
+                                        <td style={tdStyle}>
+                                            <span style={{ 
+                                                padding: '6px 14px', 
+                                                borderRadius: '8px', 
+                                                fontSize: '0.65rem', 
+                                                fontWeight: 800,
+                                                background: isAvailable ? '#dcfce7' : '#fee2e2',
+                                                color: isAvailable ? '#166534' : '#991b1b',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                            }}>
+                                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isAvailable ? '#10b981' : '#ef4444' }}></span>
+                                                {resource.status}
+                                            </span>
+                                        </td>
+                                        {isAdmin && (
+                                            <td style={tdStyle}>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button className="action-circle-btn edit" onClick={() => handleEdit(resource)} style={{ background: '#f1f5f9', color: '#1a2a44', width: '32px', height: '32px', borderRadius: '50%', border: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✎</button>
+                                                    <button className="action-circle-btn toggle" onClick={() => toggleStatus(resource)} style={{ background: isAvailable ? '#dcfce7' : '#fee2e2', color: isAvailable ? '#166534' : '#991b1b', width: '32px', height: '32px', borderRadius: '50%', border: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⏻</button>
+                                                    <button className="action-circle-btn delete" onClick={() => handleDelete(resource.id)} style={{ background: '#fee2e2', color: '#991b1b', width: '32px', height: '32px', borderRadius: '50%', border: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🗑</button>
+                                                </div>
+                                            </td>
+                                        )}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 </div>
             )}
 
@@ -119,6 +167,9 @@ export default function InfrastructurePage() {
         </div>
     );
 }
+
+const thStyle = { padding: '20px 24px', fontSize: '0.7rem', fontWeight: 800, color: '#64748b', letterSpacing: '0.05em' };
+const tdStyle = { padding: '20px 24px' };
 
 function FilterGroup({ label, value, options, onChange }) {
     return (
