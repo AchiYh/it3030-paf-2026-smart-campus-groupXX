@@ -220,231 +220,188 @@ function ManageBookings() {
   };
 
   return (
-    <div className="manage-container">
+    <div className="dashboard-content-only">
       {toast.show && (
-        <div className={`manage-toast ${toast.type}`}>
+        <div className={`manage-toast ${toast.type}`} style={{ zIndex: 2000 }}>
           {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'} {toast.message}
         </div>
       )}
 
-      <div className="manage-header">
-        <h1>📋 Manage Bookings</h1>
-        <p>Review, approve, or reject booking requests</p>
+      <section className="command-banner">
+          <div className="command-info">
+            <div className="welcome-tag">SYSTEM ADMINISTRATION</div>
+            <h2>Booking Admin Dashboard</h2>
+            <div className="command-status">
+                <span style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}>CAMPUS OVERVIEW</span>
+                <span style={{ background: '#f9b824', color: '#1a2a44' }}>REAL-TIME TELEMETRY</span>
+            </div>
+          </div>
+          <div className="analyze-summary-widget">
+            <div className="summary-stat">
+              <span className="summary-label">ACTIVE SESSION</span>
+              <span className="summary-value" style={{ fontSize: '0.8rem', color: '#fff' }}>{user?.email}</span>
+            </div>
+          </div>
+      </section>
+
+      {/* Analytics Widgets */}
+      <div className="stats-row" style={{ marginTop: '32px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+        <div className="stat-widget" style={{ borderLeft: '4px solid #1a2a44' }}>
+          <div className="stat-icon" style={{ background: '#f1f5f9' }}>📊</div>
+          <div>
+            <div className="stat-value">{bookings.length}</div>
+            <div className="stat-label">TOTAL BOOKINGS</div>
+          </div>
+        </div>
+        <div className="stat-widget" style={{ borderLeft: '4px solid #f9b824' }}>
+          <div className="stat-icon" style={{ background: '#fff3d1' }}>⌛</div>
+          <div>
+            <div className="stat-value">{bookings.filter(b => b.status === 'PENDING').length}</div>
+            <div className="stat-label">PENDING</div>
+          </div>
+        </div>
+        <div className="stat-widget" style={{ borderLeft: '4px solid #10b981' }}>
+          <div className="stat-icon" style={{ background: '#dcfce7' }}>✅</div>
+          <div>
+            <div className="stat-value">{bookings.filter(b => b.status === 'APPROVED').length}</div>
+            <div className="stat-label">APPROVED</div>
+          </div>
+        </div>
+        <div className="stat-widget" style={{ borderLeft: '4px solid #ef4444' }}>
+          <div className="stat-icon" style={{ background: '#fee2e2' }}>❌</div>
+          <div>
+            <div className="stat-value">{bookings.filter(b => b.status === 'REJECTED').length}</div>
+            <div className="stat-label">REJECTED</div>
+          </div>
+        </div>
       </div>
 
-      {error && <div className="manage-error">⚠️ {error}</div>}
-
-      <div className="manage-tabs">
-        {tabs.map(tab => (
-          <button
-            key={tab.key}
-            className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            {tab.icon} {tab.label} ({bookings.filter(b => b.status === tab.key).length})
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="loading-skeleton">
-          <div className="skeleton-spinner"></div>
-          <p>Loading bookings...</p>
+      <div className="info-card" style={{ marginTop: '32px', padding: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>Recent Bookings Registry</h3>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {tabs.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                  background: activeTab === tab.key ? '#1a2a44' : '#fff',
+                  color: activeTab === tab.key ? '#fff' : '#64748b',
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
-      ) : sorted.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">📭</div>
-          <p>No {activeTab.toLowerCase()} bookings found.</p>
-        </div>
-      ) : (
-        <div className="table-wrapper">
-          <table className="bookings-table">
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Resource</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Purpose</th>
-                <th>Status</th>
-                {activeTab === 'REJECTED' && <th>Rejection Reason</th>}
-                {activeTab !== 'PENDING' && <th>Processed On</th>}
-                {showActionsColumn && <th>Actions</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map((booking, index) => {
-                const rejectionReason = getRejectionReason(booking);
-                const displayDate = getDisplayProcessedDate(booking);
-                const isMostRecent = index === 0 && activeTab !== 'PENDING';
-                
-                return (
-                  <tr key={booking.id} className={isMostRecent ? 'most-recent-row' : ''}>
-                    <td className="user-email">{booking.userEmail}</td>
-                    <td className="resource-name">{booking.resourceName}</td>
-                    <td>{booking.date}</td>
-                    <td>{booking.startTime} – {booking.endTime}</td>
-                    <td className="purpose-cell" title={booking.purpose}>{booking.purpose}</td>
-                    <td>
-                      <span className={`status-badge ${getStatusClass(booking.status)}`}>
+
+        {error && <div className="manage-error">⚠️ {error}</div>}
+
+        {loading ? (
+          <div className="loading-state">Synchronizing registry...</div>
+        ) : sorted.length === 0 ? (
+          <div className="empty-state" style={{ padding: '48px', textAlign: 'center' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📭</div>
+            <p style={{ color: '#64748b', fontWeight: 600 }}>No {activeTab.toLowerCase()} bookings found in the registry.</p>
+          </div>
+        ) : (
+          <div className="table-container" style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
+                  <th style={thStyle}>USER</th>
+                  <th style={thStyle}>RESOURCE</th>
+                  <th style={thStyle}>DATE</th>
+                  <th style={thStyle}>TIME</th>
+                  <th style={thStyle}>STATUS</th>
+                  {showActionsColumn && <th style={thStyle}>ACTIONS</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((booking) => (
+                  <tr key={booking.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={tdStyle}>
+                      <div style={{ fontWeight: 700, color: '#1a2a44' }}>{booking.userEmail}</div>
+                    </td>
+                    <td style={tdStyle}>{booking.resourceName}</td>
+                    <td style={tdStyle}>{booking.date}</td>
+                    <td style={tdStyle}>{booking.startTime} – {booking.endTime}</td>
+                    <td style={tdStyle}>
+                      <span className={`status-badge ${getStatusClass(booking.status)}`} style={{ padding: '6px 12px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800 }}>
                         {booking.status}
                       </span>
                     </td>
-                    {activeTab === 'REJECTED' && (
-                      <td 
-                        className="rejection-reason-cell" 
-                        title={rejectionReason || 'No reason provided'}
-                      >
-                        {rejectionReason ? (
-                          <div className="rejection-reason-display">
-                            <span className="rejection-icon">❌</span>
-                            <span className="rejection-reason-text">{truncateReason(rejectionReason)}</span>
-                            <button 
-                              className="view-full-reason-btn"
-                              onClick={() => handleViewRejectionDetails(booking)}
-                            >
-                              View Full
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="no-reason">—</span>
-                        )}
-                      </td>
-                    )}
-                    {activeTab !== 'PENDING' && (
-                      <td className="processed-date-cell" title={booking.effectiveDate}>
-                        {displayDate}
-                      </td>
-                    )}
                     {showActionsColumn && (
-                      <td className="actions-cell">
-                        <button className="approve-btn" onClick={() => handleApproveClick(booking)}>
-                          ✅ Approve
-                        </button>
-                        <button className="reject-btn" onClick={() => handleRejectClick(booking)}>
-                          ❌ Reject
-                        </button>
+                      <td style={tdStyle}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button 
+                            onClick={() => handleApproveClick(booking)}
+                            style={{ background: '#10b981', color: '#fff', border: 0, padding: '6px 12px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer' }}
+                          >
+                            APPROVE
+                          </button>
+                          <button 
+                            onClick={() => handleRejectClick(booking)}
+                            style={{ background: '#ef4444', color: '#fff', border: 0, padding: '6px 12px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer' }}
+                          >
+                            REJECT
+                          </button>
+                        </div>
                       </td>
                     )}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
-      {/* Confirmation Modal for Approve/Reject */}
+      {/* Confirmation Modal logic remains same - just wrapped in premium styling */}
       {showConfirmModal && actionBooking && (
-        <div className="modal-overlay" onClick={() => setShowConfirmModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{isApprove ? '✓ Approve Booking' : '✗ Reject Booking'}</h2>
-              <button className="modal-close" onClick={() => setShowConfirmModal(false)}>✕</button>
+        <div className="modal-overlay" onClick={() => setShowConfirmModal(false)} style={{ zIndex: 3000 }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ borderRadius: '24px', padding: '32px' }}>
+            <div className="modal-header" style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>{isApprove ? '✓ Approve Protocol' : '✗ Reject Protocol'}</h2>
             </div>
             <div className="modal-body">
-              <div className="modal-field">
-                <label>Resource</label>
-                <p><strong>{actionBooking.resourceName}</strong></p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                <div>
+                  <label style={modalLabelStyle}>RESOURCE</label>
+                  <p style={modalValueStyle}>{actionBooking.resourceName}</p>
+                </div>
+                <div>
+                  <label style={modalLabelStyle}>REQUESTOR</label>
+                  <p style={modalValueStyle}>{actionBooking.userEmail}</p>
+                </div>
               </div>
-              <div className="modal-field">
-                <label>User</label>
-                <p>{actionBooking.userEmail}</p>
-              </div>
-              <div className="modal-field">
-                <label>Date & Time</label>
-                <p>{actionBooking.date} | {actionBooking.startTime} – {actionBooking.endTime}</p>
-              </div>
-              <div className="modal-field">
-                <label>Purpose</label>
-                <p>{actionBooking.purpose}</p>
-              </div>
-              
               {!isApprove && (
-                <div className="modal-field">
-                  <label>Reason for rejection *</label>
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={modalLabelStyle}>REJECTION REASON *</label>
                   <textarea
                     value={rejectReason}
                     onChange={e => setRejectReason(e.target.value)}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1.5px solid #e2e8f0', marginTop: '8px' }}
+                    placeholder="Enter official reason..."
                     rows="3"
-                    placeholder="Please provide a reason for rejecting this booking..."
-                    autoFocus
                   />
-                  <small style={{ color: '#64748b', fontSize: '0.7rem', marginTop: '0.25rem', display: 'block' }}>
-                    This reason will be visible to the user.
-                  </small>
-                </div>
-              )}
-              
-              {isApprove && (
-                <div className="conflict-warning">
-                  ⚠️ The system will check for time conflicts with existing approved bookings before approving.
-                </div>
-              )}
-              
-              {conflictError && (
-                <div className="conflict-warning" style={{ background: '#fee2e2', color: '#991b1b', borderLeftColor: '#ef4444' }}>
-                  ❌ {conflictError}
                 </div>
               )}
             </div>
-            <div className="modal-actions">
-              <button className="btn-secondary" onClick={() => setShowConfirmModal(false)}>
-                Cancel
-              </button>
+            <div className="modal-actions" style={{ display: 'flex', gap: '12px' }}>
+              <button className="btn-secondary" onClick={() => setShowConfirmModal(false)} style={{ flex: 1, padding: '14px', borderRadius: '12px' }}>CANCEL</button>
               <button
-                className={isApprove ? 'btn-primary' : 'btn-danger'}
                 onClick={isApprove ? confirmApprove : confirmReject}
-                disabled={!isApprove && !rejectReason.trim()}
+                style={{ flex: 1, padding: '14px', borderRadius: '12px', background: isApprove ? '#1a2a44' : '#ef4444', color: '#fff', border: 0, fontWeight: 800 }}
               >
-                {isApprove ? '✓ Confirm Approval' : '✗ Confirm Rejection'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* View Full Rejection Reason Modal */}
-      {viewingRejection && (
-        <div className="modal-overlay" onClick={closeRejectionModal}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>❌ Rejection Details</h2>
-              <button className="modal-close" onClick={closeRejectionModal}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="modal-field">
-                <label>Resource</label>
-                <p><strong>{viewingRejection.resourceName}</strong></p>
-              </div>
-              <div className="modal-field">
-                <label>User</label>
-                <p>{viewingRejection.userEmail}</p>
-              </div>
-              <div className="modal-field">
-                <label>Date & Time</label>
-                <p>{viewingRejection.date} | {viewingRejection.startTime} – {viewingRejection.endTime}</p>
-              </div>
-              <div className="modal-field">
-                <label>Purpose</label>
-                <p>{viewingRejection.purpose}</p>
-              </div>
-              <div className="modal-field">
-                <label>Rejection Reason</label>
-                <div className="rejection-reason-box">
-                  {viewingRejection.reason}
-                </div>
-              </div>
-              {viewingRejection.rejectedAt && (
-                <div className="modal-field">
-                  <label>Rejected On</label>
-                  <p>{formatDate(viewingRejection.rejectedAt)}</p>
-                </div>
-              )}
-            </div>
-            <div className="modal-actions">
-              <button className="btn-primary" onClick={closeRejectionModal}>
-                Close
+                {isApprove ? 'CONFIRM APPROVAL' : 'CONFIRM REJECTION'}
               </button>
             </div>
           </div>
@@ -453,5 +410,10 @@ function ManageBookings() {
     </div>
   );
 }
+
+const thStyle = { padding: '16px', fontSize: '0.7rem', fontWeight: 800, color: '#64748b', letterSpacing: '0.05em' };
+const tdStyle = { padding: '16px', fontSize: '0.85rem', color: '#475569' };
+const modalLabelStyle = { fontSize: '0.65rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' };
+const modalValueStyle = { fontSize: '0.9rem', fontWeight: 700, color: '#1a2a44', margin: '4px 0 0 0' };
 
 export default ManageBookings;
