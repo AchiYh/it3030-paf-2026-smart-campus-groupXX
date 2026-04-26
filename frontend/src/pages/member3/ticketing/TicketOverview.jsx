@@ -366,7 +366,7 @@ function TicketOverview() {
               fontSize: '0.78rem',
               letterSpacing: '0.12em',
               fontWeight: 700,
-              color: 'rgba(226,232,240,0.72)',
+              color: '#000000',
             }}>
               {item.label}
             </p>

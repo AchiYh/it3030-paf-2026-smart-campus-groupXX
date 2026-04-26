@@ -17,6 +17,18 @@ const CATEGORY_OPTIONS = [
   { value: 'OTHER', label: 'OTHER', icon: '📋' },
 ];
 
+
+const RESOURCE_OPTIONS_BY_CATEGORY = {
+  NETWORK: ['WiFi Access Point', 'Network Switch', 'LAN Port', 'Internet Router'],
+  ELECTRICAL: ['Light Fixture', 'Power Outlet', 'Circuit Breaker', 'Generator'],
+  PLUMBING: ['Tap', 'Washroom Sink', 'Water Line', 'Drainage'],
+  HVAC: ['Air Conditioner', 'Ventilation Fan', 'Thermostat', 'Duct System'],
+  FURNITURE: ['Desk', 'Chair', 'Cabinet', 'Whiteboard'],
+  CLEANING: ['Restroom', 'Corridor', 'Classroom Floor', 'Waste Bin Area'],
+  SECURITY: ['CCTV Camera', 'Door Lock', 'Access Control Panel', 'Alarm Sensor'],
+  OTHER: ['Projector', 'Audio System', 'General Facility', 'Other Resource'],
+};
+
 function toReporterId(email) {
   const local = (email || '').split('@')[0] || 'usr';
   const normalized = local.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -31,6 +43,18 @@ function calculateDueDatePreview(priority) {
   return `${due.toLocaleDateString()} (${days} day${days > 1 ? 's' : ''})`;
 }
 
+function buildEnrichedDescription(description, location, relatedResource) {
+  const metaLines = [];
+  if (location) metaLines.push(`Location: ${location}`);
+  if (relatedResource) metaLines.push(`Related Resource: ${relatedResource}`);
+
+  if (metaLines.length === 0) {
+    return description.trim();
+  }
+
+  return `${metaLines.join('\n')}\n\n${description.trim()}`;
+}
+
 function CreateTicketPage() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -39,6 +63,8 @@ function CreateTicketPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    location: '',
+    relatedResource: '',
     category: '',
     priority: 'MEDIUM',
     reportedBy: toReporterId(user?.email),
@@ -61,10 +87,21 @@ function CreateTicketPage() {
 
   const imageCountLabel = useMemo(() => `${images.length}/${MAX_IMAGES} images selected`, [images.length]);
   const dueDatePreview = useMemo(() => calculateDueDatePreview(formData.priority), [formData.priority]);
+  const relatedResourceOptions = useMemo(
+    () => RESOURCE_OPTIONS_BY_CATEGORY[formData.category] || RESOURCE_OPTIONS_BY_CATEGORY.OTHER,
+    [formData.category]
+  );
   const prioritySuggestion = useMemo(
     () => suggestPriority(formData.description, formData.category),
     [formData.description, formData.category]
   );
+
+  useEffect(() => {
+    if (!formData.relatedResource) return;
+    if (!relatedResourceOptions.includes(formData.relatedResource)) {
+      setFormData((prev) => ({ ...prev, relatedResource: '' }));
+    }
+  }, [formData.relatedResource, relatedResourceOptions]);
 
   const validateForm = () => {
     const nextErrors = {};
@@ -75,6 +112,19 @@ function CreateTicketPage() {
 
     if (!formData.description || formData.description.trim().length < 10) {
       nextErrors.description = 'Description must be at least 10 characters.';
+    }
+
+    if (!formData.location) {
+      nextErrors.location = 'Location is required.';
+    }
+
+    const enrichedDescription = buildEnrichedDescription(
+      formData.description,
+      formData.location,
+      formData.relatedResource
+    );
+    if (enrichedDescription.length > 2000) {
+      nextErrors.description = 'Description and selected metadata must not exceed 2000 characters.';
     }
 
     if (!formData.category || formData.category.trim().length < 2) {
@@ -168,9 +218,15 @@ function CreateTicketPage() {
     setSubmitting(true);
 
     try {
+      const enrichedDescription = buildEnrichedDescription(
+        formData.description,
+        formData.location,
+        formData.relatedResource
+      );
+
       const payload = {
         title: formData.title.trim(),
-        description: formData.description.trim(),
+        description: enrichedDescription,
         category: formData.category.trim(),
         priority: formData.priority,
         reportedBy: formData.reportedBy.trim(),
@@ -264,6 +320,37 @@ function CreateTicketPage() {
           {errors.description && <p style={{ color: '#fca5a5', marginTop: '0.35rem', fontSize: '0.8rem' }}>{errors.description}</p>}
         </div>
 
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.85rem' }}>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label htmlFor="location">Location *</label>
+            <input
+              id="location"
+              name="location"
+              className="form-control"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="E.g., Lab 3, 2nd Floor"
+            />
+            {errors.location && <p style={{ color: '#fca5a5', marginTop: '0.35rem', fontSize: '0.8rem' }}>{errors.location}</p>}
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label htmlFor="relatedResource">Related Resource</label>
+            <select
+              id="relatedResource"
+              name="relatedResource"
+              className="form-control"
+              value={formData.relatedResource}
+              onChange={handleChange}
+            >
+              <option value="">Select resource</option>
+              {relatedResourceOptions.map((resource) => (
+                <option key={resource} value={resource}>{resource}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div className="form-group" style={{ marginBottom: 0 }}>
           <label htmlFor="category">Category *</label>
           <div
@@ -285,7 +372,7 @@ function CreateTicketPage() {
                   style={{
                     border: selected ? '1px solid rgba(96,165,250,0.9)' : '1px solid var(--border-color)',
                     background: selected ? 'rgba(59,130,246,0.18)' : 'rgba(148,163,184,0.08)',
-                    color: selected ? '#bfdbfe' : 'var(--text-secondary)',
+                    color: selected ? '#1e3a8a' : 'var(--text-secondary)',
                     borderRadius: '999px',
                     padding: '0.45rem 0.8rem',
                     fontSize: '0.82rem',
@@ -354,7 +441,7 @@ function CreateTicketPage() {
                         borderRadius: '6px',
                         background: 'rgba(59,130,246,0.2)',
                         border: '1px solid rgba(59,130,246,0.4)',
-                        color: '#93c5fd',
+                        color: '#1e3a8a',
                         fontSize: '0.75rem',
                         fontWeight: '500',
                         cursor: 'pointer',

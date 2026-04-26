@@ -153,6 +153,72 @@ function TicketDetailsPage() {
   const isCommentOwner = (comment) => identityMatches(comment?.authorId);
   const isTicketOwner = (currentTicket) => identityMatches(currentTicket?.reportedBy);
 
+  const loadTechnicianOptions = async () => {
+    if (!canModerate) return;
+
+    setLoadingTechnicians(true);
+    try {
+      const [techniciansRes, ticketsRes] = await Promise.all([
+        API.get('/user/technicians').catch(() => ({ data: [] })),
+        ticketService.getTickets(),
+      ]);
+
+      const fromTechnicianEndpoint = Array.isArray(techniciansRes.data)
+        ? techniciansRes.data
+        : Array.isArray(techniciansRes.data?.data)
+          ? techniciansRes.data.data
+          : [];
+
+      let fromAdminAll = [];
+      if (isAdmin && fromTechnicianEndpoint.length === 0) {
+        const allUsersRes = await API.get('/user/admin/all').catch(() => ({ data: [] }));
+        const allUsers = Array.isArray(allUsersRes.data) ? allUsersRes.data : [];
+        fromAdminAll = allUsers.filter((u) => {
+          const role = String(u?.role || '').replace('ROLE_', '').toUpperCase();
+          return role.includes('TECHNICIAN');
+        });
+      }
+
+      const mergedById = new Map();
+      [...fromTechnicianEndpoint, ...fromAdminAll].forEach((tech) => {
+        const id = tech?.id || tech?._id || tech?.userId || '';
+        if (!id) return;
+        if (!mergedById.has(id)) {
+          mergedById.set(id, tech);
+        }
+      });
+
+      const rawTechnicianList = Array.from(mergedById.values());
+
+      const technicianList = rawTechnicianList
+        .map((tech) => ({
+          ...tech,
+          id: tech?.id || tech?._id || tech?.userId || '',
+          fullName: tech?.fullName || [tech?.firstName, tech?.lastName].filter(Boolean).join(' ').trim() || tech?.email || 'Unknown Technician',
+          specialization: tech?.specialization || 'General',
+        }))
+        .filter((tech) => Boolean(tech.id));
+
+      const allTickets = Array.isArray(ticketsRes.data) ? ticketsRes.data : [];
+      const busy = new Set(
+        allTickets
+          .filter((item) => item?.id !== ticketId)
+          .filter((item) => item?.assignedTo)
+          .filter((item) => !['CLOSED', 'REJECTED'].includes(String(item?.status || '').toUpperCase()))
+          .map((item) => item.assignedTo)
+      );
+
+      setTechnicians(technicianList);
+      setBusyTechnicianIds(busy);
+
+      if (technicianList.length === 0) {
+        setActionError('No technicians found. Add technicians from the Add Technician page, then try again.');
+      }
+    } finally {
+      setLoadingTechnicians(false);
+    }
+  };
+
   const loadDetail = async () => {
     setLoading(true);
     setError('');
@@ -167,29 +233,11 @@ function TicketDetailsPage() {
       setAssignTo(ticketRes.data?.assignedTo || '');
 
       if (canModerate) {
-        setLoadingTechnicians(true);
-        const [techniciansRes, ticketsRes] = await Promise.all([
-          API.get('/users/technicians'),
-          ticketService.getTickets(),
-        ]);
-
-        const technicianList = Array.isArray(techniciansRes.data) ? techniciansRes.data : [];
-        const allTickets = Array.isArray(ticketsRes.data) ? ticketsRes.data : [];
-        const busy = new Set(
-          allTickets
-            .filter((item) => item?.id !== ticketId)
-            .filter((item) => item?.assignedTo)
-            .filter((item) => !['CLOSED', 'REJECTED'].includes(String(item?.status || '').toUpperCase()))
-            .map((item) => item.assignedTo)
-        );
-
-        setTechnicians(technicianList);
-        setBusyTechnicianIds(busy);
+        await loadTechnicianOptions();
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load ticket details.');
     } finally {
-      setLoadingTechnicians(false);
       setLoading(false);
     }
   };
@@ -198,6 +246,31 @@ function TicketDetailsPage() {
     loadDetail();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketId]);
+
+  useEffect(() => {
+    if (!canModerate) return undefined;
+
+    const handleWindowFocus = () => {
+      loadTechnicianOptions().catch(() => {
+        // Keep existing list if refresh fails.
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        handleWindowFocus();
+      }
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canModerate, ticketId]);
 
   const runAction = async (fn) => {
     setActionLoading(true);
@@ -544,6 +617,11 @@ function TicketDetailsPage() {
                       style={{ minWidth: '220px', flex: 1 }}
                       value={assignTo}
                       onChange={(e) => setAssignTo(e.target.value)}
+                      onFocus={() => {
+                        loadTechnicianOptions().catch(() => {
+                          // Keep dropdown usable even if refresh fails.
+                        });
+                      }}
                       disabled={loadingTechnicians || actionLoading}
                       required
                     >
@@ -575,6 +653,11 @@ function TicketDetailsPage() {
                     </select>
                     <button className="btn btn-primary" type="submit" disabled={actionLoading}>Assign</button>
                   </div>
+                  {technicians.length === 0 && !loadingTechnicians && (
+                    <p style={{ marginTop: '0.4rem', color: '#fca5a5', fontSize: '0.8rem' }}>
+                      No technicians available in the list right now.
+                    </p>
+                  )}
                   <p style={{ marginTop: '0.4rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                     Recommendations are based on ticket category and technician specialization. Busy technicians are unavailable.
                   </p>
